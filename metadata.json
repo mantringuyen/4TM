@@ -1,0 +1,8 @@
+{
+  "name": "4TM",
+  "description": "Monorepo architecture for the 4TM web ecosystem comprising web applications, shared packages, and API services.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "4tm",
+  "private": true,
+  "scripts": {
+    "build": "echo '4TM monorepo initialized'"
+  },
+  "workspaces": [
+    "main",
+    "study",
+    "games",
+    "apps",
+    "ebook",
+    "tools",
+    "packages/*",
+    "services/*"
+  ]
+}
