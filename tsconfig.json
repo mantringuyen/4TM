@@ -18,6 +18,6 @@
       "@shared/*": ["./shared/*"]
     }
   },
-  "include": ["src", "shared", "server.ts", "vite.config.ts"],
+  "include": ["src", "shared", "worker", "server.ts", "vite.config.ts"],
   "exclude": ["node_modules", "dist", "study", "products"]
 }

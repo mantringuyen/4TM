@@ -8,7 +8,8 @@
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "lint": "tsc --noEmit",
     "start": "node dist/server.cjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "wrangler deploy --config wrangler.jsonc"
   },
   "workspaces": [
     "products/*"
@@ -32,6 +33,7 @@
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.3"
+    "vite": "^6.2.3",
+    "wrangler": "^4.131.2"
   }
 }
