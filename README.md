@@ -59,12 +59,7 @@ Workspaces are configured in the root `package.json`:
   "name": "4tm",
   "private": true,
   "workspaces": [
-    "main",
-    "study",
-    "games",
-    "apps",
-    "ebook",
-    "tools",
+    "{main,study,games,apps,ebook,tools}",
     "packages/*",
     "services/*"
   ]

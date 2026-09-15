@@ -1,0 +1,6 @@
+{
+  "name": "4TM — Interactive Programming LMS",
+  "description": "Autonomous full-stack learning platform with client-side code execution, structured courses across Basic/Intermediate/Advanced paths, interactive challenges, quizzes, projects, question bank, admin management, and bilingual EN/VI support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

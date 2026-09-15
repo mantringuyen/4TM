@@ -10,7 +10,14 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "noEmit": true,
-    "baseUrl": "."
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@shared": ["./shared/index.ts"],
+      "@shared/*": ["./shared/*"]
+    }
   },
-  "exclude": ["node_modules", "dist"]
+  "include": ["src", "shared", "server.ts", "vite.config.ts"],
+  "exclude": ["node_modules", "dist", "study", "products"]
 }

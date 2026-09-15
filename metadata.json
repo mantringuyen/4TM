@@ -1,6 +1,6 @@
 {
-  "name": "4TM",
-  "description": "Monorepo architecture for the 4TM web ecosystem comprising web applications, shared packages, and API services.",
+  "name": "4TM Ecosystem",
+  "description": "Official 4TM Ecosystem Homepage connecting Study, Ebook, Tools, Apps, and Games at 4tm.io.vn.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
