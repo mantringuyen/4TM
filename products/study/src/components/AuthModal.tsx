@@ -183,7 +183,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             if (resendRes.success) {
               setMode('verify_otp');
               setResendCooldown(60);
-              setInfoMsg(`${dict.auth.verifyEmailSubtitle} ${email}`);
+              setInfoMsg(dict.auth.verifyEmailSubtitle);
             } else {
               const errMsg = resendRes.error || '';
               if (errMsg.toLowerCase().includes('60 seconds') || errMsg.toLowerCase().includes('security purposes')) {
@@ -214,10 +214,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       } else if (mode === 'signup') {
         const res = await signUpUser(email, password, displayName || 'New Student');
         if (res.success) {
-          // Transition to OTP verification step (OTP already sent during signUp)
+          // Transition to OTP verification step
           setMode('verify_otp');
           setResendCooldown(60);
-          setInfoMsg(`${dict.auth.verifyEmailSubtitle} ${email}`);
+          setInfoMsg(dict.auth.verifyEmailSubtitle);
         } else {
           setErrorMsg(res.error || 'Registration error');
         }
@@ -510,7 +510,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 {mode === 'verify_otp' 
-                  ? `${dict.auth.verifyEmailSubtitle} ${email}`
+                  ? dict.auth.verifyEmailSubtitle
                   : mode === 'pending_approval'
                   ? dict.auth.pendingApprovalBadge
                   : mode === 'forgot_password'
