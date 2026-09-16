@@ -498,38 +498,47 @@ async function runSecurityTests() {
   // TEST M: Missing SUPABASE_SERVICE_ROLE_KEY Fails Closed (No Anon Fallback)
   // -------------------------------------------------------------------------
   await test('Test M: Service Role Mandatory — Missing SUPABASE_SERVICE_ROLE_KEY returns HTTP 500 server_misconfiguration', async () => {
-    const mockEnvMissingServiceKey: any = {
-      VITE_SUPABASE_URL: 'https://mock.supabase.co',
-      VITE_SUPABASE_ANON_KEY: 'public_anon_key_should_never_be_used_for_admin_exchange',
-      // SUPABASE_SERVICE_ROLE_KEY intentionally omitted
-    };
+    const savedProcessKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    const req = new Request('https://4tm.io.vn/api/sso/exchange', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Origin: 'https://study.4tm.io.vn' },
-      body: JSON.stringify({
-        ticket: 'st_live_ticket_test_m',
-        target_origin: 'https://study.4tm.io.vn',
-        state: 'sso_state_test_m',
-      }),
-    });
+    try {
+      const mockEnvMissingServiceKey: any = {
+        VITE_SUPABASE_URL: 'https://mock.supabase.co',
+        VITE_SUPABASE_ANON_KEY: 'public_anon_key_should_never_be_used_for_admin_exchange',
+        // SUPABASE_SERVICE_ROLE_KEY intentionally omitted
+      };
 
-    const res = await workerHandler.fetch(req, mockEnvMissingServiceKey, {});
-    const data = await res.json();
+      const req = new Request('https://4tm.io.vn/api/sso/exchange', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Origin: 'https://study.4tm.io.vn' },
+        body: JSON.stringify({
+          ticket: 'st_live_ticket_test_m',
+          target_origin: 'https://study.4tm.io.vn',
+          state: 'sso_state_test_m',
+        }),
+      });
 
-    if (res.status !== 500) {
-      throw new Error(`Expected HTTP 500 when service role key is absent, got status: ${res.status}`);
-    }
+      const res = await workerHandler.fetch(req, mockEnvMissingServiceKey, {});
+      const data = await res.json();
 
-    if (data.errorCategory !== 'server_misconfiguration') {
-      throw new Error(`Expected errorCategory 'server_misconfiguration', got: ${JSON.stringify(data)}`);
-    }
+      if (res.status !== 500) {
+        throw new Error(`Expected HTTP 500 when service role key is absent, got status: ${res.status}`);
+      }
 
-    // Verify secret is not leaked in error payload
-    const serialized = JSON.stringify(data);
-    if (serialized.includes('public_anon_key') || serialized.includes('key')) {
-      if (data.message.toLowerCase().includes('public_anon_key')) {
-        throw new Error('Key leaked in error response!');
+      if (data.errorCategory !== 'server_misconfiguration') {
+        throw new Error(`Expected errorCategory 'server_misconfiguration', got: ${JSON.stringify(data)}`);
+      }
+
+      // Verify secret is not leaked in error payload
+      const serialized = JSON.stringify(data);
+      if (serialized.includes('public_anon_key') || serialized.includes('key')) {
+        if (data.message.toLowerCase().includes('public_anon_key')) {
+          throw new Error('Key leaked in error response!');
+        }
+      }
+    } finally {
+      if (savedProcessKey !== undefined) {
+        process.env.SUPABASE_SERVICE_ROLE_KEY = savedProcessKey;
       }
     }
   });

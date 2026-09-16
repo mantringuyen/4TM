@@ -27,9 +27,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   showText = true,
   showMark = true,
   className = '',
-  href,
+  href = !productName ? '/' : undefined,
   onClick,
-  as = href ? 'a' : onClick ? 'button' : 'div',
+  as = (href !== undefined || !productName) ? 'a' : onClick ? 'button' : 'div',
 }) => {
   const sizeClasses = {
     sm: {
@@ -81,7 +81,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   if (as === 'a' || (href && as !== 'button' && as !== 'div')) {
     return (
       <a
-        href={href || 'https://4tm.io.vn'}
+        href={href !== undefined ? href : 'https://4tm.io.vn'}
         onClick={onClick}
         className={containerClasses}
         aria-label={productName ? `${productName} — 4TM` : '4TM Ecosystem'}

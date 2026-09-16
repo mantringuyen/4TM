@@ -27,7 +27,7 @@ export const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Left: Brand Logo & Canonical Product Switcher */}
         <div className="flex items-center gap-3 sm:gap-5">
-          <BrandLogo size="md" showText={true} showMark={true} />
+          <BrandLogo size="md" showText={true} showMark={true} href="/" />
 
           <div className="h-5 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
 

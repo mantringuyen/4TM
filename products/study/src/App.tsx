@@ -672,6 +672,12 @@ function AppContent() {
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-6 text-slate-600 dark:text-slate-400 font-medium">
+            <a
+              href="https://4tm.io.vn"
+              className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
+              4TM Ecosystem
+            </a>
             <button onClick={() => handleNavigate('courses')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
               {dict.nav.courses}
             </button>

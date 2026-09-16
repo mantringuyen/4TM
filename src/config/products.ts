@@ -236,6 +236,8 @@ export const ECOSYSTEM_PRODUCTS_CONFIG: EcosystemProductItem[] = [
  * Adapter providing canonical EcosystemProduct structure for ProductSwitcher
  */
 export function getCanonicalEcosystemProducts(currentId = 'hub', lang: Language = 'en') {
+  // Only implemented/live products for ecosystem navigation
+  const implementedProducts = ECOSYSTEM_PRODUCTS_CONFIG.filter((p) => p.id === 'study');
   return [
     {
       id: 'hub',
@@ -245,7 +247,7 @@ export function getCanonicalEcosystemProducts(currentId = 'hub', lang: Language 
       url: 'https://4tm.io.vn',
       current: currentId === 'hub',
     },
-    ...ECOSYSTEM_PRODUCTS_CONFIG.map((p) => ({
+    ...implementedProducts.map((p) => ({
       id: p.id,
       name: p.name,
       shortName: p.shortName,

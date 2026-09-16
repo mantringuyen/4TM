@@ -709,8 +709,25 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </kbd>
               </button>
 
+              {/* 4TM Ecosystem Switcher for Mobile */}
+              <div className="py-2.5 px-1 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-mono">
+                  {dict.nav?.products || (language === 'vi' ? 'Hệ sinh thái' : 'Ecosystem')}
+                </span>
+                <ProductSwitcher currentProductId="study" />
+              </div>
+
               {/* Navigation Links Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <a
+                  id="mobile-nav-root-btn"
+                  href="https://4tm.io.vn"
+                  className="p-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-850"
+                  title="Return to 4TM Root"
+                >
+                  <Layers className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <span>4TM Root</span>
+                </a>
                 <button
                   id="mobile-nav-home-btn"
                   onClick={() => {
