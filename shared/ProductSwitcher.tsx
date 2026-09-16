@@ -11,12 +11,12 @@ export interface EcosystemProduct {
 }
 
 export const DEFAULT_ECOSYSTEM_PRODUCTS: EcosystemProduct[] = [
-  { id: 'hub', name: '4TM Ecosystem', shortName: 'Hub', url: 'https://4tm.io.vn', description: 'Central ecosystem portal' },
-  { id: 'study', name: '4TM Study', shortName: 'Study', url: 'https://study.4tm.io.vn', description: 'Interactive learning platform' },
-  { id: 'games', name: '4TM Games', shortName: 'Games', url: 'https://games.4tm.io.vn', description: 'Gamified web simulations' },
-  { id: 'apps', name: '4TM Apps', shortName: 'Apps', url: 'https://apps.4tm.io.vn', description: 'Productivity applications' },
-  { id: 'ebook', name: '4TM Ebook', shortName: 'Ebook', url: 'https://ebook.4tm.io.vn', description: 'Curated technical library' },
-  { id: 'tools', name: '4TM Tools', shortName: 'Tools', url: 'https://tools.4tm.io.vn', description: 'Developer productivity tools' },
+  { id: 'hub', name: '4TM', shortName: '4TM', url: 'https://4tm.io.vn', description: 'Central ecosystem portal' },
+  { id: 'study', name: 'Study — 4TM', shortName: 'Study', url: 'https://study.4tm.io.vn', description: 'Interactive learning platform' },
+  { id: 'apps', name: 'Apps — 4TM', shortName: 'Apps', url: 'https://apps.4tm.io.vn', description: 'Productivity applications' },
+  { id: 'games', name: 'Games — 4TM', shortName: 'Games', url: 'https://games.4tm.io.vn', description: 'Gamified web simulations' },
+  { id: 'ebook', name: 'Ebook — 4TM', shortName: 'Ebook', url: 'https://ebook.4tm.io.vn', description: 'Curated technical library' },
+  { id: 'tools', name: 'Tools — 4TM', shortName: 'Tools', url: 'https://tools.4tm.io.vn', description: 'Developer productivity tools' },
 ];
 
 export interface ProductSwitcherProps {

@@ -123,14 +123,25 @@ function AppContent() {
       });
       authUnsubscribe = () => subscription.unsubscribe();
 
-      // Check URL on initial mount for explicit errors (e.g. expired or invalid recovery link)
+      // Check URL on initial mount for auth query parameters or recovery/errors
       if (typeof window !== 'undefined') {
         const hash = window.location.hash || '';
         const search = window.location.search || '';
+        const searchParams = new URLSearchParams(search.startsWith('?') ? search.substring(1) : search);
+        const authParam = searchParams.get('auth') || (searchParams.get('login') === 'true' ? 'signin' : null);
+
+        if (authParam === 'signin' || authParam === 'login') {
+          setAuthModalInitialMode('signin');
+          setAuthModalInitialError('');
+          setAuthModalOpen(true);
+        } else if (authParam === 'signup' || authParam === 'register') {
+          setAuthModalInitialMode('signup');
+          setAuthModalInitialError('');
+          setAuthModalOpen(true);
+        }
 
         if (hash.includes('error=') || search.includes('error=')) {
           const hashParams = new URLSearchParams(hash.startsWith('#') ? hash.substring(1) : hash);
-          const searchParams = new URLSearchParams(search.startsWith('?') ? search.substring(1) : search);
 
           const errorCode = hashParams.get('error_code') || searchParams.get('error_code');
           const rawDesc = hashParams.get('error_description') || searchParams.get('error_description') || hashParams.get('error');
@@ -154,6 +165,21 @@ function AppContent() {
           // Recovery credentials present: let Supabase client consume the tokens first.
           // Do NOT call replaceState here to avoid wiping tokens before session resolution.
           setAuthModalInitialMode('reset_password');
+          setAuthModalInitialError('');
+          setAuthModalOpen(true);
+        }
+      }
+    } else {
+      // Supabase not configured in current build, but check if user attempted to open auth
+      if (typeof window !== 'undefined') {
+        const searchParams = new URLSearchParams(window.location.search);
+        const authParam = searchParams.get('auth') || (searchParams.get('login') === 'true' ? 'signin' : null);
+        if (authParam === 'signin' || authParam === 'login') {
+          setAuthModalInitialMode('signin');
+          setAuthModalInitialError('');
+          setAuthModalOpen(true);
+        } else if (authParam === 'signup' || authParam === 'register') {
+          setAuthModalInitialMode('signup');
           setAuthModalInitialError('');
           setAuthModalOpen(true);
         }

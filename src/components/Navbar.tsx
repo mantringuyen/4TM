@@ -3,7 +3,7 @@ import { BrandLogo, ProductSwitcher } from '@shared';
 import { getCanonicalEcosystemProducts } from '../config/products';
 import { useLanguage } from '../i18n/LanguageContext';
 import { ThemeSelector } from './ThemeSelector';
-import { Menu, X, ExternalLink, Sparkles } from 'lucide-react';
+import { Menu, X, ExternalLink, Sparkles, LogIn } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { language, setLanguage, dict } = useLanguage();
@@ -101,6 +101,16 @@ export const Navbar: React.FC = () => {
             </button>
           </div>
 
+          {/* Sign In / Auth Entry */}
+          <a
+            href="https://study.4tm.io.vn?auth=signin"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+            title={dict.nav.signIn}
+          >
+            <LogIn className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+            <span>{dict.nav.signIn}</span>
+          </a>
+
           {/* Launch Study CTA */}
           <a
             href="https://study.4tm.io.vn"
@@ -173,7 +183,15 @@ export const Navbar: React.FC = () => {
             <ThemeSelector variant="dropdown" />
           </div>
 
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
+            <a
+              href="https://study.4tm.io.vn?auth=signin"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900 text-sm font-bold shadow-2xs"
+            >
+              <LogIn className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span>{dict.nav.signIn}</span>
+            </a>
+
             <a
               href="https://study.4tm.io.vn"
               target="_blank"

@@ -160,6 +160,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   productName="Study"
                   showText={true}
                   showMark={true}
+                  as="div"
                 />
               </button>
 

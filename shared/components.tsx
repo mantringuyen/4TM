@@ -80,9 +80,11 @@ export const Badge: React.FC<BadgeProps> = ({
 };
 
 export function getSupabaseConfig() {
+  const globalEnv = typeof window !== 'undefined' ? (window as any).__ENV__ || {} : {};
+  const procEnv = typeof process !== 'undefined' ? process.env || {} : {};
   return {
-    url: (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_URL) || '',
-    anonKey: (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_ANON_KEY) || '',
+    url: (procEnv.VITE_SUPABASE_URL || globalEnv.VITE_SUPABASE_URL || '').trim(),
+    anonKey: (procEnv.VITE_SUPABASE_ANON_KEY || globalEnv.VITE_SUPABASE_ANON_KEY || '').trim(),
   };
 }
 

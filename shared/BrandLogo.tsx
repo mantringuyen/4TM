@@ -6,6 +6,9 @@ export interface BrandLogoProps {
   showText?: boolean;
   showMark?: boolean;
   className?: string;
+  href?: string;
+  onClick?: (e: React.MouseEvent) => void;
+  as?: 'a' | 'div' | 'button';
 }
 
 export const BRAND_CONFIG = {
@@ -24,6 +27,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   showText = true,
   showMark = true,
   className = '',
+  href,
+  onClick,
+  as = href ? 'a' : onClick ? 'button' : 'div',
 }) => {
   const sizeClasses = {
     sm: {
@@ -43,12 +49,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     },
   }[size];
 
-  return (
-    <a
-      href="https://4tm.io.vn"
-      className={`inline-flex items-center gap-2.5 group cursor-pointer select-none ${className}`}
-      aria-label="4TM Ecosystem Home"
-    >
+  const content = (
+    <>
       {showMark && (
         <div
           className={`flex items-center justify-center font-black tracking-tighter text-white bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 shadow-md shadow-blue-600/20 group-hover:scale-105 transition-transform duration-200 shrink-0 ${sizeClasses.mark}`}
@@ -71,6 +73,40 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           )}
         </div>
       )}
-    </a>
+    </>
+  );
+
+  const containerClasses = `inline-flex items-center gap-2.5 group cursor-pointer select-none text-left ${className}`;
+
+  if (as === 'a' || (href && as !== 'button' && as !== 'div')) {
+    return (
+      <a
+        href={href || 'https://4tm.io.vn'}
+        onClick={onClick}
+        className={containerClasses}
+        aria-label={productName ? `${productName} — 4TM` : '4TM Ecosystem'}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  if (as === 'button' || onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={containerClasses}
+        aria-label={productName ? `${productName} — 4TM` : '4TM Ecosystem'}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <div className={containerClasses} aria-label={productName ? `${productName} — 4TM` : '4TM Ecosystem'}>
+      {content}
+    </div>
   );
 };

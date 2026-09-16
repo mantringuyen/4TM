@@ -1,10 +1,21 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseConfig, createSupabaseClient } from '@shared';
 
-// Access environment variables directly through import.meta.env or @shared config
+// Access environment variables directly through import.meta.env or @shared config or runtime global
 const sharedConfig = getSupabaseConfig();
-const rawUrl = (import.meta.env.VITE_SUPABASE_URL || sharedConfig.url || '').trim();
-const rawAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || sharedConfig.anonKey || '').trim();
+const windowEnv = typeof window !== 'undefined' ? (window as any).__ENV__ || {} : {};
+const rawUrl = (
+  import.meta.env.VITE_SUPABASE_URL ||
+  windowEnv.VITE_SUPABASE_URL ||
+  sharedConfig.url ||
+  ''
+).trim();
+const rawAnonKey = (
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  windowEnv.VITE_SUPABASE_ANON_KEY ||
+  sharedConfig.anonKey ||
+  ''
+).trim();
 
 /**
  * Safely normalizes the Supabase URL by trimming whitespace, stripping accidental

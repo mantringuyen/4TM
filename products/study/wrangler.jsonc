@@ -18,10 +18,7 @@
     }
   ],
   "vars": {
-    "VITE_SUPABASE_URL": "",
-    "VITE_SUPABASE_ANON_KEY": "",
-    "VITE_CLOUDFLARE_R2_PUBLIC_URL": "",
     "CLOUDFLARE_R2_BUCKET_NAME": "storage",
-    "APP_URL": ""
+    "APP_URL": "https://study.4tm.io.vn"
   }
 }
