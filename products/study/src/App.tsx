@@ -27,7 +27,7 @@ import { ReviewModal } from './components/ReviewModal';
 import { BookmarksModal, NotesModal } from './components/BookmarksAndNotesModals';
 import { Terminal, ShieldCheck, Heart, Sparkles, Globe, Clock } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './services/supabase';
-import { BrandLogo, BRAND_CONFIG } from '@shared';
+import { BrandLogo, BRAND_CONFIG, processSsoCallback } from '@shared';
 
 function AppContent() {
   const { language, setLanguage, dict } = useLanguage();
@@ -67,9 +67,30 @@ function AppContent() {
   useEffect(() => {
     let isMounted = true;
 
-    // Supabase session is the single source of truth
-    authService.initializeAuthSession()
-      .then(synced => {
+    const initAuth = async () => {
+      try {
+        if (typeof window !== 'undefined') {
+          const hash = window.location.hash || '';
+          const search = window.location.search || '';
+          if (hash.includes('ticket=') || search.includes('ticket=')) {
+            const callbackRes = await processSsoCallback({
+              supabaseClient: supabase,
+            });
+            if (callbackRes.success && callbackRes.user) {
+              const synced = await authService.syncUserFromSupabaseUser(callbackRes.user);
+              if (isMounted && synced && isUserLoggedIn(synced)) {
+                setUser(synced);
+                if (synced.preferredLanguage && synced.preferredLanguage !== language) {
+                  setLanguage(synced.preferredLanguage);
+                }
+                return;
+              }
+            }
+          }
+        }
+
+        // Supabase session is the single source of truth
+        const synced = await authService.initializeAuthSession();
         if (!isMounted) return;
         if (synced && isUserLoggedIn(synced)) {
           setUser(synced);
@@ -77,17 +98,17 @@ function AppContent() {
             setLanguage(synced.preferredLanguage);
           }
         } else {
-          // Session is null: strictly reset user state to guest
           setUser(getDefaultUser());
         }
-      })
-      .catch(err => {
+      } catch (err) {
         console.error('Failed to initialize auth session:', err);
         if (isMounted) setUser(getDefaultUser());
-      })
-      .finally(() => {
+      } finally {
         if (isMounted) setAuthLoading(false);
-      });
+      }
+    };
+
+    initAuth();
 
     const handlePopState = () => {
       const path = window.location.pathname.replace(/^\//, '');

@@ -48,8 +48,8 @@ export default {
       return headers;
     };
 
-    // Handle OPTIONS CORS Preflight for /api/sso/exchange
-    if (request.method === 'OPTIONS' && pathname === '/api/sso/exchange') {
+    // Handle OPTIONS CORS Preflight for SSO endpoints
+    if (request.method === 'OPTIONS' && (pathname === '/api/sso/exchange' || pathname === '/api/sso/issue')) {
       return new Response(null, {
         status: 204,
         headers: getCorsHeaders(),
@@ -268,7 +268,188 @@ export default {
       }
     }
 
-    // 4. Static assets / SPA fallback
+    // 4. SSO Ticket Issue Endpoint: POST /api/sso/issue
+    // Executed ONLY by authenticated Root users to mint a single-use ticket for an allowed target peer.
+    if (pathname === '/api/sso/issue' && request.method === 'POST') {
+      try {
+        const authHeader = request.headers.get('Authorization') || '';
+        if (!authHeader.startsWith('Bearer ')) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              errorCategory: 'unauthenticated',
+              message: 'Active Root authentication session required to issue SSO ticket',
+            }),
+            { status: 401, headers: getCorsHeaders() }
+          );
+        }
+
+        const rootToken = authHeader.replace(/^Bearer\s+/i, '').trim();
+        if (!rootToken) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              errorCategory: 'unauthenticated',
+              message: 'Active Root authentication session required to issue SSO ticket',
+            }),
+            { status: 401, headers: getCorsHeaders() }
+          );
+        }
+
+        const body = await request.json().catch(() => null);
+        if (!body || typeof body !== 'object') {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              errorCategory: 'invalid_payload',
+              message: 'Request body must be a valid JSON object',
+            }),
+            { status: 400, headers: getCorsHeaders() }
+          );
+        }
+
+        const { target_origin, state } = body;
+
+        // Verify target origin against exact allowlist
+        if (!target_origin || typeof target_origin !== 'string' || !isValidSsoTargetOrigin(target_origin)) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              errorCategory: 'invalid_target_origin',
+              message: `Target origin '${target_origin}' is not an authorized SSO target`,
+            }),
+            { status: 400, headers: getCorsHeaders() }
+          );
+        }
+
+        // Validate state parameter
+        if (!state || typeof state !== 'string' || state.trim().length === 0) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              errorCategory: 'missing_state',
+              message: 'Authorization state parameter is required and must be non-empty',
+            }),
+            { status: 400, headers: getCorsHeaders() }
+          );
+        }
+
+        const supabaseUrl = env.VITE_SUPABASE_URL || env.SUPABASE_URL;
+        const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
+        const anonKey = env.VITE_SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || !serviceRoleKey) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              errorCategory: 'configuration_error',
+              message: 'Server auth infrastructure is not configured',
+            }),
+            { status: 500, headers: getCorsHeaders() }
+          );
+        }
+
+        // Verify Root user session via Supabase GoTrue
+        const userRes = await fetch(`${supabaseUrl.replace(/\/+$/, '')}/auth/v1/user`, {
+          headers: {
+            Authorization: `Bearer ${rootToken}`,
+            apikey: anonKey || serviceRoleKey,
+          },
+        });
+
+        if (!userRes.ok) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              errorCategory: 'unauthenticated',
+              message: 'Root session token is invalid or expired',
+            }),
+            { status: 401, headers: getCorsHeaders() }
+          );
+        }
+
+        const userData = (await userRes.json().catch(() => null)) as any;
+        const verifiedUserId = userData?.id;
+
+        if (!verifiedUserId) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              errorCategory: 'unauthenticated',
+              message: 'Could not resolve authenticated user identity from Root session',
+            }),
+            { status: 401, headers: getCorsHeaders() }
+          );
+        }
+
+        // Worker uses service_role to invoke issue_sso_ticket
+        const rpcEndpoint = `${supabaseUrl.replace(/\/+$/, '')}/rest/v1/rpc/issue_sso_ticket`;
+        const rpcRes = await fetch(rpcEndpoint, {
+          method: 'POST',
+          headers: {
+            apikey: serviceRoleKey,
+            Authorization: `Bearer ${serviceRoleKey}`,
+            'Content-Type': 'application/json',
+            'x-sso-user-id': verifiedUserId,
+          },
+          body: JSON.stringify({
+            p_target_origin: target_origin,
+            p_state: state,
+          }),
+        });
+
+        if (!rpcRes.ok) {
+          const errText = await rpcRes.text();
+          console.error('issue_sso_ticket RPC error:', errText);
+          return new Response(
+            JSON.stringify({
+              success: false,
+              errorCategory: 'issuance_failed',
+              message: 'Failed to issue ticket from database broker',
+            }),
+            { status: 500, headers: getCorsHeaders() }
+          );
+        }
+
+        const rawTicket = await rpcRes.json();
+        if (!rawTicket || typeof rawTicket !== 'string') {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              errorCategory: 'issuance_failed',
+              message: 'Database did not return a valid ticket',
+            }),
+            { status: 500, headers: getCorsHeaders() }
+          );
+        }
+
+        const redirectUrl = `${target_origin.replace(/\/+$/, '')}/#ticket=${encodeURIComponent(
+          rawTicket
+        )}&state=${encodeURIComponent(state)}`;
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            ticket: rawTicket,
+            target_origin,
+            redirect_url: redirectUrl,
+          }),
+          { status: 200, headers: getCorsHeaders(target_origin) }
+        );
+      } catch (err: any) {
+        console.error('SSO issue internal error:', err);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            errorCategory: 'internal_error',
+            message: err?.message || 'Internal error in SSO issuance broker',
+          }),
+          { status: 500, headers: getCorsHeaders() }
+        );
+      }
+    }
+
+    // 5. Static assets / SPA fallback
     if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
       return await env.ASSETS.fetch(request);
     }

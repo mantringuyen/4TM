@@ -115,12 +115,69 @@ BEGIN
         NULL
     );
 
-    -- 7. Return raw ticket ONLY to authenticated Root caller
+    -- 7. Return raw ticket ONLY to caller
     RETURN v_raw_ticket;
 END;
 $$;
 
--- 4. Function: consume_sso_ticket(p_ticket_hash text, p_target_origin text, p_state_hash text)
+-- 4. Function: issue_root_handoff_ticket(p_state text)
+-- Called by authenticated peer products to mint an SSO handoff ticket strictly bound to Root (4tm.io.vn).
+-- Target origin is hardcoded to https://4tm.io.vn to prevent lateral peer-to-peer ticket minting.
+CREATE OR REPLACE FUNCTION public.issue_root_handoff_ticket(p_state text)
+RETURNS text
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, extensions, pg_temp
+AS $$
+DECLARE
+    v_caller_id uuid;
+    v_raw_ticket text;
+    v_ticket_hash text;
+    v_state_hash text;
+BEGIN
+    -- 1. Enforce authenticated session
+    v_caller_id := auth.uid();
+    IF v_caller_id IS NULL THEN
+        RAISE EXCEPTION 'Authentication required to issue SSO handoff ticket' USING ERRCODE = '42501';
+    END IF;
+
+    -- 2. Validate state parameter
+    IF p_state IS NULL OR length(trim(p_state)) = 0 THEN
+        RAISE EXCEPTION 'Authorization request state parameter is required' USING ERRCODE = '22023';
+    END IF;
+
+    -- 3. Generate CSPRNG 256-bit raw ticket
+    v_raw_ticket := 'st_live_' || encode(gen_random_bytes(32), 'hex');
+
+    -- 4. Calculate SHA-256 hashes for ticket and state
+    v_ticket_hash := encode(digest(v_raw_ticket, 'sha256'), 'hex');
+    v_state_hash := encode(digest(p_state, 'sha256'), 'hex');
+
+    -- 5. Insert ticket record strictly bound to Root (30-second TTL)
+    INSERT INTO public.sso_tickets (
+        ticket_hash,
+        user_id,
+        target_origin,
+        state_hash,
+        created_at,
+        expires_at,
+        used_at
+    ) VALUES (
+        v_ticket_hash,
+        v_caller_id,
+        'https://4tm.io.vn',
+        v_state_hash,
+        now(),
+        now() + INTERVAL '30 seconds',
+        NULL
+    );
+
+    -- 6. Return raw ticket to authenticated peer caller
+    RETURN v_raw_ticket;
+END;
+$$;
+
+-- 5. Function: consume_sso_ticket(p_ticket_hash text, p_target_origin text, p_state_hash text)
 -- Called by Cloudflare Worker service role during exchange to atomically consume ticket.
 CREATE OR REPLACE FUNCTION public.consume_sso_ticket(
     p_ticket_hash text,
@@ -173,10 +230,15 @@ $$;
 
 -- Revoke execution privileges from PUBLIC to prevent unauthorized anonymous execution
 REVOKE EXECUTE ON FUNCTION public.issue_sso_ticket(text, text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.issue_sso_ticket(text, text) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.issue_root_handoff_ticket(text) FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION public.consume_sso_ticket(text, text, text) FROM PUBLIC;
 
--- Grant execution privileges on issue_sso_ticket to authenticated users
-GRANT EXECUTE ON FUNCTION public.issue_sso_ticket(text, text) TO authenticated;
+-- Grant execution privileges on issue_sso_ticket strictly to service_role and postgres (broker-only)
+GRANT EXECUTE ON FUNCTION public.issue_sso_ticket(text, text) TO service_role, postgres;
+
+-- Grant execution privileges on issue_root_handoff_ticket to authenticated peer users
+GRANT EXECUTE ON FUNCTION public.issue_root_handoff_ticket(text) TO authenticated;
 
 -- Grant execution privileges on consume_sso_ticket to service_role and postgres
 GRANT EXECUTE ON FUNCTION public.consume_sso_ticket(text, text, text) TO service_role, postgres;
