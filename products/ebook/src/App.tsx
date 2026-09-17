@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Book, Language } from './types';
 import { EBOOKS, CATEGORIES, SUBJECTS } from './data/ebooks';
 import { LANGUAGE_STORAGE_KEY } from './i18n/translations';
@@ -15,6 +15,51 @@ import { ThemeProvider } from '@shared';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+
+// Helper: Parse URL hash to state
+function parseLocationHash(hash: string): {
+  view: 'catalog' | 'detail' | 'reader';
+  bookSlug?: string;
+  chapterIndex?: number;
+} {
+  if (!hash || hash.includes('ticket=')) {
+    return { view: 'catalog' };
+  }
+  const clean = hash.replace(/^#\/?/, '').trim();
+  if (!clean || clean === 'catalog') {
+    return { view: 'catalog' };
+  }
+
+  const readerMatch = clean.match(/^book\/([^/]+)\/ch\/(\d+)$/i);
+  if (readerMatch) {
+    return {
+      view: 'reader',
+      bookSlug: decodeURIComponent(readerMatch[1]),
+      chapterIndex: parseInt(readerMatch[2], 10),
+    };
+  }
+
+  const detailMatch = clean.match(/^book\/([^/]+)$/i);
+  if (detailMatch) {
+    return {
+      view: 'detail',
+      bookSlug: decodeURIComponent(detailMatch[1]),
+    };
+  }
+
+  return { view: 'catalog' };
+}
+
+// Helper: Safely update window hash / history
+function setHashUrl(hash: string, replace = false) {
+  if (typeof window === 'undefined') return;
+  if (window.location.hash === hash) return;
+  if (replace) {
+    window.history.replaceState(null, '', hash);
+  } else {
+    window.history.pushState(null, '', hash);
+  }
+}
 
 export function App() {
   const [language, setLanguage] = useState<Language>(() => {
@@ -56,6 +101,66 @@ export function App() {
   });
 
   const [user, setUser] = useState<User | null>(null);
+
+  // Sync route state from window.location.hash
+  const syncRouteFromHash = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    const currentHash = window.location.hash || '';
+    if (currentHash.includes('ticket=')) return;
+
+    const parsed = parseLocationHash(currentHash);
+
+    if (parsed.view === 'catalog') {
+      setActiveView('catalog');
+      setSelectedBook(null);
+    } else if (parsed.view === 'detail' && parsed.bookSlug) {
+      const foundBook = EBOOKS.find(
+        (b) => b.slug === parsed.bookSlug || b.id === parsed.bookSlug
+      );
+      if (foundBook) {
+        setSelectedBook(foundBook);
+        setActiveView('detail');
+      } else {
+        // Fallback to catalog if book not found
+        setActiveView('catalog');
+        setSelectedBook(null);
+        setHashUrl('#/catalog', true);
+      }
+    } else if (parsed.view === 'reader' && parsed.bookSlug) {
+      const foundBook = EBOOKS.find(
+        (b) => b.slug === parsed.bookSlug || b.id === parsed.bookSlug
+      );
+      if (foundBook) {
+        const rawCh = typeof parsed.chapterIndex === 'number' && !isNaN(parsed.chapterIndex) ? parsed.chapterIndex : 0;
+        const validCh = Math.max(0, Math.min(rawCh, foundBook.chapters.length - 1));
+        setSelectedBook(foundBook);
+        setCurrentChapterIndex(validCh);
+        setActiveView('reader');
+      } else {
+        // Fallback to catalog if book not found
+        setActiveView('catalog');
+        setSelectedBook(null);
+        setHashUrl('#/catalog', true);
+      }
+    }
+  }, []);
+
+  // Handle URL hash changes & initial deep-link routing
+  useEffect(() => {
+    syncRouteFromHash();
+
+    const handleHashOrPopState = () => {
+      syncRouteFromHash();
+    };
+
+    window.addEventListener('hashchange', handleHashOrPopState);
+    window.addEventListener('popstate', handleHashOrPopState);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashOrPopState);
+      window.removeEventListener('popstate', handleHashOrPopState);
+    };
+  }, [syncRouteFromHash]);
 
   // Initialize Auth & Handle SSO Ticket
   useEffect(() => {
@@ -102,6 +207,7 @@ export function App() {
   const handleSelectBook = (book: Book) => {
     setSelectedBook(book);
     setActiveView('detail');
+    setHashUrl(`#/book/${book.slug}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -111,6 +217,7 @@ export function App() {
       const updated = { ...lastRead, [selectedBook.id]: chapterIndex };
       setLastRead(updated);
       localStorage.setItem('4tm_ebook_last_read', JSON.stringify(updated));
+      setHashUrl(`#/book/${selectedBook.slug}/ch/${chapterIndex}`);
     }
     setActiveView('reader');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -122,6 +229,7 @@ export function App() {
       const updated = { ...lastRead, [selectedBook.id]: idx };
       setLastRead(updated);
       localStorage.setItem('4tm_ebook_last_read', JSON.stringify(updated));
+      setHashUrl(`#/book/${selectedBook.slug}/ch/${idx}`);
     }
   };
 
@@ -162,6 +270,7 @@ export function App() {
             onNavigateHome={() => {
               setActiveView('catalog');
               setSelectedBook(null);
+              setHashUrl('#/catalog');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             user={user}
@@ -189,6 +298,7 @@ export function App() {
               onBack={() => {
                 setActiveView('catalog');
                 setSelectedBook(null);
+                setHashUrl('#/catalog');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               onStartReading={handleStartReading}
@@ -204,6 +314,11 @@ export function App() {
               onNavigateChapter={handleNavigateChapter}
               onBackToBook={() => {
                 setActiveView('detail');
+                if (selectedBook) {
+                  setHashUrl(`#/book/${selectedBook.slug}`);
+                } else {
+                  setHashUrl('#/catalog');
+                }
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               bookmarks={bookmarks}

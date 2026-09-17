@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Book, Category, Subject, Language } from '../types';
+import { Book, Category, Subject, Language, BookType } from '../types';
 import { TRANSLATIONS } from '../i18n/translations';
 import { Search, BookOpen, Clock, Layers, Sparkles, ArrowRight, CheckCircle2 } from 'lucide-react';
 
@@ -10,6 +10,16 @@ export interface CatalogViewProps {
   language: Language;
   onSelectBook: (book: Book) => void;
 }
+
+const OFFICIAL_BOOK_TYPES: BookType[] = [
+  'Handbook',
+  'Definitions',
+  'Tips',
+  'Practical Guides',
+  'Common Errors',
+  'Best Practices',
+  'Patterns / Recipes',
+];
 
 export const CatalogView: React.FC<CatalogViewProps> = ({
   books,
@@ -22,6 +32,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
+  const [selectedBookType, setSelectedBookType] = useState<string>('all');
 
   const filteredBooks = useMemo(() => {
     return books.filter((b) => {
@@ -33,6 +44,10 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
       if (selectedLevel !== 'all' && b.level !== selectedLevel) {
         return false;
       }
+      // Book Type match
+      if (selectedBookType !== 'all' && b.bookType !== selectedBookType) {
+        return false;
+      }
       // Search match
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -42,13 +57,14 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
         const matchesDesc =
           b.description.en.toLowerCase().includes(q) || b.description.vi.toLowerCase().includes(q);
         const matchesTags = b.tags.some((t) => t.toLowerCase().includes(q));
-        if (!matchesTitle && !matchesSubtitle && !matchesDesc && !matchesTags) {
+        const matchesBookType = b.bookType.toLowerCase().includes(q);
+        if (!matchesTitle && !matchesSubtitle && !matchesDesc && !matchesTags && !matchesBookType) {
           return false;
         }
       }
       return true;
     });
-  }, [books, selectedCategory, selectedLevel, searchQuery]);
+  }, [books, selectedCategory, selectedLevel, selectedBookType, searchQuery]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -81,7 +97,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           />
         </div>
 
-        {/* Category & Level Pills */}
+        {/* Category Pills */}
         <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
           {/* All Categories */}
           <button
@@ -108,6 +124,37 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               }`}
             >
               {cat.name[language]}
+            </button>
+          ))}
+        </div>
+
+        {/* Book Type & Level Pills */}
+        <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1">
+          {/* Book Type Filter */}
+          <button
+            type="button"
+            onClick={() => setSelectedBookType('all')}
+            className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+              selectedBookType === 'all'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
+            }`}
+          >
+            {dict.filter.allBookTypes}
+          </button>
+
+          {OFFICIAL_BOOK_TYPES.map((bt) => (
+            <button
+              key={bt}
+              type="button"
+              onClick={() => setSelectedBookType(bt)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                selectedBookType === bt
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
+              }`}
+            >
+              {dict.filter.bookTypes?.[bt] || bt}
             </button>
           ))}
 
@@ -144,9 +191,14 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               <div>
                 {/* Header info */}
                 <div className="flex items-center justify-between gap-3 mb-3">
-                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                    {book.level}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                      {book.level}
+                    </span>
+                    <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-300">
+                      {dict.filter.bookTypes?.[book.bookType] || book.bookType}
+                    </span>
+                  </div>
                   <div className="flex items-center gap-1.5 text-xs text-slate-400 font-mono">
                     <Clock className="w-3.5 h-3.5" />
                     <span>{book.estimatedReadTime}</span>
@@ -209,6 +261,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               setSearchQuery('');
               setSelectedCategory('all');
               setSelectedLevel('all');
+              setSelectedBookType('all');
             }}
             className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white cursor-pointer hover:bg-blue-500"
           >
