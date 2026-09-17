@@ -8,6 +8,7 @@ import { GameCatalog } from './components/GameCatalog';
 import { PlayView } from './components/PlayView';
 import { createClient, User } from '@supabase/supabase-js';
 import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
+import { ThemeProvider } from '@shared';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -84,43 +85,45 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 transition-colors duration-200">
-      <Navbar
-        language={language}
-        onLanguageChange={handleLanguageChange}
-        onNavigateHome={() => {
-          setActiveGame(null);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-        user={user}
-        onSignIn={handleSignIn}
-        onSignOut={handleSignOut}
-      />
+    <ThemeProvider>
+      <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 transition-colors duration-200">
+        <Navbar
+          language={language}
+          onLanguageChange={handleLanguageChange}
+          onNavigateHome={() => {
+            setActiveGame(null);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          user={user}
+          onSignIn={handleSignIn}
+          onSignOut={handleSignOut}
+        />
 
-      <div className="flex-1">
-        {activeGame ? (
-          <PlayView
-            game={activeGame}
-            language={language}
-            onBackToCatalog={() => {
-              setActiveGame(null);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
-        ) : (
-          <GameCatalog
-            games={GAMES}
-            language={language}
-            onSelectGame={(game) => {
-              setActiveGame(game);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
-        )}
+        <div className="flex-1">
+          {activeGame ? (
+            <PlayView
+              game={activeGame}
+              language={language}
+              onBackToCatalog={() => {
+                setActiveGame(null);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          ) : (
+            <GameCatalog
+              games={GAMES}
+              language={language}
+              onSelectGame={(game) => {
+                setActiveGame(game);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          )}
+        </div>
+
+        <Footer language={language} />
       </div>
-
-      <Footer language={language} />
-    </div>
+    </ThemeProvider>
   );
 }
 

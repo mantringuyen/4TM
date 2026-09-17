@@ -9,6 +9,7 @@ import { BookDetailView } from './components/BookDetailView';
 import { ReaderView } from './components/ReaderView';
 import { createClient, User } from '@supabase/supabase-js';
 import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
+import { ThemeProvider } from '@shared';
 
 // Client-side Supabase client (lazy & safe fallback)
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -151,68 +152,70 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
-      {/* Navigation (hidden when in deep reader mode for distraction-free reading) */}
-      {activeView !== 'reader' && (
-        <Navbar
-          language={language}
-          onLanguageChange={handleLanguageChange}
-          onNavigateHome={() => {
-            setActiveView('catalog');
-            setSelectedBook(null);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-          user={user}
-          onSignIn={handleSignIn}
-          onSignOut={handleSignOut}
-        />
-      )}
-
-      {/* Main View Flow */}
-      <div className="flex-1">
-        {activeView === 'catalog' && (
-          <CatalogView
-            books={EBOOKS}
-            categories={CATEGORIES}
-            subjects={SUBJECTS}
+    <ThemeProvider>
+      <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+        {/* Navigation (hidden when in deep reader mode for distraction-free reading) */}
+        {activeView !== 'reader' && (
+          <Navbar
             language={language}
-            onSelectBook={handleSelectBook}
-          />
-        )}
-
-        {activeView === 'detail' && selectedBook && (
-          <BookDetailView
-            book={selectedBook}
-            language={language}
-            onBack={() => {
+            onLanguageChange={handleLanguageChange}
+            onNavigateHome={() => {
               setActiveView('catalog');
               setSelectedBook(null);
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            onStartReading={handleStartReading}
-            savedChapterIndex={lastRead[selectedBook.id] || 0}
+            user={user}
+            onSignIn={handleSignIn}
+            onSignOut={handleSignOut}
           />
         )}
 
-        {activeView === 'reader' && selectedBook && (
-          <ReaderView
-            book={selectedBook}
-            currentChapterIndex={currentChapterIndex}
-            language={language}
-            onNavigateChapter={handleNavigateChapter}
-            onBackToBook={() => {
-              setActiveView('detail');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            bookmarks={bookmarks}
-            onToggleBookmark={handleToggleBookmark}
-          />
-        )}
+        {/* Main View Flow */}
+        <div className="flex-1">
+          {activeView === 'catalog' && (
+            <CatalogView
+              books={EBOOKS}
+              categories={CATEGORIES}
+              subjects={SUBJECTS}
+              language={language}
+              onSelectBook={handleSelectBook}
+            />
+          )}
+
+          {activeView === 'detail' && selectedBook && (
+            <BookDetailView
+              book={selectedBook}
+              language={language}
+              onBack={() => {
+                setActiveView('catalog');
+                setSelectedBook(null);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onStartReading={handleStartReading}
+              savedChapterIndex={lastRead[selectedBook.id] || 0}
+            />
+          )}
+
+          {activeView === 'reader' && selectedBook && (
+            <ReaderView
+              book={selectedBook}
+              currentChapterIndex={currentChapterIndex}
+              language={language}
+              onNavigateChapter={handleNavigateChapter}
+              onBackToBook={() => {
+                setActiveView('detail');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              bookmarks={bookmarks}
+              onToggleBookmark={handleToggleBookmark}
+            />
+          )}
+        </div>
+
+        {/* Footer (hidden in reader mode) */}
+        {activeView !== 'reader' && <Footer language={language} />}
       </div>
-
-      {/* Footer (hidden in reader mode) */}
-      {activeView !== 'reader' && <Footer language={language} />}
-    </div>
+    </ThemeProvider>
   );
 }
 

@@ -8,6 +8,7 @@ import { AppCatalog } from './components/AppCatalog';
 import { AppModal } from './components/AppModal';
 import { createClient, User } from '@supabase/supabase-js';
 import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
+import { ThemeProvider } from '@shared';
 
 const FAVORITES_STORAGE_KEY = '4tm_apps_favorites';
 
@@ -106,37 +107,39 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
-      <Navbar
-        language={language}
-        onLanguageChange={handleLanguageChange}
-        user={user}
-        onSignIn={handleSignIn}
-        onSignOut={handleSignOut}
-      />
-
-      <div className="flex-1">
-        <AppCatalog
-          apps={APPS}
+    <ThemeProvider>
+      <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+        <Navbar
           language={language}
-          onSelectApp={(app) => setSelectedApp(app)}
-          favorites={favorites}
-          onToggleFavorite={handleToggleFavorite}
+          onLanguageChange={handleLanguageChange}
+          user={user}
+          onSignIn={handleSignIn}
+          onSignOut={handleSignOut}
         />
+
+        <div className="flex-1">
+          <AppCatalog
+            apps={APPS}
+            language={language}
+            onSelectApp={(app) => setSelectedApp(app)}
+            favorites={favorites}
+            onToggleFavorite={handleToggleFavorite}
+          />
+        </div>
+
+        {selectedApp && (
+          <AppModal
+            app={selectedApp}
+            language={language}
+            onClose={() => setSelectedApp(null)}
+            isFavorite={favorites.includes(selectedApp.id)}
+            onToggleFavorite={handleToggleFavorite}
+          />
+        )}
+
+        <Footer language={language} />
       </div>
-
-      {selectedApp && (
-        <AppModal
-          app={selectedApp}
-          language={language}
-          onClose={() => setSelectedApp(null)}
-          isFavorite={favorites.includes(selectedApp.id)}
-          onToggleFavorite={handleToggleFavorite}
-        />
-      )}
-
-      <Footer language={language} />
-    </div>
+    </ThemeProvider>
   );
 }
 
