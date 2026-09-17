@@ -12,6 +12,7 @@ export interface Env {
   };
 
   // Cloudflare R2 bucket binding (if bound via wrangler.jsonc)
+  DATA?: any;
   R2_BUCKET?: any;
   STORAGE?: any;
 

@@ -2,6 +2,7 @@ export interface Env {
   ASSETS?: {
     fetch: (request: Request | string) => Promise<Response>;
   };
+  DATA?: any;
   APP_URL?: string;
 }
 

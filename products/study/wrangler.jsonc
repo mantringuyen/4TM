@@ -13,12 +13,12 @@
   },
   "r2_buckets": [
     {
-      "binding": "R2_BUCKET",
-      "bucket_name": "storage"
+      "binding": "DATA",
+      "bucket_name": "4tm-study"
     }
   ],
   "vars": {
-    "CLOUDFLARE_R2_BUCKET_NAME": "storage",
+    "CLOUDFLARE_R2_BUCKET_NAME": "4tm-study",
     "APP_URL": "https://study.4tm.io.vn"
   }
 }

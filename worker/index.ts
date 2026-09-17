@@ -5,6 +5,7 @@ export interface Env {
   ASSETS?: {
     fetch: (request: Request | string) => Promise<Response>;
   };
+  DATA?: any;
   APP_URL?: string;
   VITE_SUPABASE_URL?: string;
   SUPABASE_URL?: string;

@@ -11,6 +11,12 @@
     "binding": "ASSETS",
     "not_found_handling": "single-page-application"
   },
+  "r2_buckets": [
+    {
+      "binding": "DATA",
+      "bucket_name": "4tm-tools"
+    }
+  ],
   "vars": {
     "APP_URL": "https://tools.4tm.io.vn"
   }
