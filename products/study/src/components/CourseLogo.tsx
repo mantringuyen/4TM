@@ -135,6 +135,34 @@ export const CourseLogo: React.FC<CourseLogoProps> = ({
         </svg>
       );
 
+    case 'ai':
+      return (
+        <svg
+          viewBox="0 0 128 128"
+          className={`${currentSize} ${className} shrink-0 drop-shadow-sm`}
+          aria-label="AI Logo"
+        >
+          <defs>
+            <linearGradient id="aiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#8B5CF6" />
+              <stop offset="50%" stopColor="#6366F1" />
+              <stop offset="100%" stopColor="#3B82F6" />
+            </linearGradient>
+          </defs>
+          <rect width="128" height="128" rx="28" fill="url(#aiGrad)" />
+          {/* Sparkles / Neural AI Emblem */}
+          <path
+            d="M64 24C64 46.0914 46.0914 64 24 64C46.0914 64 64 81.9086 64 104C64 81.9086 81.9086 64 104 64C81.9086 64 64 46.0914 64 24Z"
+            fill="#FFFFFF"
+          />
+          <path
+            d="M92 28C92 35.732 85.732 42 78 42C85.732 42 92 48.268 92 56C92 48.268 98.268 42 106 42C98.268 42 92 35.732 92 28Z"
+            fill="#E0E7FF"
+            opacity="0.9"
+          />
+        </svg>
+      );
+
     default:
       return (
         <div
@@ -245,6 +273,20 @@ export const getCourseBranding = (courseId: CourseId | string): CourseBrandingIn
         lightCardBorder: 'hover:border-amber-400',
         darkCardBorder: 'hover:border-yellow-500/50',
         iconBg: 'bg-amber-50 dark:bg-yellow-950/50',
+      };
+    case 'ai':
+      return {
+        id: 'ai',
+        name: 'AI',
+        badgeText: 'GEN AI / LLMS / RAG',
+        pillBg: 'bg-purple-500/10 dark:bg-purple-900/30',
+        pillText: 'text-purple-600 dark:text-purple-400',
+        pillBorder: 'border-purple-500/30 dark:border-purple-500/40',
+        gradient: 'from-[#8B5CF6] via-[#6366F1] to-[#3B82F6]',
+        heroGradient: 'from-purple-600/20 via-indigo-900/10 to-blue-500/10',
+        lightCardBorder: 'hover:border-purple-400',
+        darkCardBorder: 'hover:border-purple-500/50',
+        iconBg: 'bg-purple-50 dark:bg-purple-950/50',
       };
     case 'powerbi':
     default:

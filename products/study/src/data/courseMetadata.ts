@@ -479,6 +479,75 @@ export const courseDetailMetadataMap: Record<CourseId, CourseDetailMetadata> = {
       },
     ],
   },
+
+  ai: {
+    learningObjectives: [
+      {
+        en: 'Understand core AI/ML fundamentals, transformer architectures, tokenization, and context window dynamics.',
+        vi: 'Hiểu nền tảng cốt lõi AI/ML, kiến trúc transformer, token hóa và động lực cửa sổ ngữ cảnh.',
+      },
+      {
+        en: 'Master systematic Prompt Engineering (system prompts, zero/few-shot, Chain-of-Thought, and structured JSON outputs).',
+        vi: 'Làm chủ Kỹ thuật Prompt (system prompt, zero/few-shot, Chain-of-Thought và xuất dữ liệu JSON có cấu trúc).',
+      },
+      {
+        en: 'Integrate Generative AI REST APIs, handle rate limits, authentication, and structured error responses.',
+        vi: 'Tích hợp Generative AI REST API, xử lý giới hạn băng thông, xác thực và lỗi hệ thống.',
+      },
+      {
+        en: 'Implement function and tool calling schemas to allow LLMs to execute external functions dynamically.',
+        vi: 'Xây dựng schema function/tool calling để LLM gọi và thực thi các hàm hệ thống tự động.',
+      },
+      {
+        en: 'Build semantic search engines and Retrieval-Augmented Generation (RAG) pipelines with vector embeddings.',
+        vi: 'Xây dựng công cụ tìm kiếm ngữ nghĩa và quy trình RAG (Retrieval-Augmented Generation) với vector embeddings.',
+      },
+    ],
+    whatYouWillLearn: [
+      {
+        en: 'Generative AI vs Traditional ML: Tokens, temperature, top-p, parameters, and non-determinism',
+        vi: 'Generative AI vs ML truyền thống: Token, temperature, top-p, tham số và tính phi định hình',
+      },
+      {
+        en: 'Prompt Engineering strategies: System prompts, role assignment, Chain-of-Thought, and JSON mode',
+        vi: 'Chiến lược Kỹ thuật Prompt: System prompt, đóng vai, Chain-of-Thought và chế độ JSON Mode',
+      },
+      {
+        en: 'AI for Coding & Research: Refactoring, debugging, document summarization, and source grounding',
+        vi: 'AI cho Lập trình & Nghiên cứu: Refactor code, sửa lỗi, tóm tắt tài liệu và đối chiếu nguồn tin',
+      },
+      {
+        en: 'REST APIs & SDK integration: Authentication headers, streaming response chunks, and backoff retries',
+        vi: 'Tích hợp REST API & SDK: Header xác thực, phản hồi luồng (streaming) và cơ chế retry',
+      },
+      {
+        en: 'Function Calling: JSON Schema definitions, multi-tool orchestration, and response parsing',
+        vi: 'Function Calling: Khai báo JSON Schema, điều phối nhiều công cụ và xử lý kết quả',
+      },
+      {
+        en: 'Vector Embeddings & RAG: Cosine similarity, chunking strategies, indexing, and context augmentation',
+        vi: 'Vector Embeddings & RAG: Độ tương đồng Cosine, chiến lược chia đoạn text, đánh chỉ mục và bổ sung ngữ cảnh',
+      },
+    ],
+    prerequisites: [
+      {
+        en: 'Basic programming concepts (e.g. JavaScript, Python, or standard JSON data structures).',
+        vi: 'Nền tảng lập trình cơ bản (như JavaScript, Python hoặc cấu trúc dữ liệu JSON chuẩn).',
+      },
+    ],
+    targetAudience: [
+      {
+        en: 'Software engineers, backend/fullstack developers, data professionals, and tech leads building AI products.',
+        vi: 'Kỹ sư phần mềm, lập trình viên backend/fullstack, chuyên viên dữ liệu và Tech Lead phát triển sản phẩm AI.',
+      },
+    ],
+    keyHighlights: [
+      {
+        en: '3-Stage progression from AI concepts to hands-on Prompt Engineering and full API/RAG integration.',
+        vi: 'Lộ trình 3 cấp độ từ lý thuyết AI đến thực hành Prompt Engineering và tích hợp API/RAG hoàn chỉnh.',
+      },
+    ],
+  },
 };
 
 export const getCourseMetadata = (courseId: CourseId): CourseDetailMetadata => {

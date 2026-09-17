@@ -6,10 +6,10 @@ import { powerBiCourse } from './powerBiData';
 import { htmlCourse } from './htmlData';
 import { cssCourse } from './cssData';
 import { javascriptCourse } from './javascriptData';
+import { aiCourseData } from './aiData';
 
 /**
- * 7 Displayed Core Courses in exact required sequence:
- * 1. Python, 2. Excel, 3. SQL, 4. Power BI, 5. HTML, 6. CSS, 7. JavaScript
+ * Core Displayed Courses
  */
 export const coreCourses: Course[] = [
   pythonCourse,
@@ -19,6 +19,7 @@ export const coreCourses: Course[] = [
   htmlCourse,
   cssCourse,
   javascriptCourse,
+  aiCourseData,
 ];
 
 /**
@@ -32,6 +33,7 @@ export const allCourses: Course[] = [
   htmlCourse,
   cssCourse,
   javascriptCourse,
+  aiCourseData,
 ];
 
 export const getCourseById = (id: CourseId): Course | undefined => {

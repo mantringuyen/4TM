@@ -82,6 +82,18 @@ export const getCourseTheme = (courseId: CourseId | string) => {
         accentText: 'text-amber-600 dark:text-amber-400',
         cardBorder: 'hover:border-amber-400/50',
       };
+    case 'ai':
+      return {
+        name: 'AI & Generative Engineering',
+        primaryColor: '#8B5CF6',
+        secondaryColor: '#6366F1',
+        badgeBg: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30',
+        gradient: 'from-[#8B5CF6] via-[#6366F1] to-[#3B82F6]',
+        glow: 'shadow-purple-500/20',
+        ring: 'ring-purple-500/40',
+        accentText: 'text-purple-600 dark:text-purple-400',
+        cardBorder: 'hover:border-purple-500/50',
+      };
     case 'powerbi':
     default:
       return {

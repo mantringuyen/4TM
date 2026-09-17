@@ -2,7 +2,7 @@ export type Language = 'en' | 'vi';
 
 export type LevelId = 'basic' | 'intermediate' | 'advanced';
 
-export type CourseId = 'python' | 'excel' | 'sql' | 'html' | 'css' | 'javascript' | 'powerbi';
+export type CourseId = 'python' | 'excel' | 'sql' | 'html' | 'css' | 'javascript' | 'powerbi' | 'ai';
 
 export type LessonStage = 'learn' | 'exercises' | 'challenge' | 'quiz' | 'project';
 
