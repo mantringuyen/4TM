@@ -721,7 +721,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 <a
                   id="mobile-nav-root-btn"
-                  href="https://4tm.io.vn"
+                  href={isLoggedIn ? "https://4tm.io.vn/sso?from=study" : "https://4tm.io.vn"}
                   className="p-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-850"
                   title="Return to 4TM Root"
                 >

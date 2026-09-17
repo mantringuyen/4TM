@@ -27,7 +27,7 @@ import { ReviewModal } from './components/ReviewModal';
 import { BookmarksModal, NotesModal } from './components/BookmarksAndNotesModals';
 import { Terminal, ShieldCheck, Heart, Sparkles, Globe, Clock } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './services/supabase';
-import { BrandLogo, BRAND_CONFIG, processSsoCallback } from '@shared';
+import { BrandLogo, BRAND_CONFIG, processSsoCallback, issuePeerRootHandoff } from '@shared';
 
 function AppContent() {
   const { language, setLanguage, dict } = useLanguage();
@@ -70,8 +70,37 @@ function AppContent() {
     const initAuth = async () => {
       try {
         if (typeof window !== 'undefined') {
+          const pathname = window.location.pathname;
           const hash = window.location.hash || '';
           const search = window.location.search || '';
+
+          // A. Handle incoming SP-initiated Root handoff request: /sso/handoff?state=...
+          if (pathname.startsWith('/sso/handoff') || search.includes('state=')) {
+            const searchParams = new URLSearchParams(search.startsWith('?') ? search.substring(1) : search);
+            const stateFromRoot = searchParams.get('state');
+
+            if (stateFromRoot) {
+              const { data: { session } } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
+              if (!session) {
+                // If user is not yet logged into Study, prompt Study login modal and preserve state
+                setAuthModalInitialMode('signin');
+                setAuthModalInitialError('');
+                setAuthModalOpen(true);
+              } else {
+                // User is authenticated on Study: issue Root handoff ticket with the Root-provided state
+                const handoffRes = await issuePeerRootHandoff({
+                  supabaseClient: supabase,
+                  state: stateFromRoot,
+                });
+                if (handoffRes.success && handoffRes.redirectUrl) {
+                  window.location.replace(handoffRes.redirectUrl);
+                  return;
+                }
+              }
+            }
+          }
+
+          // B. Handle incoming SSO callback from Root (Root -> Study)
           if (hash.includes('ticket=') || search.includes('ticket=')) {
             const callbackRes = await processSsoCallback({
               supabaseClient: supabase,

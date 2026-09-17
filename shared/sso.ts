@@ -15,6 +15,7 @@ export const SSO_ALLOWED_ORIGINS = [
 ] as const;
 
 export const SSO_STATE_STORAGE_KEY = '4tm_sso_state';
+export const SSO_DOWNSTREAM_TARGET_STORAGE_KEY = '4tm_sso_downstream_target';
 
 /**
  * Validates target origin against exact allowlist.
@@ -327,6 +328,7 @@ export async function processSsoCallback(
 
 export interface IssuePeerRootHandoffOptions {
   supabaseClient: any;
+  state?: string;
   targetOrigin?: string;
   rootUrl?: string;
   redirectPath?: string;
@@ -343,6 +345,8 @@ export interface IssuePeerRootHandoffResult {
 
 /**
  * Initiates an authenticated peer-to-Root SSO handoff.
+ * If a state nonce is provided from Root (SP-initiated), it uses that state.
+ * Otherwise generates a new state nonce.
  * Calls issue_root_handoff_ticket(state) on the authenticated peer session.
  * The returned ticket is hardcoded in the DB to target https://4tm.io.vn.
  */
@@ -351,6 +355,7 @@ export async function issuePeerRootHandoff(
 ): Promise<IssuePeerRootHandoffResult> {
   const {
     supabaseClient,
+    state: customState,
     targetOrigin,
     rootUrl = 'https://4tm.io.vn',
     redirectPath = '',
@@ -373,8 +378,8 @@ export async function issuePeerRootHandoff(
     };
   }
 
-  // Generate cryptographically random state
-  const state = generateSsoState();
+  // Use Root-provided state for SP-initiated flow or generate one
+  const state = customState || generateSsoState();
 
   if (typeof window !== 'undefined' && window.sessionStorage) {
     window.sessionStorage.setItem(SSO_STATE_STORAGE_KEY, state);
@@ -412,3 +417,4 @@ export async function issuePeerRootHandoff(
     redirectUrl,
   };
 }
+
