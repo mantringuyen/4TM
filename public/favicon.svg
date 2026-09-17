@@ -1,28 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
   <defs>
-    <linearGradient id="ecosystem-border" x1="0%" y1="0%" x2="100%" y2="100%">
-      <!-- 4TM Deep Navy / Cobalt -->
-      <stop offset="0%" stop-color="#1E40AF" />
-      <!-- Study Indigo -->
-      <stop offset="22%" stop-color="#6366F1" />
-      <!-- Ebook Forest Teal -->
-      <stop offset="42%" stop-color="#0D9488" />
-      <!-- Apps Burnt Orange -->
-      <stop offset="62%" stop-color="#B45309" />
-      <!-- Games Ruby -->
-      <stop offset="82%" stop-color="#BE123C" />
-      <!-- Tools Slate -->
-      <stop offset="100%" stop-color="#475569" />
+    <linearGradient id="brand-spectrum-ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="12%" stop-color="#06B6D4" />
+      <stop offset="25%" stop-color="#10B981" />
+      <stop offset="37%" stop-color="#F59E0B" />
+      <stop offset="50%" stop-color="#F97316" />
+      <stop offset="62%" stop-color="#EF4444" />
+      <stop offset="75%" stop-color="#EC4899" />
+      <stop offset="87%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#2563EB" />
     </linearGradient>
   </defs>
   
-  <!-- Outer multicolor ecosystem border ring -->
-  <rect x="0.75" y="0.75" width="30.5" height="30.5" rx="7.25" fill="url(#ecosystem-border)" stroke="none" />
+  <!-- Outer multicolor spectrum ring -->
+  <rect x="0.75" y="0.75" width="30.5" height="30.5" rx="7.25" fill="url(#brand-spectrum-ring)" stroke="none" />
   
-  <!-- Inner solid near-black / black core background -->
+  <!-- Inner solid near-black core background -->
   <rect x="2.25" y="2.25" width="27.5" height="27.5" rx="5.75" fill="#090D16" />
   
-  <!-- Solid white 4TM brand lettering with pristine optical balance -->
+  <!-- Solid white 4TM brand lettering with optical balance -->
   <text 
     x="16" 
     y="20.5" 

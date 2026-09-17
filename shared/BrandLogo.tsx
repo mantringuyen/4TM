@@ -71,14 +71,14 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     },
   }[size];
 
-  // Refined multicolor ecosystem border gradient (4TM Navy/Cobalt -> Study Indigo -> Ebook Teal -> Apps Orange -> Games Ruby -> Tools Slate)
-  const ecosystemBorderGradient = 'bg-gradient-to-br from-[#1E40AF] via-[#6366F1] via-[#0D9488] via-[#B45309] via-[#BE123C] to-[#475569]';
+  // Rich continuous multicolor spectrum ring gradient (Blue -> Cyan -> Green -> Yellow -> Orange -> Red -> Magenta -> Purple -> Blue)
+  const brandSpectrumRingGradient = 'bg-[conic-gradient(from_135deg_at_50%_50%,#2563EB_0%,#06B6D4_12%,#10B981_25%,#F59E0B_37%,#F97316_50%,#EF4444_62%,#EC4899_75%,#8B5CF6_87%,#2563EB_100%)]';
 
   const content = (
     <>
       {showMark && (
         <div
-          className={`relative flex items-center justify-center shrink-0 shadow-sm group-hover:scale-[1.03] transition-transform duration-200 ${sizeClasses.mark} ${ecosystemBorderGradient}`}
+          className={`relative flex items-center justify-center shrink-0 shadow-xs group-hover:scale-[1.03] transition-transform duration-200 ${sizeClasses.mark} ${brandSpectrumRingGradient}`}
           aria-hidden="true"
         >
           {/* Solid near-black background core */}
