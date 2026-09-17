@@ -13,6 +13,10 @@ export interface EcosystemProduct {
 export const DEFAULT_ECOSYSTEM_PRODUCTS: EcosystemProduct[] = [
   { id: 'hub', name: '4TM', shortName: '4TM', url: 'https://4tm.io.vn', description: 'Central ecosystem portal' },
   { id: 'study', name: 'Study — 4TM', shortName: 'Study', url: 'https://study.4tm.io.vn', description: 'Interactive learning platform' },
+  { id: 'ebook', name: 'Ebook — 4TM', shortName: 'Ebook', url: 'https://ebook.4tm.io.vn', description: 'Digital technical publications & reading' },
+  { id: 'games', name: 'Games — 4TM', shortName: 'Games', url: 'https://games.4tm.io.vn', description: 'Interactive game ecosystem' },
+  { id: 'apps', name: 'Apps — 4TM', shortName: 'Apps', url: 'https://apps.4tm.io.vn', description: 'Application ecosystem & directory' },
+  { id: 'tools', name: 'Tools — 4TM', shortName: 'Tools', url: 'https://tools.4tm.io.vn', description: 'Web utilities & developer suite' },
 ];
 
 export interface ProductSwitcherProps {

@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "4tm-ebook",
+  "main": "worker/index.ts",
+  "compatibility_date": "2025-02-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+  "vars": {
+    "APP_URL": "https://ebook.4tm.io.vn"
+  }
+}

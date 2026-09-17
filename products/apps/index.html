@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Apps — 4TM</title>
+    <meta name="description" content="Application Ecosystem & Curated Web Software Directory — explore, launch, and experiment with purpose-built developer utilities, productivity suites, and learning aids." />
+    <meta property="og:title" content="Apps — 4TM" />
+    <meta property="og:description" content="Application Ecosystem & Curated Web Software Directory — explore, launch, and experiment with purpose-built developer utilities, productivity suites, and learning aids." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+      (function() {
+        try {
+          var mode = localStorage.getItem('4tm_theme_preference') || localStorage.getItem('4tm_theme_mode') || 'system';
+          var isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          var root = document.documentElement;
+          if (isDark) {
+            root.classList.add('dark');
+            root.classList.remove('light');
+            root.setAttribute('data-theme', 'dark');
+            root.style.colorScheme = 'dark';
+          } else {
+            root.classList.add('light');
+            root.classList.remove('dark');
+            root.setAttribute('data-theme', 'light');
+            root.style.colorScheme = 'light';
+          }
+        } catch(e) {}
+      })();
+    </script>
+  </head>
+  <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans antialiased selection:bg-indigo-500 selection:text-white transition-colors duration-200">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

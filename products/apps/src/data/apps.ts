@@ -1,0 +1,145 @@
+import { AppItem } from '../types';
+
+export const APPS: AppItem[] = [
+  {
+    id: 'study-companion',
+    slug: 'study-companion',
+    name: '4TM Study Companion',
+    tagline: {
+      en: 'Deep-Work Focus Timer & Learning Session Tracker',
+      vi: 'Đồng Hồ Tập Trung Deep-Work & Quản Lý Buổi Học',
+    },
+    category: 'learning',
+    status: 'Production',
+    version: '2.1.0',
+    icon: 'GraduationCap',
+    badge: 'Official',
+    accentColor: 'from-blue-600 to-indigo-700',
+    description: {
+      en: 'An intelligent focus companion designed to synchronize study intervals, log learning goals, and maintain deep-work rhythms during coding sessions.',
+      vi: 'Ứng dụng hỗ trợ học tập thông minh giúp phân chia các khoảng thời gian tập trung (Pomodoro), ghi chép mục tiêu và duy trì nhịp độ làm việc hiệu quả.',
+    },
+    keyFeatures: {
+      en: [
+        'Customizable 25/5/15 Pomodoro intervals',
+        'Study session goal checklist',
+        'Direct deep-link integration with study.4tm.io.vn courses',
+        'Local persistence for session analytics',
+      ],
+      vi: [
+        'Tùy chỉnh khoảng thời gian 25/5/15 Pomodoro',
+        'Danh sách mục tiêu học tập theo từng buổi',
+        'Liên kết trực tiếp tới các khóa học trên study.4tm.io.vn',
+        'Lưu trữ thống kê học tập cục bộ',
+      ],
+    },
+    techSpecs: ['Web Audio API', 'LocalStorage', 'CSS Animation'],
+    launchUrl: 'https://study.4tm.io.vn',
+    hasInteractiveSandbox: true,
+  },
+  {
+    id: 'snippet-notebook',
+    slug: 'snippet-notebook',
+    name: 'Snippet Notebook',
+    tagline: {
+      en: 'Instant Local Code Vault & Snippet Manager',
+      vi: 'Kho Lưu Trữ & Quản Lý Đoạn Mã Lập Trình Nhanh',
+    },
+    category: 'productivity',
+    status: 'Production',
+    version: '1.4.0',
+    icon: 'Code2',
+    badge: 'Offline First',
+    accentColor: 'from-emerald-500 to-teal-700',
+    description: {
+      en: 'Store, tag, and organize reusable algorithms, terminal one-liners, and configuration files with zero network latency and one-click clipboard copying.',
+      vi: 'Lưu trữ, gắn nhãn và tổ chức các đoạn mã thuật toán, lệnh terminal và file cấu hình dùng lại với độ trễ bằng 0 và sao chép một chạm.',
+    },
+    keyFeatures: {
+      en: [
+        'Full-text search across titles and snippet bodies',
+        'Syntax language tags (Python, TypeScript, SQL, Bash)',
+        'One-click instant copy to clipboard',
+        'Export notebook to Markdown bundle',
+      ],
+      vi: [
+        'Tìm kiếm toàn văn theo tiêu đề và nội dung code',
+        'Gắn nhãn theo ngôn ngữ (Python, TypeScript, SQL, Bash)',
+        'Sao chép nhanh một chạm vào clipboard',
+        'Xuất toàn bộ sổ tay thành file Markdown',
+      ],
+    },
+    techSpecs: ['React State', 'Clipboard API', 'Fira Code'],
+    hasInteractiveSandbox: true,
+  },
+  {
+    id: 'api-studio',
+    slug: 'api-studio',
+    name: 'REST API Testbed',
+    tagline: {
+      en: 'Client-Side HTTP Inspector & Request Composer',
+      vi: 'Công Cụ Soạn Thảo & Kiểm Thử HTTP Request Trên Trình Duyệt',
+    },
+    category: 'devtools',
+    status: 'Beta',
+    version: '0.9.5',
+    icon: 'Radio',
+    badge: 'Dev Suite',
+    accentColor: 'from-amber-500 to-orange-700',
+    description: {
+      en: 'Compose, test, and inspect HTTP endpoints directly from your browser. View response status, duration, and generate ready-to-use cURL commands.',
+      vi: 'Soạn thảo, gửi thử nghiệm và phân tích phản hồi HTTP trực tiếp trên trình duyệt. Đo lường thời gian phản hồi và tự động tạo câu lệnh cURL tương ứng.',
+    },
+    keyFeatures: {
+      en: [
+        'Method selector: GET, POST, PUT, DELETE, PATCH',
+        'Custom header key-value builder',
+        'JSON payload editor with format verification',
+        'Automatic cURL snippet generation',
+      ],
+      vi: [
+        'Hỗ trợ đầy đủ GET, POST, PUT, DELETE, PATCH',
+        'Bộ soạn headers key-value trực quan',
+        'Trình nhập dữ liệu JSON có kiểm tra cú pháp',
+        'Tự động sinh lệnh cURL tương ứng',
+      ],
+    },
+    techSpecs: ['Fetch API', 'JSON Parser', 'cURL Generator'],
+    hasInteractiveSandbox: true,
+  },
+  {
+    id: 'color-palette-studio',
+    slug: 'color-palette-studio',
+    name: 'Color Palette Studio',
+    tagline: {
+      en: 'Accessible Palette Generator & Contrast Checker',
+      vi: 'Tạo Bảng Màu Chuẩn Tiếp Cận & Kiểm Tra Tương Phản WCAG',
+    },
+    category: 'creative',
+    status: 'Production',
+    version: '1.2.0',
+    icon: 'Palette',
+    badge: 'Design System',
+    accentColor: 'from-purple-500 to-pink-600',
+    description: {
+      en: 'Generate cohesive color harmonies, verify WCAG AA/AAA text legibility contrast ratios, and copy ready-to-use CSS/Tailwind variables.',
+      vi: 'Tạo các dải màu phối hợp hài hòa, kiểm tra tỷ lệ tương phản độ đọc chữ chuẩn WCAG AA/AAA và sao chép biến CSS/Tailwind ngay lập tức.',
+    },
+    keyFeatures: {
+      en: [
+        'Interactive base hex color picker',
+        'Live WCAG AA (4.5:1) and AAA (7:1) contrast calculation',
+        'Harmonic palette generation (Analogous, Complementary, Triadic)',
+        'Copy CSS custom properties (--color-*) in one click',
+      ],
+      vi: [
+        'Bộ chọn màu Hex chủ đạo tương tác',
+        'Tính toán độ tương phản chuẩn WCAG AA (4.5:1) và AAA (7:1)',
+        'Tạo bảng màu tương phản, tương đồng và tam giác hài hòa',
+        'Sao chép biến CSS custom properties (--color-*) nhanh chóng',
+      ],
+    },
+    techSpecs: ['Color Math', 'WCAG 2.1 Formula', 'CSS Variables'],
+    hasInteractiveSandbox: true,
+  },
+];

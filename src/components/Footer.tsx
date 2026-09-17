@@ -34,22 +34,13 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 list-none p-0 m-0 text-xs">
               {ECOSYSTEM_PRODUCTS_CONFIG.map((prod) => (
                 <li key={prod.id}>
-                  {prod.id === 'study' ? (
-                    <a
-                      href={prod.href}
-                      className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                    >
-                      <span>{prod.name}</span>
-                      <ExternalLink className="w-3 h-3 opacity-60" />
-                    </a>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 text-slate-400 dark:text-slate-500 cursor-default">
-                      <span>{prod.name}</span>
-                      <span className="text-[10px] px-1 py-0.2 rounded bg-slate-100 dark:bg-slate-900 text-slate-400 font-mono">
-                        {prod.status === 'in-development' ? 'dev' : 'soon'}
-                      </span>
-                    </span>
-                  )}
+                  <a
+                    href={prod.href}
+                    className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
+                    <span>{prod.name}</span>
+                    <ExternalLink className="w-3 h-3 opacity-60" />
+                  </a>
                 </li>
               ))}
             </ul>
