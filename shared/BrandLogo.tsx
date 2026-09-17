@@ -1,4 +1,5 @@
 import React from 'react';
+import { getProductAccent } from './tokens';
 
 export interface BrandLogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -47,6 +48,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   };
 
   const label = getProductLabel(productName);
+  const accent = getProductAccent(label);
 
   const sizeClasses = {
     sm: {
@@ -79,7 +81,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       {showText && (
         <div className="flex items-center leading-none">
           <span
-            className={`rounded-lg bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/20 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 font-bold lowercase tracking-wider ${sizeClasses.badge}`}
+            className={`rounded-lg border font-bold lowercase tracking-wider ${accent.classes.badge} ${sizeClasses.badge}`}
           >
             {label}
           </span>

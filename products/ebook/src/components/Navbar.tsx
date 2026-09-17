@@ -54,7 +54,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={onNavigateHome}
-            className="px-3 py-1.5 rounded-xl hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-xl hover:text-teal-600 dark:hover:text-teal-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer"
           >
             {dict.nav.library}
           </button>
@@ -78,7 +78,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => onLanguageChange('en')}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 language === 'en'
-                  ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                  ? 'bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-400 shadow-sm'
                   : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
               }`}
             >
@@ -90,7 +90,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => onLanguageChange('vi')}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 language === 'vi'
-                  ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                  ? 'bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-400 shadow-sm'
                   : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
               }`}
             >
@@ -102,7 +102,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {user ? (
             <div className="flex items-center gap-2">
               <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                <UserIcon className="w-3.5 h-3.5 text-blue-500" />
+                <UserIcon className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
                 <span className="max-w-[120px] truncate">{user.email?.split('@')[0]}</span>
               </div>
               <button
@@ -120,7 +120,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               type="button"
               id="ebook-signin-btn"
               onClick={onSignIn}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-500 text-white shadow-sm transition-colors cursor-pointer"
             >
               <LogIn className="w-3.5 h-3.5" />
               <span>{dict.nav.signIn}</span>

@@ -47,9 +47,9 @@ export const Navbar: React.FC<NavbarProps> = ({
         <nav className="hidden md:flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
           <a
             href="#directory"
-            className="px-3 py-1.5 rounded-xl hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded-xl hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors flex items-center gap-1.5"
           >
-            <LayoutGrid className="w-3.5 h-3.5 text-indigo-500" />
+            <LayoutGrid className="w-3.5 h-3.5 text-amber-600 dark:text-amber-500" />
             <span>{dict.nav.directory}</span>
           </a>
         </nav>
@@ -71,7 +71,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => onLanguageChange('en')}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 language === 'en'
-                  ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                  ? 'bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 shadow-xs'
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -83,7 +83,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => onLanguageChange('vi')}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 language === 'vi'
-                  ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                  ? 'bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 shadow-xs'
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -95,7 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {user ? (
             <div className="flex items-center gap-2">
               <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800">
-                <UserIcon className="w-3.5 h-3.5 text-indigo-500" />
+                <UserIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-500" />
                 <span className="max-w-[120px] truncate">{user.email?.split('@')[0]}</span>
               </div>
               <button
@@ -113,7 +113,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               type="button"
               id="apps-signin-btn"
               onClick={onSignIn}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-sm transition-colors cursor-pointer"
             >
               <LogIn className="w-3.5 h-3.5" />
               <span>{dict.nav.signIn}</span>

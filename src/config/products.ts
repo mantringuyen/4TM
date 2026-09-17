@@ -59,7 +59,7 @@ export const ECOSYSTEM_PRODUCTS_CONFIG: EcosystemProductItem[] = [
       en: 'Active Platform',
       vi: 'Nền Tảng Hoạt Động',
     },
-    statusBadgeClass: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+    statusBadgeClass: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-500/20',
     ctaText: {
       en: 'Launch Platform',
       vi: 'Khởi Chạy Nền Tảng',
@@ -97,7 +97,7 @@ export const ECOSYSTEM_PRODUCTS_CONFIG: EcosystemProductItem[] = [
       en: 'App Ecosystem',
       vi: 'Hệ Sinh Thái Apps',
     },
-    statusBadgeClass: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+    statusBadgeClass: 'bg-amber-600/10 text-amber-800 dark:text-amber-400 border-amber-600/25',
     ctaText: {
       en: 'Discover Apps',
       vi: 'Khám Phá Ứng Dụng',
@@ -135,7 +135,7 @@ export const ECOSYSTEM_PRODUCTS_CONFIG: EcosystemProductItem[] = [
       en: 'Game Ecosystem',
       vi: 'Hệ Sinh Thái Games',
     },
-    statusBadgeClass: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
+    statusBadgeClass: 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20',
     ctaText: {
       en: 'Play & Explore',
       vi: 'Chơi & Trải Nghiệm',
@@ -173,7 +173,7 @@ export const ECOSYSTEM_PRODUCTS_CONFIG: EcosystemProductItem[] = [
       en: 'Technical Library',
       vi: 'Thư Viện Kỹ Thuật',
     },
-    statusBadgeClass: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20',
+    statusBadgeClass: 'bg-teal-500/10 text-teal-700 dark:text-teal-400 border-teal-500/20',
     ctaText: {
       en: 'Explore Ebooks',
       vi: 'Đọc Sách Kỹ Thuật',
@@ -211,7 +211,7 @@ export const ECOSYSTEM_PRODUCTS_CONFIG: EcosystemProductItem[] = [
       en: 'Developer Suite',
       vi: 'Bộ Tiện Ích Dev',
     },
-    statusBadgeClass: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+    statusBadgeClass: 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20',
     ctaText: {
       en: 'Open Tools',
       vi: 'Mở Bộ Công Cụ',

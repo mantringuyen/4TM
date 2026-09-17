@@ -1,6 +1,7 @@
 import React from 'react';
 import { EcosystemProductItem } from '../config/products';
 import { useLanguage } from '../i18n/LanguageContext';
+import { getProductAccent } from '@shared';
 import {
   GraduationCap,
   LayoutGrid,
@@ -19,6 +20,7 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, featured = false }) => {
   const { language, dict } = useLanguage();
+  const accent = getProductAccent(product.id);
 
   const renderIcon = (iconName: string) => {
     const props = { className: 'w-6 h-6' };
@@ -50,7 +52,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, featured = fa
         {/* Card Header: Icon, Subdomain & Status Badge */}
         <div className="flex items-start justify-between gap-3 mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform duration-200">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${accent.classes.badge} group-hover:scale-105 transition-transform duration-200`}>
               {renderIcon(product.icon)}
             </div>
             <div>
@@ -112,7 +114,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, featured = fa
           href={product.href}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/20 transition-all cursor-pointer"
+          className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold ${accent.classes.cta} transition-all cursor-pointer`}
         >
           <span>{product.ctaText[language]}</span>
           <ArrowUpRight className="w-3.5 h-3.5" />

@@ -168,7 +168,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <ProductSwitcher currentProductId="study" />
               </div>
 
-              <span className="hidden lg:inline-block text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 font-bold tracking-wider">
+              <span className="hidden lg:inline-block text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30 font-bold tracking-wider">
                 LMS
               </span>
             </div>
@@ -191,7 +191,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={() => setLanguage('en')}
                   className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     language === 'en'
-                      ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                      ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                   }`}
                   title="Switch to English"
@@ -203,7 +203,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={() => setLanguage('vi')}
                   className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     language === 'vi'
-                      ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                      ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                   }`}
                   title="Chuyển sang Tiếng Việt"
@@ -229,13 +229,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   id="nav-courses-progress-trigger-btn"
                   onClick={() => setProgressPanelOpen(true)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 dark:bg-blue-500/15 dark:hover:bg-blue-500/25 border border-blue-500/30 text-blue-600 dark:text-blue-300 text-xs font-bold transition-all cursor-pointer group shadow-sm hover:scale-[1.02]"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 dark:bg-indigo-500/15 dark:hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-600 dark:text-indigo-300 text-xs font-bold transition-all cursor-pointer group shadow-sm hover:scale-[1.02]"
                   title={dict.nav?.courseProgress || 'Course Progress'}
                   aria-label="View course progress breakdown"
                 >
                   <span className="text-sm">📚</span>
                   <span>{dict.nav?.courses || 'Courses'}</span>
-                  <span className="px-1.5 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-mono font-bold shadow-xs">
+                  <span className="px-1.5 py-0.5 rounded-md bg-indigo-600 text-white text-[10px] font-mono font-bold shadow-xs">
                     {overallCorePercent}%
                   </span>
                 </button>
@@ -565,7 +565,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => onNavigate('courses')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                   currentView === 'courses'
-                    ? 'bg-blue-600/10 dark:bg-blue-600/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 font-bold'
+                    ? 'bg-indigo-600/10 dark:bg-indigo-600/20 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30 font-bold'
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900'
                 }`}
               >
@@ -579,7 +579,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => onNavigate('learning-paths')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                   currentView === 'learning-paths' || currentView === 'learning-path'
-                    ? 'bg-blue-600/10 dark:bg-blue-600/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 font-bold'
+                    ? 'bg-indigo-600/10 dark:bg-indigo-600/20 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30 font-bold'
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900'
                 }`}
               >
@@ -593,7 +593,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => onNavigate('learning-process')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                   currentView === 'learning-process'
-                    ? 'bg-blue-600/10 dark:bg-blue-600/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 font-bold'
+                    ? 'bg-indigo-600/10 dark:bg-indigo-600/20 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30 font-bold'
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900'
                 }`}
               >
@@ -607,7 +607,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => onNavigate('playground')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                   currentView === 'playground'
-                    ? 'bg-blue-600/10 dark:bg-blue-600/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 font-bold'
+                    ? 'bg-indigo-600/10 dark:bg-indigo-600/20 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30 font-bold'
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900'
                 }`}
               >
@@ -622,7 +622,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={() => onNavigate('dashboard')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                     currentView === 'dashboard'
-                      ? 'bg-blue-600/10 dark:bg-blue-600/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 font-bold'
+                      ? 'bg-indigo-600/10 dark:bg-indigo-600/20 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30 font-bold'
                       : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900'
                   }`}
                 >
