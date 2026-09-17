@@ -31,6 +31,23 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   onClick,
   as = (href !== undefined || !productName) ? 'a' : onClick ? 'button' : 'div',
 }) => {
+  const getProductLabel = (name?: string): string => {
+    if (name && name.trim()) {
+      return name.trim().toLowerCase();
+    }
+    if (typeof window !== 'undefined' && window.location?.hostname) {
+      const host = window.location.hostname.toLowerCase();
+      if (host.includes('study')) return 'study';
+      if (host.includes('ebook')) return 'ebook';
+      if (host.includes('games')) return 'games';
+      if (host.includes('apps')) return 'apps';
+      if (host.includes('tools')) return 'tools';
+    }
+    return 'ecosystem';
+  };
+
+  const label = getProductLabel(productName);
+
   const sizeClasses = {
     sm: {
       mark: 'w-7 h-7 text-xs rounded-lg',
@@ -60,23 +77,19 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       )}
 
       {showText && (
-        <div className="flex items-center gap-2 leading-none">
-          <span className={`tracking-tight text-[#0B1E3B] dark:text-white ${sizeClasses.text}`}>
-            4TM
+        <div className="flex items-center leading-none">
+          <span
+            className={`rounded-lg bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/20 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 font-bold lowercase tracking-wider ${sizeClasses.badge}`}
+          >
+            {label}
           </span>
-          {productName && (
-            <span
-              className={`rounded-lg bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/20 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider ${sizeClasses.badge}`}
-            >
-              {productName}
-            </span>
-          )}
         </div>
       )}
     </>
   );
 
   const containerClasses = `inline-flex items-center gap-2.5 group cursor-pointer select-none text-left ${className}`;
+  const ariaLabel = label === 'ecosystem' ? '4TM Ecosystem' : `${label} — 4TM`;
 
   if (as === 'a' || (href && as !== 'button' && as !== 'div')) {
     return (
@@ -84,7 +97,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         href={href !== undefined ? href : 'https://4tm.io.vn'}
         onClick={onClick}
         className={containerClasses}
-        aria-label={productName ? `${productName} — 4TM` : '4TM Ecosystem'}
+        aria-label={ariaLabel}
       >
         {content}
       </a>
@@ -97,7 +110,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         type="button"
         onClick={onClick}
         className={containerClasses}
-        aria-label={productName ? `${productName} — 4TM` : '4TM Ecosystem'}
+        aria-label={ariaLabel}
       >
         {content}
       </button>
@@ -105,7 +118,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   }
 
   return (
-    <div className={containerClasses} aria-label={productName ? `${productName} — 4TM` : '4TM Ecosystem'}>
+    <div className={containerClasses} aria-label={ariaLabel}>
       {content}
     </div>
   );
