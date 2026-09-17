@@ -1,5 +1,14 @@
 export type Language = 'en' | 'vi';
 
+export type BookType = 
+  | 'Handbook'
+  | 'Definitions'
+  | 'Tips'
+  | 'Common Errors'
+  | 'Best Practices'
+  | 'Practical Guides'
+  | 'Patterns / Recipes';
+
 export interface Category {
   id: string;
   name: {
@@ -77,6 +86,7 @@ export interface Book {
     en: string;
     vi: string;
   };
+  bookType: BookType;
   categoryId: string;
   subjectId: string;
   author: string;
