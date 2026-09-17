@@ -230,7 +230,7 @@ export interface ProcessSsoCallbackResult {
 export async function processSsoCallback(
   options: ProcessSsoCallbackOptions
 ): Promise<ProcessSsoCallbackResult> {
-  const { supabaseClient, workerUrl = '', targetOrigin: customTargetOrigin, expectedState: customExpectedState } = options;
+  const { supabaseClient, workerUrl = 'https://4tm.io.vn', targetOrigin: customTargetOrigin, expectedState: customExpectedState } = options;
 
   // Step 1: Parse callback and IMMEDIATELY scrub URL fragment
   const { ticket, state } = parseAndScrubSsoCallback();

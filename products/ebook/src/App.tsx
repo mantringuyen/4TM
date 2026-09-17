@@ -8,14 +8,7 @@ import { CatalogView } from './components/CatalogView';
 import { BookDetailView } from './components/BookDetailView';
 import { ReaderView } from './components/ReaderView';
 import { createClient, User } from '@supabase/supabase-js';
-import {
-  extractSsoTicketFromUrl,
-  exchangeSsoTicket,
-  clearSsoStateFromUrl,
-  initiateSsoFlow,
-  storeSsoState,
-  storeDownstreamTarget,
-} from '@shared/sso';
+import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
 
 // Client-side Supabase client (lazy & safe fallback)
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -78,23 +71,23 @@ export function App() {
       setUser(session?.user ?? null);
     });
 
-    // Handle incoming SSO ticket exchange
-    const incomingTicket = extractSsoTicketFromUrl();
-    if (incomingTicket) {
-      exchangeSsoTicket(incomingTicket)
-        .then(async (tokenData) => {
-          if (tokenData && tokenData.access_token && tokenData.refresh_token) {
-            await supabase.auth.setSession({
-              access_token: tokenData.access_token,
-              refresh_token: tokenData.refresh_token,
-            });
-          }
-          clearSsoStateFromUrl();
+    // Handle incoming SSO callback
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash || '';
+      const search = window.location.search || '';
+      if (hash.includes('ticket=') || search.includes('ticket=')) {
+        processSsoCallback({
+          supabaseClient: supabase,
         })
-        .catch((err) => {
-          console.warn('SSO ticket exchange failed or expired', err);
-          clearSsoStateFromUrl();
-        });
+          .then((result) => {
+            if (result.success && result.user) {
+              setUser(result.user);
+            }
+          })
+          .catch((err) => {
+            console.warn('SSO callback processing error:', err);
+          });
+      }
     }
 
     return () => subscription.unsubscribe();
@@ -141,12 +134,13 @@ export function App() {
   };
 
   const handleSignIn = () => {
-    // Redirect to 4TM Root portal with downstream target
-    const rootOrigin = 'https://4tm.io.vn';
-    const currentOrigin = window.location.origin;
-    const targetUrl = new URL(rootOrigin);
-    targetUrl.searchParams.set('sso_target', currentOrigin);
-    window.location.href = targetUrl.toString();
+    try {
+      const currentOrigin = window.location.origin;
+      const { authUrl } = initiateSsoAuthRequest({ targetOrigin: currentOrigin });
+      window.location.href = authUrl;
+    } catch {
+      window.location.href = 'https://4tm.io.vn';
+    }
   };
 
   const handleSignOut = async () => {

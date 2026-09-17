@@ -15,6 +15,7 @@
       "@shared": ["../../shared/index.ts"],
       "@shared/*": ["../../shared/*"]
     },
+    "allowImportingTsExtensions": true,
     "noEmit": true
   },
   "include": ["src", "worker", "../../shared/**/*"],

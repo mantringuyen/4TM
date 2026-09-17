@@ -7,11 +7,7 @@ import { Footer } from './components/Footer';
 import { AppCatalog } from './components/AppCatalog';
 import { AppModal } from './components/AppModal';
 import { createClient, User } from '@supabase/supabase-js';
-import {
-  extractSsoTicketFromUrl,
-  exchangeSsoTicket,
-  clearSsoStateFromUrl,
-} from '@shared/sso';
+import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
 
 const FAVORITES_STORAGE_KEY = '4tm_apps_favorites';
 
@@ -55,22 +51,23 @@ export function App() {
       setUser(session?.user ?? null);
     });
 
-    const incomingTicket = extractSsoTicketFromUrl();
-    if (incomingTicket) {
-      exchangeSsoTicket(incomingTicket)
-        .then(async (tokenData) => {
-          if (tokenData && tokenData.access_token && tokenData.refresh_token) {
-            await supabase.auth.setSession({
-              access_token: tokenData.access_token,
-              refresh_token: tokenData.refresh_token,
-            });
-          }
-          clearSsoStateFromUrl();
+    // Handle incoming SSO callback
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash || '';
+      const search = window.location.search || '';
+      if (hash.includes('ticket=') || search.includes('ticket=')) {
+        processSsoCallback({
+          supabaseClient: supabase,
         })
-        .catch((err) => {
-          console.warn('SSO ticket exchange failed or expired', err);
-          clearSsoStateFromUrl();
-        });
+          .then((result) => {
+            if (result.success && result.user) {
+              setUser(result.user);
+            }
+          })
+          .catch((err) => {
+            console.warn('SSO callback processing error:', err);
+          });
+      }
     }
 
     return () => subscription.unsubscribe();
@@ -92,11 +89,13 @@ export function App() {
   };
 
   const handleSignIn = () => {
-    const rootOrigin = 'https://4tm.io.vn';
-    const currentOrigin = window.location.origin;
-    const targetUrl = new URL(rootOrigin);
-    targetUrl.searchParams.set('sso_target', currentOrigin);
-    window.location.href = targetUrl.toString();
+    try {
+      const currentOrigin = window.location.origin;
+      const { authUrl } = initiateSsoAuthRequest({ targetOrigin: currentOrigin });
+      window.location.href = authUrl;
+    } catch {
+      window.location.href = 'https://4tm.io.vn';
+    }
   };
 
   const handleSignOut = async () => {

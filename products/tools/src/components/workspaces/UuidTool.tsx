@@ -14,7 +14,7 @@ export const UuidTool: React.FC<{ language: Language }> = ({ language }) => {
   function generateList(num: number, isUpper: boolean, hasHyphens: boolean): string[] {
     const list: string[] = [];
     for (let i = 0; i < num; i++) {
-      let id = crypto.randomUUID();
+      let id: string = crypto.randomUUID();
       if (!hasHyphens) id = id.replace(/-/g, '');
       if (isUpper) id = id.toUpperCase();
       list.push(id);

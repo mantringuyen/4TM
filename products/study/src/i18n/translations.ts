@@ -45,6 +45,7 @@ export const translations = {
       themeDark: 'Dark',
       themeSystem: 'System',
       themeToggleAria: 'Select color theme',
+      products: 'Ecosystem',
     },
     home: {
       heroBadge: 'Client-Side WASM Execution • 100% In-Browser',
@@ -672,6 +673,7 @@ export const translations = {
       themeDark: 'Tối',
       themeSystem: 'Hệ thống',
       themeToggleAria: 'Chọn giao diện màu',
+      products: 'Hệ sinh thái',
     },
     home: {
       heroBadge: 'Thực Thi WASM Trực Tiếp • 100% Trên Trình Duyệt',

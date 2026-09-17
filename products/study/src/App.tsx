@@ -106,7 +106,7 @@ function AppContent() {
               supabaseClient: supabase,
             });
             if (callbackRes.success && callbackRes.user) {
-              const synced = await authService.syncUserFromSupabaseUser(callbackRes.user);
+              const synced = await authService.initializeAuthSession();
               if (isMounted && synced && isUserLoggedIn(synced)) {
                 setUser(synced);
                 if (synced.preferredLanguage && synced.preferredLanguage !== language) {
