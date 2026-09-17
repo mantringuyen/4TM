@@ -52,29 +52,44 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
   const sizeClasses = {
     sm: {
-      mark: 'w-7 h-7 text-xs rounded-lg',
-      text: 'text-base font-black',
+      mark: 'w-7 h-7 rounded-[7px] p-[1.5px]',
+      inner: 'rounded-[5.5px]',
+      text: 'text-[11px] tracking-tight font-black',
       badge: 'text-[10px] px-1.5 py-0.5',
     },
     md: {
-      mark: 'w-9 h-9 text-sm rounded-xl',
-      text: 'text-xl font-black',
+      mark: 'w-9 h-9 rounded-[9px] p-[1.5px]',
+      inner: 'rounded-[7.5px]',
+      text: 'text-[13px] tracking-tight font-black',
       badge: 'text-xs px-2 py-0.5',
     },
     lg: {
-      mark: 'w-12 h-12 text-base rounded-2xl',
-      text: 'text-2xl font-black',
+      mark: 'w-12 h-12 rounded-[12px] p-[2px]',
+      inner: 'rounded-[10px]',
+      text: 'text-[17px] tracking-tight font-black',
       badge: 'text-sm px-2.5 py-1',
     },
   }[size];
+
+  // Refined multicolor ecosystem border gradient (4TM Navy/Cobalt -> Study Indigo -> Ebook Teal -> Apps Orange -> Games Ruby -> Tools Slate)
+  const ecosystemBorderGradient = 'bg-gradient-to-br from-[#1E40AF] via-[#6366F1] via-[#0D9488] via-[#B45309] via-[#BE123C] to-[#475569]';
 
   const content = (
     <>
       {showMark && (
         <div
-          className={`flex items-center justify-center font-black tracking-tighter text-white bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 shadow-md shadow-blue-600/20 group-hover:scale-105 transition-transform duration-200 shrink-0 ${sizeClasses.mark}`}
+          className={`relative flex items-center justify-center shrink-0 shadow-sm group-hover:scale-[1.03] transition-transform duration-200 ${sizeClasses.mark} ${ecosystemBorderGradient}`}
+          aria-hidden="true"
         >
-          <span>4TM</span>
+          {/* Solid near-black background core */}
+          <div
+            className={`w-full h-full bg-[#090D16] dark:bg-[#070A10] flex items-center justify-center select-none ${sizeClasses.inner}`}
+          >
+            {/* Clean, bold solid white 4TM lettering */}
+            <span className={`text-white leading-none ${sizeClasses.text}`}>
+              4TM
+            </span>
+          </div>
         </div>
       )}
 
