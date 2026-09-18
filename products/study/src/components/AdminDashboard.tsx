@@ -17,17 +17,40 @@ import {
   Search,
   RefreshCw,
   MailCheck,
-  AlertCircle
+  AlertCircle,
+  Settings,
+  Megaphone,
+  Globe,
+  Radio,
+  ToggleLeft,
+  ToggleRight,
+  Zap,
+  Crown
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { allCourses } from '../data/coursesData';
 import { CostAndSecurityAuditor } from './CostAndSecurityAuditor';
-import { fetchLearnerProfiles, adminSetUserStatus, LearnerSummary, getCurrentUser, isDemoUser } from '../services/storageService';
+import { 
+  fetchLearnerProfiles, 
+  adminSetUserStatus, 
+  adminSetUserAdFree, 
+  LearnerSummary, 
+  getCurrentUser, 
+  isDemoUser 
+} from '../services/storageService';
+import { supabase } from '../services/supabase';
+import { 
+  fetchSystemSettings, 
+  adminUpdateSystemSetting, 
+  subscribeSystemSettings, 
+  SystemSettings, 
+  DEFAULT_SYSTEM_SETTINGS 
+} from '@shared';
 import { AccountStatus } from '../types';
 
 export const AdminDashboard: React.FC = () => {
   const { t, dict } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'courses' | 'questions' | 'learners' | 'auditor'>('courses');
+  const [activeTab, setActiveTab] = useState<'courses' | 'questions' | 'learners' | 'settings' | 'auditor'>('courses');
 
   const currentUser = getCurrentUser();
   // DEV-ONLY Admin Demo Security Guard:
@@ -42,6 +65,84 @@ export const AdminDashboard: React.FC = () => {
   const [learnerFilter, setLearnerFilter] = useState<'all' | AccountStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [actionMessage, setActionMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  // System Settings & Ads State
+  const [systemSettings, setSystemSettings] = useState<SystemSettings>(DEFAULT_SYSTEM_SETTINGS);
+  const [loadingSettings, setLoadingSettings] = useState(false);
+  const [updatingKey, setUpdatingKey] = useState<string | null>(null);
+
+  const loadSettings = async () => {
+    setLoadingSettings(true);
+    try {
+      const s = await fetchSystemSettings(supabase);
+      setSystemSettings(s);
+    } catch (err) {
+      console.error('Failed to load system settings:', err);
+    } finally {
+      setLoadingSettings(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSettings();
+    const unsub = subscribeSystemSettings((newSettings) => {
+      setSystemSettings(newSettings);
+    });
+    return () => unsub();
+  }, []);
+
+  const handleUpdateSetting = async (key: keyof SystemSettings, val: any) => {
+    setUpdatingKey(key);
+    setActionMessage(null);
+    try {
+      const res = await adminUpdateSystemSetting(supabase, key, val);
+      if (res.success) {
+        setSystemSettings(prev => ({ ...prev, [key]: val }));
+        setActionMessage({
+          text: `Setting "${key}" successfully saved to database.`,
+          type: 'success'
+        });
+      } else {
+        setActionMessage({
+          text: res.error || `Failed to update ${key}.`,
+          type: 'error'
+        });
+      }
+    } catch (err: any) {
+      setActionMessage({
+        text: err?.message || 'Failed to update setting.',
+        type: 'error'
+      });
+    } finally {
+      setUpdatingKey(null);
+    }
+  };
+
+  const handleToggleProductAd = async (productKey: 'study' | 'ebook' | 'tools' | 'games' | 'apps' | 'root') => {
+    const updatedProducts = {
+      ...systemSettings.ads_products,
+      [productKey]: !systemSettings.ads_products[productKey]
+    };
+    await handleUpdateSetting('ads_products', updatedProducts);
+  };
+
+  const handleToggleAdFree = async (userId: string, currentAdFree: boolean) => {
+    setActionMessage(null);
+    const newAdFree = !currentAdFree;
+    const res = await adminSetUserAdFree(userId, newAdFree);
+    if (res.success) {
+      setActionMessage({
+        text: `Learner ad-free entitlement updated to ${newAdFree ? 'VIP Ad-Free' : 'Standard'}.`,
+        type: 'success'
+      });
+      await loadLearners();
+    } else {
+      setActionMessage({
+        text: res.error || 'Failed to update ad-free status.',
+        type: 'error'
+      });
+    }
+  };
 
   const loadLearners = async () => {
     if (!isAuthorized) return;
@@ -213,6 +314,18 @@ export const AdminDashboard: React.FC = () => {
               {pendingCount}
             </span>
           )}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('settings')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            activeTab === 'settings'
+              ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900'
+          }`}
+        >
+          <Settings className="w-4 h-4" />
+          <span>Global Controls & Ads</span>
         </button>
 
         <button
@@ -396,6 +509,7 @@ export const AdminDashboard: React.FC = () => {
                     <th className="py-3 px-4">Learner</th>
                     <th className="py-3 px-4">Email Verification</th>
                     <th className="py-3 px-4">Account Status</th>
+                    <th className="py-3 px-4">Ad-Free Entitlement</th>
                     <th className="py-3 px-4">Joined / Approved</th>
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
@@ -403,7 +517,7 @@ export const AdminDashboard: React.FC = () => {
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredLearners.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-400 text-xs">
+                      <td colSpan={6} className="py-8 text-center text-slate-400 text-xs">
                         No learners found matching your criteria.
                       </td>
                     </tr>
@@ -412,6 +526,7 @@ export const AdminDashboard: React.FC = () => {
                       const isPending = learner.status === 'pending_approval';
                       const isActive = learner.status === 'active';
                       const isSuspended = learner.status === 'suspended';
+                      const isAdFree = Boolean(learner.ad_free);
 
                       return (
                         <tr key={learner.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
@@ -453,6 +568,20 @@ export const AdminDashboard: React.FC = () => {
                                 Unverified
                               </span>
                             )}
+                          </td>
+                          <td className="py-3 px-4">
+                            <button
+                              onClick={() => handleToggleAdFree(learner.id, isAdFree)}
+                              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
+                                isAdFree
+                                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700 hover:bg-amber-500/20'
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
+                              }`}
+                              title={isAdFree ? 'Click to revoke VIP Ad-Free' : 'Click to grant VIP Ad-Free'}
+                            >
+                              <Crown className={`w-3 h-3 ${isAdFree ? 'text-amber-500 fill-amber-500' : 'text-slate-400'}`} />
+                              <span>{isAdFree ? 'VIP Ad-Free' : 'Standard'}</span>
+                            </button>
                           </td>
                           <td className="py-3 px-4 font-mono text-[11px]">
                             <div>{new Date(learner.createdAt).toLocaleDateString()}</div>
@@ -502,7 +631,211 @@ export const AdminDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Tab 4: Cost & Security Auditor */}
+      {/* Tab 4: System Settings & Global Ad Controls */}
+      {activeTab === 'settings' && (
+        <div className="space-y-6 animate-in fade-in">
+          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Settings className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <span>4TM Ecosystem System Settings & Policies</span>
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                Centralized database policies, public registration gates, and global advertising networks across all 4TM products.
+              </p>
+            </div>
+
+            <button
+              onClick={loadSettings}
+              disabled={loadingSettings}
+              className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer self-start sm:self-auto"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loadingSettings ? 'animate-spin' : ''}`} />
+              <span>Refresh Settings</span>
+            </button>
+          </div>
+
+          {actionMessage && (
+            <div className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
+              actionMessage.type === 'success' 
+                ? 'bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
+                : 'bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-300'
+            }`}>
+              {actionMessage.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+              <span>{actionMessage.text}</span>
+            </div>
+          )}
+
+          {/* Setting 1: Public Registration Control */}
+          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                    AUTH GATEWAY
+                  </span>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">Public User Registration</h4>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Enforces global sign-up availability across all 4TM applications. Guarded database-side by Supabase triggers.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
+                  systemSettings.public_registration_enabled
+                    ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                    : 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800'
+                }`}>
+                  {systemSettings.public_registration_enabled ? 'OPEN (Active)' : 'CLOSED (Locked)'}
+                </span>
+
+                <button
+                  type="button"
+                  id="toggle-public-registration-btn"
+                  disabled={updatingKey === 'public_registration_enabled'}
+                  onClick={() => handleUpdateSetting('public_registration_enabled', !systemSettings.public_registration_enabled)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 ${
+                    systemSettings.public_registration_enabled
+                      ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-sm'
+                      : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm'
+                  }`}
+                >
+                  {systemSettings.public_registration_enabled ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                  <span>{systemSettings.public_registration_enabled ? 'Lock Registration' : 'Enable Public Registration'}</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1">
+              <p className="font-semibold text-slate-700 dark:text-slate-300">Security Architecture Note:</p>
+              <p>
+                When registration is locked (<code className="font-mono text-purple-600 dark:text-purple-400">false</code>), sign-up requests are rejected at both the UI boundary and directly inside the database via <code className="font-mono text-purple-600 dark:text-purple-400">auth.users</code> trigger. Existing users and manual admin invitations remain operational.
+              </p>
+            </div>
+          </div>
+
+          {/* Setting 2: Global Ad Network System */}
+          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                    4TM ADS ENGINE
+                  </span>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">Master Advertising Network</h4>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Global non-intrusive ad unit mounted above footers. Automatically bypassed for VIP Ad-Free learners.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
+                  systemSettings.ads_enabled
+                    ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                }`}>
+                  {systemSettings.ads_enabled ? 'GLOBAL ON' : 'GLOBAL OFF'}
+                </span>
+
+                <button
+                  type="button"
+                  id="toggle-master-ads-btn"
+                  disabled={updatingKey === 'ads_enabled'}
+                  onClick={() => handleUpdateSetting('ads_enabled', !systemSettings.ads_enabled)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 ${
+                    systemSettings.ads_enabled
+                      ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-sm'
+                      : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm'
+                  }`}
+                >
+                  {systemSettings.ads_enabled ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                  <span>{systemSettings.ads_enabled ? 'Disable All Ads' : 'Enable Ad System'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Per-Product Granular Controls */}
+            <div className="space-y-3">
+              <h5 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider font-mono">
+                Per-Product Display Matrix
+              </h5>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                {(['study', 'ebook', 'tools', 'games', 'apps', 'root'] as const).map((prod) => {
+                  const isEnabled = systemSettings.ads_products?.[prod] !== false;
+                  return (
+                    <div
+                      key={prod}
+                      className={`p-3 rounded-xl border text-center transition-all ${
+                        isEnabled
+                          ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/40'
+                          : 'bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800 opacity-60'
+                      }`}
+                    >
+                      <span className="text-[11px] font-mono font-bold uppercase text-slate-700 dark:text-slate-300 block mb-1">
+                        {prod}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleProductAd(prod)}
+                        className={`w-full py-1 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer ${
+                          isEnabled
+                            ? 'bg-blue-600 text-white hover:bg-blue-500'
+                            : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-300'
+                        }`}
+                      >
+                        {isEnabled ? 'Enabled' : 'Disabled'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Ad Provider & Configuration */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 space-y-2">
+                <label className="text-xs font-bold text-slate-900 dark:text-white block">
+                  Ad Provider Engine
+                </label>
+                <select
+                  value={systemSettings.ad_provider}
+                  onChange={(e) => handleUpdateSetting('ad_provider', e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-purple-500"
+                >
+                  <option value="custom_house_ads">4TM Custom House Campaigns (Internal Network)</option>
+                  <option value="google_adsense">Google AdSense Responsive Unit</option>
+                </select>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Custom house ads cross-promote 4TM ecosystem products with zero third-party tracking.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 space-y-2">
+                <label className="text-xs font-bold text-slate-900 dark:text-white block">
+                  House Ads Active Campaign
+                </label>
+                <select
+                  value={systemSettings.custom_ad_campaign}
+                  onChange={(e) => handleUpdateSetting('custom_ad_campaign', e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-purple-500"
+                >
+                  <option value="auto_rotate">Auto Rotate All Campaigns (Study, Ebook, Tools)</option>
+                  <option value="study_pro">Study Pro: Interactive WASM Python & SQL Track</option>
+                  <option value="ebook_hub">4TM Ebook: 54 Engineering Handbooks</option>
+                  <option value="developer_tools">DevTools: Fast Developer Utilities & Formatters</option>
+                </select>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Select a targeted product campaign or allow smart automatic rotation.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 5: Cost & Security Auditor */}
       {activeTab === 'auditor' && (
         <CostAndSecurityAuditor />
       )}

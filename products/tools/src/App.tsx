@@ -7,7 +7,7 @@ import { Footer } from './components/Footer';
 import { Workbench } from './components/Workbench';
 import { createClient, User } from '@supabase/supabase-js';
 import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
-import { ThemeProvider } from '@shared';
+import { ThemeProvider, AdSlot } from '@shared';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -97,6 +97,7 @@ export function App() {
           <Workbench tools={TOOLS} language={language} />
         </div>
 
+        <AdSlot product="tools" user={user} supabaseClient={supabase} />
         <Footer language={language} />
       </div>
     </ThemeProvider>

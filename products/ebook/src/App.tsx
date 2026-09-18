@@ -9,7 +9,7 @@ import { BookDetailView } from './components/BookDetailView';
 import { ReaderView } from './components/ReaderView';
 import { createClient, User } from '@supabase/supabase-js';
 import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
-import { ThemeProvider } from '@shared';
+import { ThemeProvider, AdSlot } from '@shared';
 
 // Client-side Supabase client (lazy & safe fallback)
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -328,6 +328,7 @@ export function App() {
         </div>
 
         {/* Footer (hidden in reader mode) */}
+        {activeView !== 'reader' && <AdSlot product="ebook" user={user} supabaseClient={supabase} />}
         {activeView !== 'reader' && <Footer language={language} />}
       </div>
     </ThemeProvider>

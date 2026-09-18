@@ -8,7 +8,7 @@ import { AppCatalog } from './components/AppCatalog';
 import { AppModal } from './components/AppModal';
 import { createClient, User } from '@supabase/supabase-js';
 import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
-import { ThemeProvider } from '@shared';
+import { ThemeProvider, AdSlot } from '@shared';
 
 const FAVORITES_STORAGE_KEY = '4tm_apps_favorites';
 
@@ -137,6 +137,7 @@ export function App() {
           />
         )}
 
+        <AdSlot product="apps" user={user} supabaseClient={supabase} />
         <Footer language={language} />
       </div>
     </ThemeProvider>

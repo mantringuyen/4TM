@@ -1,6 +1,7 @@
 import { UserProfile, AccountStatus, MfaFactor, MfaAssuranceLevel, MfaAssuranceResult, MfaEnrollResult, Language } from '../types';
 import { supabase, isSupabaseConfigured } from './supabase';
 import { getCurrentUser, saveCurrentUser, getDefaultUser, getAdminUser, syncUserDataFromSupabase, isDemoUser } from './storageService';
+import { fetchSystemSettings, isPublicRegistrationEnabled } from '@shared';
 
 export interface AuthResponse {
   success: boolean;
@@ -150,6 +151,24 @@ export const authService = {
         success: false,
         error: 'Authentication service is not configured. Please verify Supabase environment settings.'
       };
+    }
+
+    // Server/DB-level setting verification
+    try {
+      const settings = await fetchSystemSettings(supabase);
+      if (!settings.public_registration_enabled) {
+        return {
+          success: false,
+          error: 'Public registration is currently disabled. Please contact the administrator.',
+        };
+      }
+    } catch {
+      if (!isPublicRegistrationEnabled()) {
+        return {
+          success: false,
+          error: 'Public registration is currently disabled. Please contact the administrator.',
+        };
+      }
     }
 
     try {

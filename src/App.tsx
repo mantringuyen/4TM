@@ -16,6 +16,7 @@ import {
   isValidSsoTargetOrigin,
   SSO_STATE_STORAGE_KEY,
   SSO_DOWNSTREAM_TARGET_STORAGE_KEY,
+  AdSlot,
 } from '@shared';
 import { issueSsoTicket } from './services/ssoIssuer';
 import type { User, Session } from '@supabase/supabase-js';
@@ -169,6 +170,7 @@ export const App: React.FC = () => {
             <WhySection />
             <SynergySection />
           </main>
+          <AdSlot product="root" user={user} supabaseClient={supabase} />
           <Footer />
 
           <AuthModal

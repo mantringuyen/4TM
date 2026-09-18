@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
+import { fetchSystemSettings, isPublicRegistrationEnabled } from '@shared';
 
 export interface AuthResult {
   success: boolean;
@@ -37,6 +38,25 @@ export const authService = {
    */
   async signUp(email: string, password: string): Promise<AuthResult> {
     if (!supabase) return { success: false, error: 'Supabase client is not configured' };
+    
+    // Check global public registration setting
+    try {
+      const settings = await fetchSystemSettings(supabase);
+      if (!settings.public_registration_enabled) {
+        return {
+          success: false,
+          error: 'Public registration is currently unavailable. Please contact an administrator.',
+        };
+      }
+    } catch {
+      if (!isPublicRegistrationEnabled()) {
+        return {
+          success: false,
+          error: 'Public registration is currently unavailable. Please contact an administrator.',
+        };
+      }
+    }
+
     try {
       const { data, error } = await supabase.auth.signUp({
         email,

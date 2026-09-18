@@ -11,9 +11,11 @@ import {
   ArrowRight,
   CheckCircle2,
   Clock,
-  RefreshCw
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
+import { fetchSystemSettings, isPublicRegistrationEnabled, subscribeSystemSettings } from '@shared';
 import { 
   signInUser, 
   signUpUser, 
@@ -68,6 +70,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [verifiedUser, setVerifiedUser] = useState<UserProfile | null>(null);
   const [hasValidRecoverySession, setHasValidRecoverySession] = useState<boolean | null>(null);
   const [checkingRecoverySession, setCheckingRecoverySession] = useState(false);
+  const [publicRegistrationEnabled, setPublicRegistrationEnabled] = useState<boolean>(() => isPublicRegistrationEnabled());
+
+  useEffect(() => {
+    fetchSystemSettings(supabase).then((s) => {
+      setPublicRegistrationEnabled(s.public_registration_enabled);
+    });
+
+    const unsubscribe = subscribeSystemSettings((s) => {
+      setPublicRegistrationEnabled(s.public_registration_enabled);
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Sync mode and error when initial props change
   useEffect(() => {
@@ -212,6 +226,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           setErrorMsg(res.error || 'Authentication error');
         }
       } else if (mode === 'signup') {
+        if (!publicRegistrationEnabled) {
+          setErrorMsg(
+            dict.language === 'vi'
+              ? 'Đăng ký công khai hiện đang tạm khóa. Vui lòng liên hệ quản trị viên hoặc đăng nhập bằng tài khoản hiện có.'
+              : 'Public registration is currently disabled. Please contact the administrator or sign in with an existing account.'
+          );
+          return;
+        }
         const res = await signUpUser(email, password, displayName || 'New Student');
         if (res.success) {
           // Transition to OTP verification step
@@ -573,6 +595,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
         )}
 
+        {/* Registration Disabled Notice */}
+        {mode === 'signup' && !publicRegistrationEnabled && (
+          <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 text-xs flex items-start gap-2.5">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+            <div className="leading-relaxed">
+              <p className="font-bold">
+                {dict.language === 'vi' ? 'Đăng ký công khai đang tạm khóa' : 'Public Registration Disabled'}
+              </p>
+              <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-0.5">
+                {dict.language === 'vi'
+                  ? 'Hệ thống hiện không nhận đăng ký mới từ công chúng. Vui lòng đăng nhập nếu bạn đã có tài khoản.'
+                  : 'New user self-registration is closed. Please sign in if you already have an approved account.'}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Mode: Sign In or Sign Up Form */}
         {(mode === 'signin' || mode === 'signup') && (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -638,10 +677,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/20 transition-all cursor-pointer disabled:opacity-50"
+              disabled={loading || (mode === 'signup' && !publicRegistrationEnabled)}
+              className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? dict.auth.verifying : (mode === 'signin' ? dict.auth.submitSignIn : dict.auth.submitSignUp)}
+              {loading
+                ? dict.auth.verifying
+                : mode === 'signin'
+                ? dict.auth.submitSignIn
+                : !publicRegistrationEnabled
+                ? (dict.language === 'vi' ? 'Đăng Ký Đang Khóa' : 'Registration Closed')
+                : dict.auth.submitSignUp}
             </button>
           </form>
         )}

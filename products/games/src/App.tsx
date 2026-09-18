@@ -8,7 +8,7 @@ import { GameCatalog } from './components/GameCatalog';
 import { PlayView } from './components/PlayView';
 import { createClient, User } from '@supabase/supabase-js';
 import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
-import { ThemeProvider } from '@shared';
+import { ThemeProvider, AdSlot } from '@shared';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -121,6 +121,7 @@ export function App() {
           )}
         </div>
 
+        <AdSlot product="games" user={user} supabaseClient={supabase} />
         <Footer language={language} />
       </div>
     </ThemeProvider>

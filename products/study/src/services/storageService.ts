@@ -912,6 +912,7 @@ export interface LearnerSummary {
   role: 'user' | 'admin';
   status: AccountStatus;
   emailVerified: boolean;
+  ad_free?: boolean;
   createdAt: string;
   approvedAt?: string;
   approvedBy?: string;
@@ -930,7 +931,7 @@ export const fetchLearnerProfiles = async (): Promise<LearnerSummary[]> => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, display_name, role, status, email_verified, created_at, approved_at, approved_by, xp')
+        .select('id, email, display_name, role, status, email_verified, ad_free, created_at, approved_at, approved_by, xp')
         .order('created_at', { ascending: false });
 
       if (!error && Array.isArray(data)) {
@@ -941,6 +942,7 @@ export const fetchLearnerProfiles = async (): Promise<LearnerSummary[]> => {
           role: p.role || 'user',
           status: (p.status as AccountStatus) || (p.role === 'admin' ? 'active' : 'pending_approval'),
           emailVerified: Boolean(p.email_verified),
+          ad_free: Boolean(p.ad_free),
           createdAt: p.created_at,
           approvedAt: p.approved_at,
           approvedBy: p.approved_by,
@@ -964,6 +966,7 @@ export const fetchLearnerProfiles = async (): Promise<LearnerSummary[]> => {
       role: current.role,
       status: current.status || 'active',
       emailVerified: current.emailVerified ?? true,
+      ad_free: (current as any).ad_free ?? false,
       createdAt: current.createdAt,
       xp: current.xp,
     },
@@ -974,6 +977,7 @@ export const fetchLearnerProfiles = async (): Promise<LearnerSummary[]> => {
       role: 'user',
       status: 'pending_approval',
       emailVerified: true,
+      ad_free: false,
       createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
       xp: 0,
     },
@@ -984,6 +988,7 @@ export const fetchLearnerProfiles = async (): Promise<LearnerSummary[]> => {
       role: 'user',
       status: 'pending_verification',
       emailVerified: false,
+      ad_free: false,
       createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
       xp: 0,
     },
@@ -994,6 +999,7 @@ export const fetchLearnerProfiles = async (): Promise<LearnerSummary[]> => {
       role: 'user',
       status: 'suspended',
       emailVerified: true,
+      ad_free: false,
       createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
       xp: 10,
     }
@@ -1035,6 +1041,43 @@ export const adminSetUserStatus = async (
   // Update local session if target is current user
   if (current.id === userId) {
     current.status = newStatus;
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(current));
+  }
+
+  return { success: true };
+};
+
+// Admin: Set learner Ad-Free entitlement status
+export const adminSetUserAdFree = async (
+  userId: string,
+  adFree: boolean
+): Promise<{ success: boolean; error?: string }> => {
+  const current = getCurrentUser();
+  if (current.role !== 'admin') {
+    return { success: false, error: 'Only administrators can modify user ad-free entitlement.' };
+  }
+
+  if (!import.meta.env.DEV && isDemoUser(current)) {
+    return { success: false, error: 'Administrative operations are not permitted for demo accounts in production.' };
+  }
+
+  if (isSupabaseConfigured && supabase && !isDemoUser(current) && !isDemoUserId(userId)) {
+    try {
+      const { error } = await supabase.rpc('admin_set_user_ad_free', {
+        target_user_id: userId,
+        is_ad_free: adFree,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Database error occurred' };
+    }
+  }
+
+  if (current.id === userId) {
+    (current as any).ad_free = adFree;
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(current));
   }
 

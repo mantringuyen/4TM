@@ -27,7 +27,7 @@ import { ReviewModal } from './components/ReviewModal';
 import { BookmarksModal, NotesModal } from './components/BookmarksAndNotesModals';
 import { Terminal, ShieldCheck, Heart, Sparkles, Globe, Clock } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './services/supabase';
-import { BrandLogo, BRAND_CONFIG, processSsoCallback, issuePeerRootHandoff } from '@shared';
+import { BrandLogo, BRAND_CONFIG, processSsoCallback, issuePeerRootHandoff, AdSlot } from '@shared';
 
 function AppContent() {
   const { language, setLanguage, dict } = useLanguage();
@@ -711,6 +711,9 @@ function AppContent() {
           setUser(updatedUser);
         }}
       />
+
+      {/* Platform AdSlot */}
+      <AdSlot product="study" user={user} supabaseClient={supabase} />
 
       {/* Platform Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-10 mt-12 transition-colors">

@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { X, Mail, Lock, LogIn, UserPlus, KeyRound, ArrowLeft, AlertCircle, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Mail, Lock, LogIn, UserPlus, KeyRound, ArrowLeft, AlertCircle, CheckCircle2, Loader2, Sparkles, AlertTriangle } from 'lucide-react';
 import { authService } from '../services/authService';
+import { supabase } from '../services/supabase';
 import { useLanguage } from '../i18n/LanguageContext';
+import { fetchSystemSettings, isPublicRegistrationEnabled, subscribeSystemSettings } from '@shared';
 
 export type AuthMode = 'signin' | 'signup' | 'magiclink' | 'forgot';
 
@@ -24,6 +26,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [publicRegistrationEnabled, setPublicRegistrationEnabled] = useState<boolean>(() => isPublicRegistrationEnabled());
+
+  useEffect(() => {
+    fetchSystemSettings(supabase).then((s) => {
+      setPublicRegistrationEnabled(s.public_registration_enabled);
+    });
+
+    const unsubscribe = subscribeSystemSettings((s) => {
+      setPublicRegistrationEnabled(s.public_registration_enabled);
+    });
+    return () => unsubscribe();
+  }, []);
 
   if (!isOpen) return null;
 
@@ -46,6 +60,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     e.preventDefault();
     setError(null);
     setSuccessMessage(null);
+
+    if (mode === 'signup' && !publicRegistrationEnabled) {
+      setError(
+        isVi
+          ? 'Đăng ký công khai hiện đang tạm khóa. Vui lòng liên hệ quản trị viên hoặc đăng nhập bằng tài khoản hiện có.'
+          : 'Public registration is currently disabled. Please contact the administrator or sign in with an existing account.'
+      );
+      return;
+    }
 
     if (!email.trim() || !password) {
       setError(isVi ? 'Vui lòng nhập đầy đủ email và mật khẩu.' : 'Please enter both email and password.');
@@ -199,6 +222,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
         )}
 
+        {/* Registration Disabled Notice */}
+        {mode === 'signup' && !publicRegistrationEnabled && (
+          <div className="mb-4 p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 text-xs flex items-start gap-2 animate-in fade-in duration-100">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+            <div className="leading-relaxed">
+              <p className="font-bold">
+                {isVi ? 'Đăng ký công khai đang tạm khóa' : 'Public Registration Disabled'}
+              </p>
+              <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-0.5">
+                {isVi
+                  ? 'Hệ thống hiện không nhận đăng ký mới từ công chúng. Nếu bạn đã có tài khoản hoặc là quản trị viên, vui lòng đăng nhập.'
+                  : 'New self-registration is closed. If you already have an account or administrator credentials, please sign in.'}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Forms */}
         {(mode === 'signin' || mode === 'signup') && (
           <form onSubmit={handlePasswordAuth} className="space-y-3.5">
@@ -268,8 +308,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all cursor-pointer mt-2"
+              disabled={loading || (mode === 'signup' && !publicRegistrationEnabled)}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all cursor-pointer mt-2"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -281,7 +321,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               ) : (
                 <>
                   <UserPlus className="w-4 h-4" />
-                  <span>{isVi ? 'Đăng Ký Tài Khoản' : 'Create Account'}</span>
+                  <span>
+                    {!publicRegistrationEnabled
+                      ? (isVi ? 'Đăng Ký Đang Khóa' : 'Registration Closed')
+                      : (isVi ? 'Đăng Ký Tài Khoản' : 'Create Account')}
+                  </span>
                 </>
               )}
             </button>
