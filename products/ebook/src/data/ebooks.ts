@@ -95,17 +95,17 @@ export const TOPICS: EbookTopic[] = [
     icon: 'Code',
   },
   {
-    id: 'javascript',
-    domainIds: ['programming', 'web'],
+    id: 'sql',
+    domainIds: ['data-analytics'],
     name: {
-      en: 'JavaScript',
-      vi: 'JavaScript',
+      en: 'SQL',
+      vi: 'SQL',
     },
     description: {
-      en: 'V8 engine internals, Event Loop, closures, ES6+ & async workflows.',
-      vi: 'Kiến trúc V8, Event Loop, closure, ES6+ & lập trình bất đồng bộ.',
+      en: 'Relational data modeling, indexing, joins & query optimization.',
+      vi: 'Mô hình dữ liệu quan hệ, đánh chỉ mục, phép join & tối ưu truy vấn.',
     },
-    icon: 'FileCode',
+    icon: 'Database',
   },
   {
     id: 'html',
@@ -134,17 +134,17 @@ export const TOPICS: EbookTopic[] = [
     icon: 'Palette',
   },
   {
-    id: 'sql',
-    domainIds: ['data-analytics'],
+    id: 'javascript',
+    domainIds: ['programming', 'web'],
     name: {
-      en: 'SQL',
-      vi: 'SQL',
+      en: 'JavaScript',
+      vi: 'JavaScript',
     },
     description: {
-      en: 'Relational data modeling, indexing, joins & query optimization.',
-      vi: 'Mô hình dữ liệu quan hệ, đánh chỉ mục, phép join & tối ưu truy vấn.',
+      en: 'V8 engine internals, Event Loop, closures, ES6+ & async workflows.',
+      vi: 'Kiến trúc V8, Event Loop, closure, ES6+ & lập trình bất đồng bộ.',
     },
-    icon: 'Database',
+    icon: 'FileCode',
   },
   {
     id: 'excel',

@@ -1,23 +1,24 @@
 import React, { useState, useMemo } from 'react';
-import { Book, Category, Subject, Language, BookType } from '../types';
-import { DOMAINS, TOPICS, EBOOK_FIELD } from '../data/ebooks';
+import { Book, Category, Subject, Language } from '../types';
+import { DOMAINS, TOPICS } from '../data/ebooks';
 import { TRANSLATIONS } from '../i18n/translations';
+import { BookCard } from './BookCard';
+import { FilterDrawer } from './FilterDrawer';
 import {
   Search,
   BookOpen,
-  Clock,
-  ArrowRight,
-  Code,
-  Layout,
-  Database,
-  Sparkles,
-  ChevronRight,
+  SlidersHorizontal,
+  X,
   RotateCcw,
-  BookMarked,
+  Code,
   FileCode,
+  Layout,
+  Palette,
+  Database,
   Table,
   BarChart,
-  Palette,
+  Sparkles,
+  BookMarked,
 } from 'lucide-react';
 
 export interface CatalogViewProps {
@@ -26,32 +27,6 @@ export interface CatalogViewProps {
   subjects: Subject[];
   language: Language;
   onSelectBook: (book: Book) => void;
-}
-
-const OFFICIAL_BOOK_TYPES: BookType[] = [
-  'Handbook',
-  'Definitions',
-  'Tips',
-  'Practical Guides',
-  'Common Errors',
-  'Best Practices',
-  'Patterns / Recipes',
-];
-
-// Helper to get Lucide icon component by name
-function getDomainIcon(iconName: string) {
-  switch (iconName) {
-    case 'Code':
-      return Code;
-    case 'Layout':
-      return Layout;
-    case 'Database':
-      return Database;
-    case 'Sparkles':
-      return Sparkles;
-    default:
-      return BookOpen;
-  }
 }
 
 function getTopicIcon(iconName: string) {
@@ -84,38 +59,44 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 }) => {
   const dict = TRANSLATIONS[language];
 
-  // Taxonomy states
-  const [selectedDomain, setSelectedDomain] = useState<string>('all');
+  // Primary topic navigation state
   const [selectedTopic, setSelectedTopic] = useState<string>('all');
+
+  // Secondary taxonomy drawer states
+  const [selectedDomain, setSelectedDomain] = useState<string>('all');
   const [selectedBookType, setSelectedBookType] = useState<string>('all');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
-  // When domain changes, filter available topics
-  const availableTopics = useMemo(() => {
-    if (selectedDomain === 'all') {
-      return TOPICS;
-    }
-    return TOPICS.filter((t) => t.domainIds.includes(selectedDomain));
-  }, [selectedDomain]);
+  // Count active secondary filters (Domain, Book Type, Level)
+  const activeSecondaryFilterCount = useMemo(() => {
+    let count = 0;
+    if (selectedDomain !== 'all') count++;
+    if (selectedBookType !== 'all') count++;
+    if (selectedLevel !== 'all') count++;
+    return count;
+  }, [selectedDomain, selectedBookType, selectedLevel]);
 
-  // If currently selected topic does not belong to the selected domain, reset to all
-  const handleDomainSelect = (domainId: string) => {
-    setSelectedDomain(domainId);
-    if (domainId !== 'all') {
-      const topicBelongs = TOPICS.some(
-        (t) => t.id === selectedTopic && t.domainIds.includes(domainId)
-      );
-      if (!topicBelongs) {
-        setSelectedTopic('all');
-      }
-    }
-  };
+  // Check if any secondary filter or search query is active
+  const hasActiveSecondaryFilters = useMemo(() => {
+    return (
+      selectedDomain !== 'all' ||
+      selectedBookType !== 'all' ||
+      selectedLevel !== 'all' ||
+      searchQuery.trim().length > 0
+    );
+  }, [selectedDomain, selectedBookType, selectedLevel, searchQuery]);
 
-  // Filtered books
+  // Filtered books algorithm
   const filteredBooks = useMemo(() => {
     return books.filter((b) => {
-      // Domain filter
+      // Primary Topic filter
+      if (selectedTopic !== 'all' && b.categoryId !== selectedTopic) {
+        return false;
+      }
+
+      // Secondary Domain filter
       if (selectedDomain !== 'all') {
         const bookDomainIds = b.domainIds || [b.categoryId];
         if (!bookDomainIds.includes(selectedDomain)) {
@@ -123,22 +104,17 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
         }
       }
 
-      // Topic filter
-      if (selectedTopic !== 'all' && b.categoryId !== selectedTopic) {
-        return false;
-      }
-
-      // Book Type filter
+      // Secondary Book Type filter
       if (selectedBookType !== 'all' && b.bookType !== selectedBookType) {
         return false;
       }
 
-      // Level filter
+      // Secondary Level filter
       if (selectedLevel !== 'all' && b.level !== selectedLevel) {
         return false;
       }
 
-      // Search query
+      // Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesTitle = b.title.toLowerCase().includes(q);
@@ -163,296 +139,195 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
       return true;
     });
-  }, [books, selectedDomain, selectedTopic, selectedBookType, selectedLevel, searchQuery]);
+  }, [books, selectedTopic, selectedDomain, selectedBookType, selectedLevel, searchQuery]);
 
-  const activeDomainObj = DOMAINS.find((d) => d.id === selectedDomain);
-  const activeTopicObj = TOPICS.find((t) => t.id === selectedTopic);
-
-  const hasActiveFilters =
-    selectedDomain !== 'all' ||
-    selectedTopic !== 'all' ||
-    selectedBookType !== 'all' ||
-    selectedLevel !== 'all' ||
-    searchQuery.trim().length > 0;
-
-  const handleResetFilters = () => {
+  const handleResetSecondaryFilters = () => {
     setSelectedDomain('all');
+    setSelectedBookType('all');
+    setSelectedLevel('all');
+    setSearchQuery('');
+  };
+
+  const handleResetAllFilters = () => {
     setSelectedTopic('all');
+    setSelectedDomain('all');
     setSelectedBookType('all');
     setSelectedLevel('all');
     setSearchQuery('');
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      {/* Header Banner */}
-      <header className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold font-mono uppercase tracking-wider mb-4">
-          <BookOpen className="w-3.5 h-3.5" />
-          <span>{dict.hero.eyebrow}</span>
-        </div>
-        <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight mb-4">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      {/* 1. Header Introduction */}
+      <header className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight mb-2">
           {dict.hero.title}
         </h1>
-        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
+        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           {dict.hero.description}
         </p>
       </header>
 
-      {/* Hierarchical Filter Navigation Section */}
-      <section aria-label="Taxonomy Filters" className="space-y-5 mb-10">
-        {/* Search Bar */}
-        <div className="relative max-w-2xl mx-auto">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input
-            id="ebook-search-input"
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={dict.nav.searchPlaceholder}
-            className="w-full pl-11 pr-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs transition-all"
-          />
-        </div>
-
-        {/* Level 1: Domain Tabs */}
-        <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-          <button
-            type="button"
-            id="domain-filter-all"
-            onClick={() => handleDomainSelect('all')}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              selectedDomain === 'all'
-                ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-600/20'
-                : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>{dict.filter.allDomains}</span>
-          </button>
-
-          {DOMAINS.map((domain) => {
-            const Icon = getDomainIcon(domain.icon);
-            const isSelected = selectedDomain === domain.id;
-            return (
+      {/* 2. Primary Controls: Search + Filter Drawer Trigger */}
+      <section aria-label="Library Search and Controls" className="space-y-4 mb-6">
+        <div className="flex items-center gap-2 sm:gap-3 max-w-2xl mx-auto">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              id="ebook-search-input"
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={dict.nav.searchPlaceholder}
+              className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs transition-all"
+            />
+            {searchQuery && (
               <button
-                key={domain.id}
-                id={`domain-filter-${domain.id}`}
                 type="button"
-                onClick={() => handleDomainSelect(domain.id)}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-600/20'
-                    : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
-                }`}
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{domain.name[language]}</span>
+                <X className="w-4 h-4" />
               </button>
-            );
-          })}
-        </div>
+            )}
+          </div>
 
-        {/* Level 2: Topic Chips (Filtered by Selected Domain) */}
-        <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1">
+          {/* Secondary Filter Toggle Drawer Button */}
           <button
             type="button"
-            id="topic-filter-all"
-            onClick={() => setSelectedTopic('all')}
-            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-              selectedTopic === 'all'
-                ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
-                : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
+            id="toggle-filter-drawer-btn"
+            onClick={() => setIsFilterDrawerOpen(true)}
+            className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer shrink-0 ${
+              activeSecondaryFilterCount > 0
+                ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 shadow-xs ring-2 ring-blue-500/20'
+                : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
             }`}
           >
-            {dict.filter.allTopics}
+            <SlidersHorizontal className="w-4 h-4 text-blue-500" />
+            <span>{language === 'vi' ? 'Bộ Lọc' : 'Filters'}</span>
+            {activeSecondaryFilterCount > 0 && (
+              <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-blue-600 text-white text-[10px] font-mono">
+                {activeSecondaryFilterCount}
+              </span>
+            )}
           </button>
-
-          {availableTopics.map((topic) => {
-            const isSelected = selectedTopic === topic.id;
-            const TopicIcon = getTopicIcon(topic.icon);
-            return (
-              <button
-                key={topic.id}
-                id={`topic-filter-${topic.id}`}
-                type="button"
-                onClick={() => setSelectedTopic(topic.id)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
-                    : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
-                }`}
-              >
-                <TopicIcon className="w-3 h-3" />
-                <span>{topic.name[language]}</span>
-              </button>
-            );
-          })}
         </div>
 
-        {/* Level 3: Book Types & Level Filters */}
-        <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1">
-          <button
-            type="button"
-            id="booktype-filter-all"
-            onClick={() => setSelectedBookType('all')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-              selectedBookType === 'all'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
-            }`}
-          >
-            {dict.filter.allBookTypes}
-          </button>
-
-          {OFFICIAL_BOOK_TYPES.map((bt) => (
+        {/* 3. ONE Primary Navigation: Compact Topic Shelf */}
+        <div className="flex items-center justify-center overflow-x-auto py-1 px-1 scrollbar-none">
+          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-slate-100/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 max-w-full">
             <button
-              key={bt}
-              id={`booktype-filter-${bt.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
               type="button"
-              onClick={() => setSelectedBookType(bt)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                selectedBookType === bt
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
+              id="topic-nav-all"
+              onClick={() => setSelectedTopic('all')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                selectedTopic === 'all'
+                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs ring-1 ring-slate-200 dark:ring-slate-700'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              {dict.filter.bookTypes?.[bt] || bt}
+              {dict.filter.allTopics}
             </button>
-          ))}
 
-          <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block mx-1" />
-
-          {/* Level Filter */}
-          {['all', 'Foundational', 'Intermediate', 'Advanced'].map((lvl) => (
-            <button
-              key={lvl}
-              id={`level-filter-${lvl.toLowerCase()}`}
-              type="button"
-              onClick={() => setSelectedLevel(lvl)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                selectedLevel === lvl
-                  ? 'bg-slate-800 text-white dark:bg-white dark:text-slate-900'
-                  : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
-              }`}
-            >
-              {lvl === 'all' ? dict.filter.all : lvl}
-            </button>
-          ))}
+            {TOPICS.map((topic) => {
+              const isSelected = selectedTopic === topic.id;
+              const TopicIcon = getTopicIcon(topic.icon);
+              return (
+                <button
+                  key={topic.id}
+                  id={`topic-nav-${topic.id}`}
+                  type="button"
+                  onClick={() => setSelectedTopic(topic.id)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    isSelected
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
+                  }`}
+                >
+                  <TopicIcon className="w-3.5 h-3.5" />
+                  <span>{topic.name[language]}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Active Taxonomy Breadcrumbs & Quick Reset Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 px-2 text-xs font-mono text-slate-500 dark:text-slate-400 border-t border-slate-200/60 dark:border-slate-800/60">
-          <nav aria-label="Taxonomy Breadcrumb" className="flex flex-wrap items-center gap-1.5">
-            <span className="font-bold text-slate-700 dark:text-slate-300">
-              {EBOOK_FIELD.name[language]}
-            </span>
-            <ChevronRight className="w-3 h-3 text-slate-400" />
-            <span className={selectedDomain !== 'all' ? 'font-bold text-blue-600 dark:text-blue-400' : ''}>
-              {activeDomainObj ? activeDomainObj.name[language] : dict.filter.allDomains}
-            </span>
-            {activeTopicObj && (
-              <>
-                <ChevronRight className="w-3 h-3 text-slate-400" />
-                <span className="font-bold text-blue-600 dark:text-blue-400">
-                  {activeTopicObj.name[language]}
+        {/* 4. Active Filter Chips Bar (ONLY rendered when secondary filters or search are active) */}
+        {hasActiveSecondaryFilters && (
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 max-w-2xl mx-auto text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {selectedDomain !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono text-[11px] font-bold border border-blue-500/20">
+                  <span>{DOMAINS.find((d) => d.id === selectedDomain)?.name[language]}</span>
+                  <X
+                    className="w-3 h-3 cursor-pointer hover:text-blue-800"
+                    onClick={() => setSelectedDomain('all')}
+                  />
                 </span>
-              </>
-            )}
-            {selectedBookType !== 'all' && (
-              <>
-                <ChevronRight className="w-3 h-3 text-slate-400" />
-                <span className="font-semibold text-slate-700 dark:text-slate-300">
-                  {dict.filter.bookTypes?.[selectedBookType as BookType] || selectedBookType}
-                </span>
-              </>
-            )}
-            <span className="ml-1 text-slate-400">
-              ({filteredBooks.length} / {books.length} {dict.card.readTime === 'read' ? 'books' : 'cuốn'})
-            </span>
-          </nav>
+              )}
 
-          {hasActiveFilters && (
+              {selectedBookType !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[11px] font-semibold">
+                  <span>{dict.filter.bookTypes?.[selectedBookType as any] || selectedBookType}</span>
+                  <X
+                    className="w-3 h-3 cursor-pointer hover:text-slate-900"
+                    onClick={() => setSelectedBookType('all')}
+                  />
+                </span>
+              )}
+
+              {selectedLevel !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[11px] font-semibold">
+                  <span>{selectedLevel}</span>
+                  <X
+                    className="w-3 h-3 cursor-pointer hover:text-slate-900"
+                    onClick={() => setSelectedLevel('all')}
+                  />
+                </span>
+              )}
+
+              {searchQuery.trim() && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[11px] font-semibold">
+                  <span>&quot;{searchQuery}&quot;</span>
+                  <X
+                    className="w-3 h-3 cursor-pointer hover:text-slate-900"
+                    onClick={() => setSearchQuery('')}
+                  />
+                </span>
+              )}
+            </div>
+
             <button
               type="button"
-              id="reset-all-filters-btn"
-              onClick={handleResetFilters}
-              className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline cursor-pointer font-bold"
+              id="reset-secondary-filters-btn"
+              onClick={handleResetSecondaryFilters}
+              className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline cursor-pointer font-bold text-[11px]"
             >
               <RotateCcw className="w-3 h-3" />
               <span>{dict.filter.clearFilters}</span>
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </section>
 
-      {/* Book Grid */}
+      {/* 5. Main Visual Book Library Grid */}
       {filteredBooks.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-          {filteredBooks.map((book) => {
-            // Find topic and domain labels
-            const topic = TOPICS.find((t) => t.id === book.categoryId);
-            const domain = DOMAINS.find((d) =>
-              book.domainIds ? book.domainIds.includes(d.id) : d.topics.includes(book.categoryId)
-            );
-
-            return (
-              <article
-                key={book.id}
-                id={`book-card-${book.id}`}
-                onClick={() => onSelectBook(book)}
-                className="group relative flex flex-col justify-between rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-6 hover:border-blue-500/50 hover:shadow-md transition-all duration-200 cursor-pointer"
-              >
-                <div>
-                  {/* Eyebrow & Compact Contextual Badge */}
-                  <div className="flex items-center justify-between gap-3 mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 uppercase">
-                        {topic ? topic.name[language] : book.bookType}
-                      </span>
-                      <span className="text-[10px] font-mono font-medium text-slate-400">
-                        {dict.filter.bookTypes?.[book.bookType] || book.bookType}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 text-[11px] text-slate-400 font-mono shrink-0">
-                      <Clock className="w-3 h-3" />
-                      <span>{book.estimatedReadTime}</span>
-                    </div>
-                  </div>
-
-                  {/* Title and Subtitle */}
-                  <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1.5 leading-snug">
-                    {book.title}
-                  </h2>
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-3 line-clamp-2">
-                    {book.subtitle[language]}
-                  </p>
-
-                  {/* Description */}
-                  <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed mb-4">
-                    {book.description[language]}
-                  </p>
-                </div>
-
-                {/* Card Footer */}
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
-                  <span className="text-[11px] text-slate-400 font-mono">
-                    {book.chaptersCount} {dict.card.chapters} &bull; {book.level}
-                  </span>
-
-                  <span className="inline-flex items-center gap-1 font-bold text-xs text-blue-600 dark:text-blue-400 group-hover:translate-x-0.5 transition-transform">
-                    <span>{dict.card.startReading}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </span>
-                </div>
-              </article>
-            );
-          })}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
+          {filteredBooks.map((book) => (
+            <BookCard
+              key={book.id}
+              book={book}
+              language={language}
+              onSelectBook={onSelectBook}
+            />
+          ))}
         </div>
       ) : (
         /* Empty State */
-        <div className="text-center py-16 px-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-xl mx-auto">
+        <div className="text-center py-12 px-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-md mx-auto shadow-xs">
           <BookOpen className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 mb-1">
+          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">
             {dict.filter.noResults}
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
@@ -461,13 +336,28 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           <button
             type="button"
             id="empty-state-reset-btn"
-            onClick={handleResetFilters}
-            className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white cursor-pointer hover:bg-blue-500"
+            onClick={handleResetAllFilters}
+            className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white cursor-pointer hover:bg-blue-500 shadow-md shadow-blue-600/20"
           >
             {dict.filter.clearFilters}
           </button>
         </div>
       )}
+
+      {/* Filter Drawer Modal */}
+      <FilterDrawer
+        isOpen={isFilterDrawerOpen}
+        onClose={() => setIsFilterDrawerOpen(false)}
+        language={language}
+        selectedDomain={selectedDomain}
+        onSelectDomain={setSelectedDomain}
+        selectedBookType={selectedBookType}
+        onSelectBookType={setSelectedBookType}
+        selectedLevel={selectedLevel}
+        onSelectLevel={setSelectedLevel}
+        onResetFilters={handleResetAllFilters}
+        activeFilterCount={activeSecondaryFilterCount}
+      />
     </div>
   );
 };
