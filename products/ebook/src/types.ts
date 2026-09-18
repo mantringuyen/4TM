@@ -9,8 +9,37 @@ export type BookType =
   | 'Practical Guides'
   | 'Patterns / Recipes';
 
-export interface Category {
+export interface EbookField {
   id: string;
+  name: {
+    en: string;
+    vi: string;
+  };
+  description: {
+    en: string;
+    vi: string;
+  };
+  domains: string[];
+}
+
+export interface EbookDomain {
+  id: string;
+  fieldId: string;
+  name: {
+    en: string;
+    vi: string;
+  };
+  description: {
+    en: string;
+    vi: string;
+  };
+  topics: string[];
+  icon: string;
+}
+
+export interface EbookTopic {
+  id: string;
+  domainIds: string[];
   name: {
     en: string;
     vi: string;
@@ -21,6 +50,8 @@ export interface Category {
   };
   icon: string;
 }
+
+export type Category = EbookTopic;
 
 export interface Subject {
   id: string;
@@ -87,6 +118,9 @@ export interface Book {
     vi: string;
   };
   bookType: BookType;
+  fieldId?: string;
+  domainIds?: string[];
+  topicId?: string;
   categoryId: string;
   subjectId: string;
   author: string;

@@ -251,8 +251,8 @@ print(a)  # [1, 2, 3, 4] - mutated in place!`,
               vi: 'MRO (Method Resolution Order)',
             },
             content: {
-              en: 'MRO determines the order in which Python searches parent classes for a method during inheritance, calculated using the C3 Linearization algorithm.',
-              vi: 'MRO quyết định thứ tự Python tìm kiếm phương thức ở các lớp cha khi kế thừa, được tính toán bằng thuật toán C3 Linearization.',
+              en: 'MRO determines the order in which Python searches parent classes for a method during inheritance, calculated using C3 Linearization order.',
+              vi: 'MRO quyết định thứ tự Python tìm kiếm phương thức ở các lớp cha khi kế thừa, được xác định qua cơ chế C3 Linearization.',
             },
           },
         ],
@@ -780,8 +780,8 @@ def main():
           vi: 'Pattern Strategy & Observer Trong Python',
         },
         summary: {
-          en: 'Swap algorithm implementations dynamically using first-class functions.',
-          vi: 'Thay đổi thuật toán linh hoạt lúc runtime nhờ tận dụng First-Class Functions.',
+          en: 'Swap logic implementations dynamically using first-class functions.',
+          vi: 'Thay đổi chiến lược xử lý linh hoạt lúc runtime nhờ tận dụng First-Class Functions.',
         },
         readTimeMinutes: 18,
         sections: [

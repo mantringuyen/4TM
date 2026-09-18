@@ -44,7 +44,7 @@ export const AI_EBOOKS: Book[] = [
         },
         summary: {
           en: 'BPE tokenization, vocabulary maps, context windows, and high-dimensional vector spaces.',
-          vi: 'Thuật toán BPE tokenization, từ điển vocabulary, cửa sổ ngữ cảnh và không gian vectơ đa chiều.',
+          vi: 'Cơ chế BPE tokenization, từ điển vocabulary, cửa sổ ngữ cảnh và không gian vectơ đa chiều.',
         },
         readTimeMinutes: 13,
         sections: [
@@ -52,7 +52,7 @@ export const AI_EBOOKS: Book[] = [
             id: 'ai-fb-1-1',
             title: {
               en: 'Byte-Pair Encoding (BPE) Mechanics',
-              vi: 'Cơ Chế Hoạt Động Của Thuật Toán BPE',
+              vi: 'Cơ Chế Hoạt Động Của BPE',
             },
             content: {
               en: 'BPE iteratively merges the most frequent pairs of characters or bytes into unified subword tokens, balancing vocabulary size with out-of-vocabulary coverage.',
@@ -391,7 +391,7 @@ print(f"Token Count: {len(tokens)}")`,
         },
         summary: {
           en: 'Cosine Similarity, Euclidean Distance, Inner Product, and Hierarchical Navigable Small World (HNSW).',
-          vi: 'Cosine Similarity, khoảng cách Euclidean, tích trong Inner Product và thuật toán đồ thị HNSW.',
+          vi: 'Cosine Similarity, khoảng cách Euclidean, tích trong Inner Product và cấu trúc đồ thị HNSW.',
         },
         readTimeMinutes: 12,
         sections: [
@@ -460,7 +460,7 @@ print(f"Token Count: {len(tokens)}")`,
     tags: ['Hybrid Search', 'RAG Recipes', 'HyDE', 'Reciprocal Rank Fusion'],
     description: {
       en: 'Advanced RAG design patterns and recipes: Hybrid Search combining BM25 keyword matching with Dense Vector search via Reciprocal Rank Fusion (RRF), HyDE, and Parent-Child chunking.',
-      vi: 'Các mẫu thiết kế RAG nâng cao: Tìm kiếm lai (Hybrid Search) kết hợp BM25 từ khóa và Vector với thuật toán RRF, phương pháp HyDE và chia đoạn Parent-Child.',
+      vi: 'Các mẫu thiết kế RAG nâng cao: Tìm kiếm lai (Hybrid Search) kết hợp BM25 từ khóa và Vector với phương pháp RRF, phương pháp HyDE và chia đoạn Parent-Child.',
     },
     prerequisites: {
       en: ['Basic understanding of RAG architectures'],
@@ -468,7 +468,7 @@ print(f"Token Count: {len(tokens)}")`,
     },
     outcomes: {
       en: ['Combine keyword BM25 and Dense Vector search with RRF scoring', 'Implement Parent Document Retrievers for deep contextual generation'],
-      vi: ['Kết hợp tìm kiếm từ khóa BM25 và Vector bằng thuật toán RRF', 'Hiện thực Parent Document Retriever giúp giữ trọn vẹn ngữ cảnh đoạn văn'],
+      vi: ['Kết hợp tìm kiếm từ khóa BM25 và Vector bằng phương pháp RRF', 'Hiện thực Parent Document Retriever giúp giữ trọn vẹn ngữ cảnh đoạn văn'],
     },
     chapters: [
       {
@@ -477,7 +477,7 @@ print(f"Token Count: {len(tokens)}")`,
         slug: 'hybrid-search-rrf-recipe',
         title: {
           en: 'Hybrid Search with Reciprocal Rank Fusion (RRF)',
-          vi: 'Tìm Kiếm Lai (Hybrid Search) & Thuật Toán RRF',
+          vi: 'Tìm Kiếm Lai (Hybrid Search) & Phương Pháp RRF',
         },
         summary: {
           en: 'Combining full-text BM25 exact keyword match with dense embedding semantic search.',

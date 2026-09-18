@@ -22,8 +22,8 @@ export const CSS_EBOOKS: Book[] = [
     accentColor: 'from-blue-500 to-sky-700',
     tags: ['CSS3', 'Flexbox', 'Grid', 'Cascade', 'Box Model'],
     description: {
-      en: 'Comprehensive reference manual for CSS styling: the Cascade algorithm, inheritance, specificity calculation, Flexbox, CSS Grid, and custom properties.',
-      vi: 'Cẩm nang tra cứu CSS toàn diện: thuật toán Cascade, kế thừa, tính toán độ ưu tiên Specificity, Flexbox, CSS Grid và biến CSS custom properties.',
+      en: 'Comprehensive reference manual for CSS styling: the Cascade mechanism, inheritance, specificity calculation, Flexbox, CSS Grid, and custom properties.',
+      vi: 'Cẩm nang tra cứu CSS toàn diện: cơ chế Cascade, kế thừa, tính toán độ ưu tiên Specificity, Flexbox, CSS Grid và biến CSS custom properties.',
     },
     prerequisites: {
       en: ['Basic HTML layout concepts'],
@@ -40,7 +40,7 @@ export const CSS_EBOOKS: Book[] = [
         slug: 'cascade-and-specificity',
         title: {
           en: 'The Cascade, Specificity & Inheritance',
-          vi: 'Thuật Toán Cascade, Specificity & Kế Thừa',
+          vi: 'Cơ Chế Cascade, Specificity & Kế Thừa',
         },
         summary: {
           en: 'Understanding specificity points (Inline, ID, Class, Type) and origin importance.',
