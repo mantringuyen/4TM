@@ -13,7 +13,7 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
   const dict = TRANSLATIONS[language];
 
   return (
-    <footer className="w-full border-t border-slate-800 bg-slate-950 mt-auto transition-colors text-slate-400">
+    <footer className="w-full border-t border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 mt-auto transition-colors text-slate-600 dark:text-slate-400">
       {/* Bottom Ad Container Slot (Prepared for Ecosystem Ad Distribution, currently empty) */}
       <div
         id="bottom-ad-container"
