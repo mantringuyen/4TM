@@ -55,19 +55,140 @@ export const JAVASCRIPT_EBOOKS: Book[] = [
               vi: 'Giai Đoạn Khởi Tạo (Creation) vs Thực Thi (Execution)',
             },
             content: {
-              en: 'When a function is called, V8 creates an Execution Context in two passes: Creation Phase (allocating memory for variables/hoisting) and Execution Phase (evaluating assignment expressions).',
-              vi: 'Khi hàm được gọi, V8 tạo Execution Context qua 2 lượt: Giai đoạn Tạo (cấp phát ô nhớ/hoisting) và Giai đoạn Chạy (tính toán giá trị gán).',
+              en: 'When a function is called or a script begins, V8 creates an Execution Context in two distinct passes: the Creation Phase (allocating memory for variables/hoisting) and the Execution Phase (evaluating assignment expressions line-by-line).\n\nDuring the Creation Phase, V8 creates the Global or Function Execution Context, instantiates the Lexical Environment, sets up the scope chain, and binds the `this` keyword. Function declarations are fully stored in memory, while `var` variables are hoisted with an initial value of `undefined`. Variables declared with `let` and `const` are also hoisted, but they enter the Temporal Dead Zone (TDZ) and cannot be accessed until their declaration statement executes.',
+              vi: 'Khi một hàm được gọi hoặc kịch bản bắt đầu, V8 khởi tạo một Execution Context qua 2 giai đoạn riêng biệt: Giai đoạn Khởi tạo (Creation Phase - cấp phát ô nhớ cho biến/hoisting) và Giai đoạn Thực thi (Execution Phase - tính toán giá trị gán từng dòng).\n\nTrong Giai đoạn Khởi tạo, V8 tạo Global hoặc Function Execution Context, khởi tạo Lexical Environment, thiết lập chuỗi scope chain và xác định giá trị từ khóa `this`. Khai báo hàm (Function Declaration) được lưu trọn vẹn vào bộ nhớ, còn biến `var` được hoisted với giá trị ban đầu là `undefined`. Các biến khai báo bằng `let` và `const` cũng được hoisted, nhưng rơi vào Vùng Chết Thời Gian (TDZ) và không thể truy cập trước dòng khai báo.',
+            },
+            keyIdea: {
+              en: 'V8 parses code before running it. In Creation Phase, functions are fully hoisted into memory, `var` is hoisted as `undefined`, and `let`/`const` enter the Temporal Dead Zone (TDZ).',
+              vi: 'V8 quét mã nguồn trước khi thực thi. Trong Giai đoạn Khởi tạo, khai báo hàm được nạp trọn vẹn vào bộ nhớ, `var` nhận giá trị `undefined`, còn `let`/`const` rơi vào Temporal Dead Zone (TDZ).',
+            },
+            whenToUse: {
+              en: 'Use function declarations or ES Modules when top-level hoisting is desirable. Use `const` and `let` inside block scopes to prevent unintended variable leakage or scope mutation bugs.',
+              vi: 'Sử dụng khai báo hàm hoặc ES Modules khi cần hoisting mức toàn cục. Sử dụng `const` và `let` trong phạm vi khối để tránh lọt biến ngoài ý muốn.',
+            },
+            commonMistakes: [
+              {
+                mistake: {
+                  en: 'Accessing a `let` or `const` variable before its line of declaration assuming it behaves like `var`.',
+                  vi: 'Truy cập biến `let` hoặc `const` trước dòng khai báo vì tưởng nó hoạt động giống `var`.',
+                },
+                why: {
+                  en: 'Unlike `var` which initializes as `undefined`, `let` and `const` remain uninitialized in the TDZ. Reading them throws a `ReferenceError`.',
+                  vi: 'Khác với `var` được gán sẵn `undefined`, `let` và `const` nằm ở trạng thái chưa khởi tạo trong TDZ, gây ra lỗi `ReferenceError`.',
+                },
+                solution: {
+                  en: 'Always declare variables at the top of their enclosing block or scope before reading them.',
+                  vi: 'Luôn khai báo biến ở đầu phạm vi khối trước khi đọc giá trị của chúng.',
+                },
+              },
+            ],
+            comparisonTable: {
+              headers: {
+                en: ['Feature', 'var', 'let', 'const'],
+                vi: ['Đặc Tính', 'var', 'let', 'const'],
+              },
+              rows: [
+                {
+                  feature: { en: 'Scope Level', vi: 'Phạm Vi Scope' },
+                  optionA: { en: 'Function / Global Scope', vi: 'Function / Global Scope' },
+                  optionB: { en: 'Block Scope ({...})', vi: 'Block Scope ({...})' },
+                  optionC: { en: 'Block Scope ({...})', vi: 'Block Scope ({...})' },
+                },
+                {
+                  feature: { en: 'Hoisting Behavior', vi: 'Hành Vi Hoisting' },
+                  optionA: { en: 'Hoisted with undefined', vi: 'Hoisted gán undefined' },
+                  optionB: { en: 'Hoisted into TDZ (ReferenceError)', vi: 'Hoisted vào TDZ (ReferenceError)' },
+                  optionC: { en: 'Hoisted into TDZ (ReferenceError)', vi: 'Hoisted vào TDZ (ReferenceError)' },
+                },
+                {
+                  feature: { en: 'Re-declaration', vi: 'Khai Báo Lại' },
+                  optionA: { en: 'Allowed in same scope', vi: 'Cho phép cùng scope' },
+                  optionB: { en: 'SyntaxError', vi: 'Lỗi SyntaxError' },
+                  optionC: { en: 'SyntaxError', vi: 'Lỗi SyntaxError' },
+                },
+                {
+                  feature: { en: 'Re-assignment', vi: 'Gán Lại Giá Trị' },
+                  optionA: { en: 'Allowed', vi: 'Cho phép' },
+                  optionB: { en: 'Allowed', vi: 'Cho phép' },
+                  optionC: { en: 'TypeError (Re-assignment forbidden)', vi: 'Lỗi TypeError (Cấm gán lại)' },
+                },
+              ],
+            },
+            diagram: {
+              title: {
+                en: 'V8 Engine Code Execution Pipeline',
+                vi: 'Quy Trình Thực Thi Mã Nguồn Trong V8 Engine',
+              },
+              steps: [
+                {
+                  stepNumber: 1,
+                  title: { en: 'Parsing & AST', vi: 'Phân Tích & Tạo AST' },
+                  description: {
+                    en: 'V8 Scanner tokenizes raw JS code into Abstract Syntax Tree (AST) nodes.',
+                    vi: 'V8 Scanner chuyển mã JS thô thành các node Cây Cú Pháp Trừu Tượng (AST).',
+                  },
+                },
+                {
+                  stepNumber: 2,
+                  title: { en: 'Ignition Interpreter', vi: 'Thông Dịch Viên Ignition' },
+                  description: {
+                    en: 'Ignition generates bytecode and creates Execution Contexts (Creation Phase).',
+                    vi: 'Ignition biên dịch AST thành bytecode và khởi tạo Execution Contexts (Creation Phase).',
+                  },
+                },
+                {
+                  stepNumber: 3,
+                  title: { en: 'Turbofan JIT Compiler', vi: 'Trình Biên Dịch Turbofan JIT' },
+                  description: {
+                    en: 'Turbofan optimizes hot bytecode paths into machine-level binary code.',
+                    vi: 'Turbofan tối ưu hóa các đoạn code chạy thường xuyên (hot paths) thành mã máy.',
+                  },
+                },
+              ],
             },
             codeBlock: {
               language: 'javascript',
               filename: 'execution_context.js',
-              code: `console.log(greet); // undefined (hoisted variable)
+              code: `console.log(greet); // undefined (hoisted var)
 var greet = "Hello 4TM";
 
 sayHello(); // Works! (hoisted function declaration)
 function sayHello() {
-  console.log("Function hoisted!");
-}`,
+  console.log("Function hoisted fully!");
+}
+
+// console.log(counter); // Uncaught ReferenceError: Cannot access 'counter' before initialization
+let counter = 10;`,
+            },
+            bestPractices: {
+              en: [
+                'Default to `const` for all variable bindings to communicate immutability intent.',
+                'Use `let` strictly when variable value re-assignment is required (e.g. accumulator loops).',
+                'Avoid `var` in modern JavaScript codebases to prevent scope bleeding and silent overwrites.',
+              ],
+              vi: [
+                'Mặc định sử dụng `const` cho mọi biến để thể hiện rõ ý định bất biến.',
+                'Chỉ dùng `let` khi thực sự cần gán lại giá trị biến (ví dụ: biến đếm vòng lặp).',
+                'Bỏ hoàn toàn `var` trong dự án hiện đại để tránh rò rỉ scope và ghi đè âm thầm.',
+              ],
+            },
+            practicalScenario: {
+              title: {
+                en: 'High-Concurrency Node.js Microservices',
+                vi: 'Microservices Node.js Tải Cao',
+              },
+              description: {
+                en: 'Understanding V8 execution contexts and lexical closures prevents memory leaks caused by lingering scope references in long-lived server callbacks.',
+                vi: 'Hiểu rõ V8 execution context giúp phòng tránh rò rỉ bộ nhớ từ các tham chiếu scope tồn đọng trong callback của máy chủ server.',
+              },
+            },
+            relatedConcepts: ['V8 Engine', 'Temporal Dead Zone', 'Scope Chain', 'Lexical Environment'],
+            studyLink: {
+              topicSlug: 'javascript',
+              label: {
+                en: 'Practice V8 & Scope questions in 4TM Study',
+                vi: 'Luyện câu hỏi V8 & Scope trên 4TM Study',
+              },
             },
           },
         ],

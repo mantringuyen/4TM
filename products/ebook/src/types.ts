@@ -76,6 +76,28 @@ export interface CodeBlock {
   };
 }
 
+export interface CommonMistakeItem {
+  mistake: { en: string; vi: string };
+  why: { en: string; vi: string };
+  solution: { en: string; vi: string };
+  codeIncorrect?: string;
+  codeCorrect?: string;
+}
+
+export interface ComparisonMatrix {
+  headers: { en: string; vi: string }[];
+  rows: { en: string[]; vi: string[] }[];
+}
+
+export interface ProcessDiagram {
+  title: { en: string; vi: string };
+  steps: {
+    number: number;
+    label: { en: string; vi: string };
+    description: { en: string; vi: string };
+  }[];
+}
+
 export interface ChapterSection {
   id: string;
   title: {
@@ -86,7 +108,34 @@ export interface ChapterSection {
     en: string;
     vi: string;
   };
+  keyIdea?: {
+    en: string;
+    vi: string;
+  };
   codeBlock?: CodeBlock;
+  whenToUse?: {
+    use: { en: string[]; vi: string[] };
+    avoid?: { en: string[]; vi: string[] };
+  };
+  commonMistakes?: CommonMistakeItem[];
+  comparisonTable?: ComparisonMatrix;
+  diagram?: ProcessDiagram;
+  bestPractices?: {
+    en: string[];
+    vi: string[];
+  };
+  practicalScenario?: {
+    en: string;
+    vi: string;
+  };
+  relatedConcepts?: {
+    en: string[];
+    vi: string[];
+  };
+  studyLink?: {
+    topicSlug: string;
+    label: { en: string; vi: string };
+  };
   keyTakeaways?: {
     en: string[];
     vi: string[];

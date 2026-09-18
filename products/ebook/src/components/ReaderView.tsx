@@ -11,6 +11,16 @@ import {
 import { DOMAINS, TOPICS, EBOOK_FIELD } from '../data/ebooks';
 import { TRANSLATIONS } from '../i18n/translations';
 import {
+  KeyIdeaBlock,
+  WhenToUseBlock,
+  CommonMistakesBlock,
+  ComparisonTableBlock,
+  ProcessDiagramBlock,
+  BestPracticesBlock,
+  PracticalScenarioBlock,
+  RelatedConceptsBlock,
+} from './EditorialPrimitives';
+import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
@@ -683,6 +693,31 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                     {renderFormattedText(section.content[language])}
                   </div>
 
+                  {/* KEY IDEA BLOCK */}
+                  {section.keyIdea && (
+                    <KeyIdeaBlock idea={section.keyIdea} language={language} theme={settings.paperTheme} />
+                  )}
+
+                  {/* WHEN TO USE BLOCK */}
+                  {section.whenToUse && (
+                    <WhenToUseBlock whenToUse={section.whenToUse} language={language} theme={settings.paperTheme} />
+                  )}
+
+                  {/* COMPARISON TABLE */}
+                  {section.comparisonTable && (
+                    <ComparisonTableBlock matrix={section.comparisonTable} language={language} theme={settings.paperTheme} />
+                  )}
+
+                  {/* PROCESS DIAGRAM */}
+                  {section.diagram && (
+                    <ProcessDiagramBlock diagram={section.diagram} language={language} theme={settings.paperTheme} />
+                  )}
+
+                  {/* COMMON MISTAKES BLOCK */}
+                  {section.commonMistakes && (
+                    <CommonMistakesBlock mistakes={section.commonMistakes} language={language} theme={settings.paperTheme} />
+                  )}
+
                   {/* CODE BLOCK (Strictly follows theme settings; Light in Light mode, Dark in Dark mode) */}
                   {section.codeBlock && (
                     <div
@@ -736,6 +771,26 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                         </div>
                       )}
                     </div>
+                  )}
+
+                  {/* PRACTICAL SCENARIO */}
+                  {section.practicalScenario && (
+                    <PracticalScenarioBlock scenario={section.practicalScenario} language={language} theme={settings.paperTheme} />
+                  )}
+
+                  {/* BEST PRACTICES */}
+                  {section.bestPractices && (
+                    <BestPracticesBlock practices={section.bestPractices} language={language} theme={settings.paperTheme} />
+                  )}
+
+                  {/* RELATED CONCEPTS & STUDY LINK */}
+                  {section.relatedConcepts && (
+                    <RelatedConceptsBlock
+                      concepts={section.relatedConcepts}
+                      studyLink={section.studyLink}
+                      language={language}
+                      theme={settings.paperTheme}
+                    />
                   )}
 
                   {/* KEY ENGINEERING TAKEAWAYS CALLOUT */}
