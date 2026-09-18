@@ -38,19 +38,22 @@ export const ProductSwitcher: React.FC<ProductSwitcherProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
+
+    const handleOutsideInteraction = (e: Event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
     };
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setIsOpen(false);
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('pointerdown', handleOutsideInteraction);
     document.addEventListener('keydown', handleKeyDown);
+
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('pointerdown', handleOutsideInteraction);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen]);
@@ -72,9 +75,9 @@ export const ProductSwitcher: React.FC<ProductSwitcherProps> = ({
       {isOpen && (
         <div
           role="listbox"
-          className="absolute left-0 mt-2 w-64 py-2 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 z-50 animate-in fade-in zoom-in-95 duration-100 overflow-hidden"
+          className="absolute left-0 mt-2 w-64 py-2 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-700/80 ring-1 ring-black/5 dark:ring-white/10 opacity-100 z-50 animate-in fade-in zoom-in-95 duration-100 overflow-hidden"
         >
-          <div className="px-3.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800/80 mb-1">
+          <div className="px-3.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800/80 mb-1">
             4TM Digital Ecosystem
           </div>
 
@@ -89,8 +92,8 @@ export const ProductSwitcher: React.FC<ProductSwitcherProps> = ({
                   onClick={() => setIsOpen(false)}
                   className={`w-full flex items-start justify-between px-3 py-2 rounded-xl text-left transition-colors cursor-pointer ${
                     isSelected
-                      ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 font-bold'
-                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80'
+                      ? 'bg-blue-50 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 font-bold border border-blue-500/20'
+                      : 'text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/90'
                   }`}
                 >
                   <div className="space-y-0.5">

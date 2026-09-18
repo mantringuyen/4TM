@@ -28,13 +28,15 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   showText = true,
   showMark = true,
   className = '',
-  href = !productName ? '/' : undefined,
+  href,
   onClick,
-  as = (href !== undefined || !productName) ? 'a' : onClick ? 'button' : 'div',
+  as,
 }) => {
   const getProductLabel = (name?: string): string => {
     if (name && name.trim()) {
-      return name.trim().toLowerCase();
+      const lower = name.trim().toLowerCase();
+      if (lower === '4tm' || lower === 'hub' || lower === 'ecosystem') return 'ecosystem';
+      return lower;
     }
     if (typeof window !== 'undefined' && window.location?.hostname) {
       const host = window.location.hostname.toLowerCase();
@@ -50,23 +52,29 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   const label = getProductLabel(productName);
   const accent = getProductAccent(label);
 
+  const resolvedHref = href !== undefined ? href : (onClick ? undefined : '/');
+  const resolvedAs = as || (onClick ? 'button' : (resolvedHref ? 'a' : 'div'));
+
   const sizeClasses = {
     sm: {
       mark: 'w-7 h-7 rounded-[7px] p-[1.5px]',
       inner: 'rounded-[5.5px]',
-      text: 'text-[11px] tracking-tight font-black',
+      markText: 'text-[11px] tracking-tight font-black',
+      brandText: 'text-xs tracking-tight font-black',
       badge: 'text-[10px] px-1.5 py-0.5',
     },
     md: {
       mark: 'w-9 h-9 rounded-[9px] p-[1.5px]',
       inner: 'rounded-[7.5px]',
-      text: 'text-[13px] tracking-tight font-black',
+      markText: 'text-[13px] tracking-tight font-black',
+      brandText: 'text-sm tracking-tight font-black',
       badge: 'text-xs px-2 py-0.5',
     },
     lg: {
       mark: 'w-12 h-12 rounded-[12px] p-[2px]',
       inner: 'rounded-[10px]',
-      text: 'text-[17px] tracking-tight font-black',
+      markText: 'text-[17px] tracking-tight font-black',
+      brandText: 'text-lg tracking-tight font-black',
       badge: 'text-sm px-2.5 py-1',
     },
   }[size];
@@ -85,8 +93,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           <div
             className={`w-full h-full bg-[#090D16] dark:bg-[#070A10] flex items-center justify-center select-none ${sizeClasses.inner}`}
           >
-            {/* Clean, bold solid white 4TM lettering */}
-            <span className={`text-white leading-none ${sizeClasses.text}`}>
+            {/* Clean, bold solid white 4TM lettering inside mark */}
+            <span className={`text-white leading-none ${sizeClasses.markText}`}>
               4TM
             </span>
           </div>
@@ -94,7 +102,10 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       )}
 
       {showText && (
-        <div className="flex items-center leading-none">
+        <div className="flex items-center gap-1.5 leading-none">
+          <span className={`text-slate-900 dark:text-white ${sizeClasses.brandText}`}>
+            4TM
+          </span>
           <span
             className={`rounded-lg border font-bold lowercase tracking-wider ${accent.classes.badge} ${sizeClasses.badge}`}
           >
@@ -106,12 +117,12 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   );
 
   const containerClasses = `inline-flex items-center gap-2.5 group cursor-pointer select-none text-left ${className}`;
-  const ariaLabel = label === 'ecosystem' ? '4TM Ecosystem' : `${label} — 4TM`;
+  const ariaLabel = label === 'ecosystem' ? '4TM Ecosystem' : `4TM ${label}`;
 
-  if (as === 'a' || (href && as !== 'button' && as !== 'div')) {
+  if (resolvedAs === 'a') {
     return (
       <a
-        href={href !== undefined ? href : 'https://4tm.io.vn'}
+        href={resolvedHref || '/'}
         onClick={onClick}
         className={containerClasses}
         aria-label={ariaLabel}
@@ -121,7 +132,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     );
   }
 
-  if (as === 'button' || onClick) {
+  if (resolvedAs === 'button') {
     return (
       <button
         type="button"
