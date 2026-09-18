@@ -52,7 +52,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   const label = getProductLabel(productName);
   const accent = getProductAccent(label);
 
-  const resolvedHref = href !== undefined ? href : (onClick ? undefined : '/');
+  const resolvedHref = (href && href !== '#') ? href : (onClick ? undefined : '/');
   const resolvedAs = as || (onClick ? 'button' : (resolvedHref ? 'a' : 'div'));
 
   const sizeClasses = {
@@ -60,21 +60,18 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       mark: 'w-7 h-7 rounded-[7px] p-[1.5px]',
       inner: 'rounded-[5.5px]',
       markText: 'text-[11px] tracking-tight font-black',
-      brandText: 'text-xs tracking-tight font-black',
       badge: 'text-[10px] px-1.5 py-0.5',
     },
     md: {
       mark: 'w-9 h-9 rounded-[9px] p-[1.5px]',
       inner: 'rounded-[7.5px]',
       markText: 'text-[13px] tracking-tight font-black',
-      brandText: 'text-sm tracking-tight font-black',
       badge: 'text-xs px-2 py-0.5',
     },
     lg: {
       mark: 'w-12 h-12 rounded-[12px] p-[2px]',
       inner: 'rounded-[10px]',
       markText: 'text-[17px] tracking-tight font-black',
-      brandText: 'text-lg tracking-tight font-black',
       badge: 'text-sm px-2.5 py-1',
     },
   }[size];
@@ -102,10 +99,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       )}
 
       {showText && (
-        <div className="flex items-center gap-1.5 leading-none">
-          <span className={`text-slate-900 dark:text-white ${sizeClasses.brandText}`}>
-            4TM
-          </span>
+        <div className="flex items-center leading-none">
           <span
             className={`rounded-lg border font-bold lowercase tracking-wider ${accent.classes.badge} ${sizeClasses.badge}`}
           >

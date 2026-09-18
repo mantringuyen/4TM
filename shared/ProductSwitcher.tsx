@@ -49,11 +49,13 @@ export const ProductSwitcher: React.FC<ProductSwitcherProps> = ({
       if (e.key === 'Escape') setIsOpen(false);
     };
 
-    document.addEventListener('pointerdown', handleOutsideInteraction);
+    document.addEventListener('pointerdown', handleOutsideInteraction, true);
+    document.addEventListener('touchstart', handleOutsideInteraction, true);
     document.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      document.removeEventListener('pointerdown', handleOutsideInteraction);
+      document.removeEventListener('pointerdown', handleOutsideInteraction, true);
+      document.removeEventListener('touchstart', handleOutsideInteraction, true);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen]);
