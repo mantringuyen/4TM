@@ -38,7 +38,7 @@ export const PlayView: React.FC<PlayViewProps> = ({ game, language, onBackToCata
         type="button"
         id="game-back-btn"
         onClick={onBackToCatalog}
-        className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-rose-400 transition-colors mb-6 cursor-pointer"
+        className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors mb-6 cursor-pointer"
       >
         <ArrowLeft className="w-4 h-4" />
         <span>{dict.playView.backToCatalog}</span>
@@ -47,21 +47,21 @@ export const PlayView: React.FC<PlayViewProps> = ({ game, language, onBackToCata
       {/* Arena Title Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono text-rose-400 font-bold uppercase mb-1">
+          <div className="flex items-center gap-2 text-xs font-mono text-rose-700 dark:text-rose-400 font-bold uppercase mb-1">
             <span>{game.genre[language]}</span>
             <span>&bull;</span>
             <span>{game.badge}</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
             {game.title}
           </h1>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-mono border border-slate-700">
+          <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-mono border border-slate-200 dark:border-slate-700">
             {game.difficulty}
           </span>
-          <span className="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-mono border border-slate-700">
+          <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-mono border border-slate-200 dark:border-slate-700">
             Est: {game.playEstimate}
           </span>
         </div>
@@ -72,20 +72,20 @@ export const PlayView: React.FC<PlayViewProps> = ({ game, language, onBackToCata
 
       {/* Instructions & Controls Guide */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
-          <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-rose-400 flex items-center gap-2">
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-xs">
+          <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400 flex items-center gap-2">
             <ShieldCheck className="w-4 h-4" />
             <span>{dict.playView.howToPlay}</span>
           </h3>
-          <p className="text-xs text-slate-300 leading-relaxed">{game.objective[language]}</p>
+          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{game.objective[language]}</p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
-          <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-2">
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-xs">
+          <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400 flex items-center gap-2">
             <Zap className="w-4 h-4" />
             <span>{dict.playView.controls}</span>
           </h3>
-          <ul className="space-y-1 text-xs text-slate-300 list-disc list-inside">
+          <ul className="space-y-1 text-xs text-slate-600 dark:text-slate-300 list-disc list-inside">
             {game.controls[language].map((ctrl, idx) => (
               <li key={idx}>{ctrl}</li>
             ))}

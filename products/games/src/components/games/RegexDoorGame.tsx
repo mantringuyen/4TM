@@ -114,14 +114,14 @@ export const RegexDoorGame: React.FC<RegexDoorGameProps> = ({ language }) => {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto p-4 sm:p-6 bg-slate-900 border border-slate-800 rounded-3xl text-white shadow-xl">
+    <div className="space-y-6 max-w-2xl mx-auto p-4 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl text-slate-900 dark:text-white shadow-lg">
       {/* Header Bar */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
         <div>
-          <span className="text-xs font-mono text-rose-400 font-bold uppercase tracking-wider">
+          <span className="text-xs font-mono text-rose-700 dark:text-rose-400 font-bold uppercase tracking-wider">
             Vault Room {room.roomNumber} of {ROOMS.length}
           </span>
-          <h3 className="text-lg font-black tracking-tight">
+          <h3 className="text-lg font-black tracking-tight text-slate-900 dark:text-white">
             {language === 'vi' ? 'Giải Mã Cửa Bảo Mật Regex' : 'Regex Vault Gatekeeper'}
           </h3>
         </div>
@@ -129,7 +129,7 @@ export const RegexDoorGame: React.FC<RegexDoorGameProps> = ({ language }) => {
         <button
           type="button"
           onClick={handleReset}
-          className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+          className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
           title="Reset"
         >
           <RefreshCw className="w-4 h-4" />
@@ -138,11 +138,11 @@ export const RegexDoorGame: React.FC<RegexDoorGameProps> = ({ language }) => {
 
       {isVictory ? (
         <div className="p-8 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-center space-y-4">
-          <Trophy className="w-12 h-12 text-rose-400 mx-auto animate-bounce" />
-          <h4 className="text-2xl font-black text-rose-400">
+          <Trophy className="w-12 h-12 text-rose-600 dark:text-rose-400 mx-auto animate-bounce" />
+          <h4 className="text-2xl font-black text-rose-700 dark:text-rose-400">
             {language === 'vi' ? 'TOÀN BỘ CỬA BẢO MẬT ĐÃ MỞ!' : 'ALL VAULTS BREACHED!'}
           </h4>
-          <p className="text-xs text-slate-300 font-mono">
+          <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">
             You successfully navigated all 3 challenge security doors using verified regular expressions!
           </p>
           <button
@@ -156,22 +156,22 @@ export const RegexDoorGame: React.FC<RegexDoorGameProps> = ({ language }) => {
       ) : (
         <div className="space-y-5">
           {/* Mission Objective */}
-          <div className="p-4 rounded-2xl bg-slate-800/60 border border-slate-800 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-mono text-rose-400 font-bold uppercase">
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-mono text-rose-700 dark:text-rose-400 font-bold uppercase">
               <ShieldAlert className="w-4 h-4" />
               <span>Door #{room.roomNumber} Security Protocol</span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-200">{room.mission[language]}</p>
+            <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200">{room.mission[language]}</p>
           </div>
 
           {/* Regex Input Field */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-mono text-slate-400">
+            <div className="flex items-center justify-between text-xs font-mono text-slate-600 dark:text-slate-400">
               <span>Pattern: /.../</span>
               <button
                 type="button"
                 onClick={() => setShowHint(!showHint)}
-                className="text-slate-400 hover:text-rose-400 underline cursor-pointer"
+                className="text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 underline cursor-pointer"
               >
                 {showHint ? 'Hide Hint' : 'Show Hint'}
               </button>
@@ -183,16 +183,16 @@ export const RegexDoorGame: React.FC<RegexDoorGameProps> = ({ language }) => {
                 value={regexInput}
                 onChange={(e) => setRegexInput(e.target.value)}
                 placeholder="e.g. ^[a-zA-Z0-9_]+$"
-                className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-rose-400 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 shadow-inner"
+                className="w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-rose-700 dark:text-rose-400 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 shadow-xs"
               />
             </div>
 
             {regexError && (
-              <p className="text-[11px] text-rose-400 font-mono">Syntax error: {regexError}</p>
+              <p className="text-[11px] text-rose-600 dark:text-rose-400 font-mono">Syntax error: {regexError}</p>
             )}
 
             {showHint && (
-              <div className="p-2.5 rounded-lg bg-rose-950/30 border border-rose-800/50 text-xs font-mono text-rose-300">
+              <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/50 text-xs font-mono text-rose-800 dark:text-rose-300">
                 Hint pattern: <code className="font-bold">{room.hint}</code>
               </div>
             )}
@@ -200,7 +200,7 @@ export const RegexDoorGame: React.FC<RegexDoorGameProps> = ({ language }) => {
 
           {/* Test Cases Matrix */}
           <div className="space-y-2">
-            <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+            <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400 uppercase tracking-wider">
               Verification Test Cases ({results.filter((r) => r.passed).length}/{room.testCases.length})
             </span>
 
@@ -210,21 +210,21 @@ export const RegexDoorGame: React.FC<RegexDoorGameProps> = ({ language }) => {
                   key={idx}
                   className={`p-2.5 rounded-xl border flex items-center justify-between text-xs font-mono transition-colors ${
                     tc.passed
-                      ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
-                      : 'bg-slate-800/60 border-slate-700 text-slate-400'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-300'
+                      : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
                   }`}
                 >
                   <div className="space-x-2 truncate mr-2">
-                    <span className="text-white font-bold">{tc.input}</span>
+                    <span className="text-slate-900 dark:text-white font-bold">{tc.input}</span>
                     <span className="text-[10px] opacity-70">
                       ({tc.shouldMatch ? 'must match' : 'must reject'})
                     </span>
                   </div>
 
                   {tc.passed ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   ) : (
-                    <XCircle className="w-4 h-4 text-slate-600 shrink-0" />
+                    <XCircle className="w-4 h-4 text-slate-400 dark:text-slate-600 shrink-0" />
                   )}
                 </div>
               ))}
@@ -239,7 +239,7 @@ export const RegexDoorGame: React.FC<RegexDoorGameProps> = ({ language }) => {
             className={`w-full py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
               allPassed
                 ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30'
-                : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-200 dark:border-slate-700'
             }`}
           >
             {allPassed ? (

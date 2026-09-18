@@ -142,28 +142,28 @@ export const SortingVisualizerGame: React.FC<SortingVisualizerGameProps> = ({ la
   };
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto p-4 sm:p-6 bg-slate-900 border border-slate-800 rounded-3xl text-white shadow-xl">
+    <div className="space-y-6 max-w-2xl mx-auto p-4 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl text-slate-900 dark:text-white shadow-lg">
       {/* Header Bar */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
         <div>
-          <span className="text-xs font-mono text-amber-400 font-bold uppercase tracking-wider">
+          <span className="text-xs font-mono text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider">
             N = 20 Elements
           </span>
-          <h3 className="text-lg font-black tracking-tight">
+          <h3 className="text-lg font-black tracking-tight text-slate-900 dark:text-white">
             {language === 'vi' ? 'Đấu Trường Thuật Toán Sắp Xếp' : 'Sorting Algorithm Visualizer'}
           </h3>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="px-3 py-1 rounded-xl bg-slate-800 border border-slate-700 text-xs font-mono">
-            <span className="text-slate-400">Comps: </span>
-            <span className="font-bold text-amber-400">{comparisons}</span>
+          <div className="px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono">
+            <span className="text-slate-500 dark:text-slate-400">Comps: </span>
+            <span className="font-bold text-amber-600 dark:text-amber-400">{comparisons}</span>
           </div>
 
           <button
             type="button"
             onClick={generateRandomArray}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
             title="Shuffle"
           >
             <RefreshCw className="w-4 h-4" />
@@ -173,7 +173,7 @@ export const SortingVisualizerGame: React.FC<SortingVisualizerGameProps> = ({ la
 
       {/* Algorithm Selector & Controls */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-800 border border-slate-700 text-xs">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
           {(['bubble', 'selection', 'insertion'] as AlgorithmType[]).map((alg) => (
             <button
               key={alg}
@@ -182,8 +182,8 @@ export const SortingVisualizerGame: React.FC<SortingVisualizerGameProps> = ({ la
               onClick={() => setAlgorithm(alg)}
               className={`px-2.5 py-1 rounded-lg font-bold transition-colors cursor-pointer capitalize ${
                 algorithm === alg
-                  ? 'bg-amber-500 text-slate-950 shadow-sm'
-                  : 'text-slate-400 hover:text-white disabled:opacity-50'
+                  ? 'bg-amber-500 text-slate-950 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-50'
               }`}
             >
               {alg} Sort
@@ -192,7 +192,7 @@ export const SortingVisualizerGame: React.FC<SortingVisualizerGameProps> = ({ la
         </div>
 
         {/* Speed Slider */}
-        <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+        <div className="flex items-center gap-2 text-xs font-mono text-slate-600 dark:text-slate-400">
           <span>Speed:</span>
           <input
             type="range"
@@ -211,7 +211,7 @@ export const SortingVisualizerGame: React.FC<SortingVisualizerGameProps> = ({ la
           onClick={startSort}
           className={`px-4 py-2 rounded-xl font-bold text-xs inline-flex items-center gap-2 cursor-pointer transition-all ${
             isPlaying
-              ? 'bg-rose-600 hover:bg-rose-500 text-white'
+              ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-md shadow-rose-600/20'
               : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20'
           }`}
         >
@@ -221,7 +221,7 @@ export const SortingVisualizerGame: React.FC<SortingVisualizerGameProps> = ({ la
       </div>
 
       {/* Visualizer Canvas / Bar Chart */}
-      <div className="h-48 sm:h-56 w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 flex items-end justify-between gap-1 sm:gap-1.5">
+      <div className="h-48 sm:h-56 w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-2xl p-4 flex items-end justify-between gap-1 sm:gap-1.5 shadow-inner">
         {array.map((val, idx) => {
           const isActive = activeIndices.includes(idx);
           const isSorted = sortedIndices.includes(idx);
@@ -237,11 +237,11 @@ export const SortingVisualizerGame: React.FC<SortingVisualizerGameProps> = ({ la
                     ? 'bg-rose-500 shadow-md shadow-rose-500/50'
                     : isSorted
                     ? 'bg-emerald-500'
-                    : 'bg-amber-500/80 hover:bg-amber-400'
+                    : 'bg-amber-400 hover:bg-amber-300 dark:bg-amber-500/80 dark:hover:bg-amber-400'
                 }`}
                 style={{ height: `${val}%` }}
               />
-              <span className="text-[9px] font-mono text-slate-500 mt-1 hidden sm:block">
+              <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500 mt-1 hidden sm:block">
                 {val}
               </span>
             </div>
@@ -249,7 +249,7 @@ export const SortingVisualizerGame: React.FC<SortingVisualizerGameProps> = ({ la
         })}
       </div>
 
-      <div className="flex items-center justify-center gap-6 text-[11px] font-mono text-slate-400">
+      <div className="flex items-center justify-center gap-6 text-[11px] font-mono text-slate-600 dark:text-slate-400">
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-xs bg-rose-500" />
           <span>Active Compare</span>

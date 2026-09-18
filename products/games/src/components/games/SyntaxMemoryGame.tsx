@@ -102,28 +102,28 @@ export const SyntaxMemoryGame: React.FC<SyntaxMemoryGameProps> = ({ language }) 
   };
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto p-4 sm:p-6 bg-slate-900 border border-slate-800 rounded-3xl text-white shadow-xl">
+    <div className="space-y-6 max-w-2xl mx-auto p-4 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl text-slate-900 dark:text-white shadow-lg">
       {/* Header Bar */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
         <div>
-          <span className="text-xs font-mono text-purple-400 font-bold uppercase tracking-wider">
+          <span className="text-xs font-mono text-purple-700 dark:text-purple-400 font-bold uppercase tracking-wider">
             6 Pairs &bull; 12 Cards
           </span>
-          <h3 className="text-lg font-black tracking-tight">
+          <h3 className="text-lg font-black tracking-tight text-slate-900 dark:text-white">
             {language === 'vi' ? 'Ma Trận Cấu Trúc Dữ Liệu' : 'Data Structures Memory Matrix'}
           </h3>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="px-3 py-1 rounded-xl bg-slate-800 border border-slate-700 text-xs font-mono">
-            <span className="text-slate-400">Moves: </span>
-            <span className="font-bold text-purple-400">{moves}</span>
+          <div className="px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono">
+            <span className="text-slate-500 dark:text-slate-400">Moves: </span>
+            <span className="font-bold text-purple-700 dark:text-purple-400">{moves}</span>
           </div>
 
           <button
             type="button"
             onClick={initGame}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
             title="Restart"
           >
             <RefreshCw className="w-4 h-4" />
@@ -133,12 +133,12 @@ export const SyntaxMemoryGame: React.FC<SyntaxMemoryGameProps> = ({ language }) 
 
       {isWon ? (
         <div className="p-8 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-center space-y-4">
-          <Trophy className="w-12 h-12 text-purple-400 mx-auto animate-bounce" />
-          <h4 className="text-2xl font-black text-purple-400">
+          <Trophy className="w-12 h-12 text-purple-600 dark:text-purple-400 mx-auto animate-bounce" />
+          <h4 className="text-2xl font-black text-purple-700 dark:text-purple-400">
             {language === 'vi' ? 'LÀM CHỦ TẤT CẢ CẶP THẺ!' : 'ALL PAIRS MATCHED!'}
           </h4>
-          <p className="text-xs text-slate-300 font-mono">
-            Completed in <span className="font-bold text-purple-400">{moves}</span> moves!
+          <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">
+            Completed in <span className="font-bold text-purple-700 dark:text-purple-400">{moves}</span> moves!
           </p>
           <button
             type="button"
@@ -159,10 +159,10 @@ export const SyntaxMemoryGame: React.FC<SyntaxMemoryGameProps> = ({ language }) 
                 onClick={() => handleCardClick(idx)}
                 className={`h-28 rounded-2xl p-3 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-300 border ${
                   card.isMatched
-                    ? 'bg-emerald-950/60 border-emerald-500/60 text-emerald-300 shadow-md shadow-emerald-950/40'
+                    ? 'bg-emerald-100 dark:bg-emerald-950/60 border-emerald-400 dark:border-emerald-500/60 text-emerald-900 dark:text-emerald-300 shadow-md'
                     : showFace
-                    ? 'bg-purple-950/80 border-purple-500 text-white shadow-lg'
-                    : 'bg-slate-800 border-slate-700 hover:border-slate-500 text-slate-400 hover:bg-slate-750'
+                    ? 'bg-purple-100 dark:bg-purple-950/80 border-purple-400 dark:border-purple-500 text-purple-950 dark:text-white shadow-lg'
+                    : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
                 {showFace ? (
@@ -173,8 +173,8 @@ export const SyntaxMemoryGame: React.FC<SyntaxMemoryGameProps> = ({ language }) 
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-1 opacity-50">
-                    <Sparkles className="w-5 h-5 text-slate-500" />
+                  <div className="flex flex-col items-center gap-1 opacity-60">
+                    <Sparkles className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                     <span className="text-[10px] font-mono font-bold">4TM</span>
                   </div>
                 )}
