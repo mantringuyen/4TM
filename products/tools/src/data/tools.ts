@@ -1,6 +1,153 @@
 import { ToolItem } from '../types';
 
 export const TOOLS: ToolItem[] = [
+  // --- PHASE 1 FLAGSHIP TOOLS ---
+  {
+    id: 'data-converter',
+    slug: 'data-converter',
+    name: 'Structured Data Converter',
+    tagline: {
+      en: 'Bidirectional JSON, CSV, TSV, XML, YAML, Excel, SQL INSERT & Markdown table converter',
+      vi: 'Chuyển đổi hai chiều JSON, CSV, TSV, XML, YAML, Excel, SQL INSERT và bảng Markdown',
+    },
+    category: 'data',
+    icon: 'Database',
+    badge: 'Phase 1',
+    accentColor: 'from-emerald-500 to-teal-700',
+    studyRelation: ['Python', 'SQL', 'Excel', 'Power BI'],
+    seoTitle: {
+      en: 'Data Converter — Free JSON, CSV, TSV, XML, YAML & Excel Converter | 4TM Tools',
+      vi: 'Chuyển Đổi Dữ Liệu — JSON, CSV, TSV, XML, YAML & Excel Trực Tuyến | 4TM Tools',
+    },
+    description: {
+      en: 'Free in-browser data conversion suite. Convert between JSON, CSV, TSV, XML, YAML, Excel (.xlsx), Markdown tables, HTML tables, and SQL INSERT statements entirely in client memory without uploading files.',
+      vi: 'Bộ chuyển đổi dữ liệu trực tiếp trên trình duyệt. Hỗ trợ chuyển đổi qua lại giữa JSON, CSV, TSV, XML, YAML, Excel (.xlsx), bảng Markdown, HTML và câu lệnh SQL INSERT an toàn tuyệt đối.',
+    },
+    keywords: ['data-converter', 'json-to-csv', 'csv-to-json', 'yaml', 'xml', 'sql-insert', 'excel-to-json', 'markdown-table'],
+    isPhase1Flagship: true,
+  },
+  {
+    id: 'text-case-converter',
+    slug: 'text-case-converter',
+    name: 'Text Case & String Utility',
+    tagline: {
+      en: 'Transform text case, inspect word/char statistics, clean whitespace, and sort lines',
+      vi: 'Chuyển đổi kiểu chữ, thống kê từ/ký tự, dọn dẹp khoảng trắng và sắp xếp dòng',
+    },
+    category: 'text',
+    icon: 'Type',
+    badge: 'Phase 1',
+    accentColor: 'from-blue-600 to-indigo-700',
+    studyRelation: ['Python', 'JavaScript'],
+    seoTitle: {
+      en: 'Text Case Converter & String Utilities — Free Online Word & Case Tool | 4TM Tools',
+      vi: 'Chuyển Đổi Kiểu Chữ & Tiện Ích Văn Bản — Đếm Từ, Đổi Case Miễn Phí | 4TM Tools',
+    },
+    description: {
+      en: 'Convert text instantly to UPPERCASE, lowercase, Title Case, Sentence case, camelCase, snake_case, PascalCase, kebab-case, and CONSTANT_CASE. Includes live word/character counters, reading-time estimates, line sorting, and duplicate removal.',
+      vi: 'Chuyển đổi văn bản sang chữ hoa, chữ thường, Title Case, camelCase, snake_case, kebab-case, CONSTANT_CASE. Tích hợp bộ đếm từ/ký tự, ước tính thời gian đọc, lọc dòng trùng và sắp xếp dòng theo A-Z.',
+    },
+    keywords: ['text-case', 'uppercase', 'lowercase', 'camelcase', 'snake-case', 'word-counter', 'string-cleaner'],
+    isPhase1Flagship: true,
+  },
+  {
+    id: 'sql-formatter',
+    slug: 'sql-formatter',
+    name: 'SQL Formatter & Beautifier',
+    tagline: {
+      en: 'Format, beautify, and minify SQL queries for PostgreSQL, MySQL, SQLite & T-SQL',
+      vi: 'Làm đẹp, định dạng thụt lề và nén gọn câu lệnh SQL cho PostgreSQL, MySQL, SQLite & T-SQL',
+    },
+    category: 'developer',
+    icon: 'Code2',
+    badge: 'Phase 1',
+    accentColor: 'from-cyan-500 to-blue-700',
+    studyRelation: ['SQL', 'Python', 'Power BI'],
+    seoTitle: {
+      en: 'SQL Formatter & Minifier — Beautify PostgreSQL, MySQL, SQLite & T-SQL | 4TM Tools',
+      vi: 'Định Dạng SQL & Nén Gọn — Hỗ Trợ PostgreSQL, MySQL, SQLite & SQL Server | 4TM Tools',
+    },
+    description: {
+      en: 'Syntax-aware SQL query formatter and minifier. Custom indentation (2 spaces, 4 spaces, tabs), keyword casing controls (UPPERCASE/lowercase), and sample queries for PostgreSQL, MySQL, SQLite, and SQL Server / T-SQL.',
+      vi: 'Công cụ định dạng và nén gọn câu lệnh SQL chuẩn cú pháp. Tùy chỉnh thụt lề, chuyển đổi từ khóa viết hoa/thường cho PostgreSQL, MySQL, SQLite và SQL Server.',
+    },
+    keywords: ['sql-formatter', 'format-sql', 'beautify-sql', 'postgresql', 'mysql', 'sqlite', 'tsql', 'minify-sql'],
+    isPhase1Flagship: true,
+  },
+  {
+    id: 'encoder-decoder',
+    slug: 'encoder-decoder',
+    name: 'Universal Encoder & Decoder',
+    tagline: {
+      en: 'Client-side Base64, URL URI, HTML Entities, Hex, Binary, and Unicode transformations',
+      vi: 'Mã hóa và giải mã Base64, URL URI, HTML Entities, Hex, Nhị phân và Unicode trên trình duyệt',
+    },
+    category: 'developer',
+    icon: 'Binary',
+    badge: 'Phase 1',
+    accentColor: 'from-violet-500 to-purple-700',
+    studyRelation: ['HTML', 'JavaScript', 'Python'],
+    seoTitle: {
+      en: 'Universal Encoder & Decoder — Base64, URL, HTML Entities, Hex & Binary | 4TM Tools',
+      vi: 'Mã Hóa & Giải Mã Toàn Diện — Base64, URL, HTML Entities, Hex & Binary | 4TM Tools',
+    },
+    description: {
+      en: 'Universal developer decoding and escaping suite. Live bidirectional conversion for Base64 (UTF-8 safe), URL encode/decode, HTML entities, Hex strings, Binary/Decimal/Hex number bases, and Unicode escape sequences.',
+      vi: 'Bộ giải mã và escape dành cho lập trình viên. Chuyển đổi hai chiều cho Base64, URL encode/decode, HTML entities, Hex, số nhị phân/thập phân và Unicode escape an toàn tuyệt đối.',
+    },
+    keywords: ['encoder-decoder', 'base64', 'url-encode', 'html-entities', 'hex-decoder', 'binary-converter'],
+    isPhase1Flagship: true,
+  },
+  {
+    id: 'css-generator',
+    slug: 'css-generator',
+    name: 'CSS & Web Layout Generator',
+    tagline: {
+      en: 'Interactive visual workspace for Flexbox, CSS Grid, Box Shadow, Gradients & Glassmorphism',
+      vi: 'Không gian trực quan tạo mã Flexbox, CSS Grid, Box Shadow, Gradient và Glassmorphism',
+    },
+    category: 'design',
+    icon: 'Palette',
+    badge: 'Phase 1',
+    accentColor: 'from-fuchsia-500 to-pink-700',
+    studyRelation: ['HTML', 'CSS'],
+    seoTitle: {
+      en: 'CSS Generator & Visual Layout Builder — Flexbox, Grid, Shadows & Gradients | 4TM Tools',
+      vi: 'Công Cụ Tạo CSS & Bố Cục Trực Quan — Flexbox, Grid, Đổ Bóng & Gradient | 4TM Tools',
+    },
+    description: {
+      en: 'Visual CSS generator with instant live previews and copyable Vanilla CSS and Tailwind CSS snippets. Generate Flexbox layouts, CSS Grid systems, multi-layer box shadows, custom border radii, linear/radial gradients, and modern glassmorphism.',
+      vi: 'Bộ tạo mã CSS trực quan với khung xem trước thời gian thực và mã CSS/Tailwind chuẩn. Hỗ trợ Flexbox, CSS Grid, Box Shadow nhiều lớp, Bo góc, Gradient và hiệu ứng kính mờ Glassmorphism.',
+    },
+    keywords: ['css-generator', 'flexbox-generator', 'grid-generator', 'box-shadow', 'glassmorphism', 'gradient-css'],
+    isPhase1Flagship: true,
+  },
+  {
+    id: 'qr-generator',
+    slug: 'qr-generator',
+    name: 'QR Code & Barcode Studio',
+    tagline: {
+      en: 'Create static, non-expiring QR codes for URLs, Wi-Fi, vCard & Email with SVG/PNG export',
+      vi: 'Tạo mã QR tĩnh vĩnh viễn cho Link, Wi-Fi, Danh bạ, Email kèm xuất ảnh SVG/PNG chất lượng cao',
+    },
+    category: 'generators',
+    icon: 'QrCode',
+    badge: 'Phase 1',
+    accentColor: 'from-amber-500 to-orange-700',
+    studyRelation: ['None'],
+    seoTitle: {
+      en: 'Static QR Code Generator — Free, No Expiration, No Sign-up, SVG/PNG Export | 4TM Tools',
+      vi: 'Tạo Mã QR Tĩnh Miễn Phí — Không Hết Hạn, Không Cần Đăng Nhập, Xuất SVG/PNG | 4TM Tools',
+    },
+    description: {
+      en: '100% free, privacy-first QR code generator with no redirects, no tracking, and no expiration. Create high-resolution static QR codes for website URLs, Wi-Fi connections, contacts (vCard), emails, and plain text with custom colors and logo embedding.',
+      vi: 'Trình tạo mã QR tĩnh 100% miễn phí, không chuyển hướng link, không theo dõi và không bao giờ hết hạn. Hỗ trợ URL, kết nối Wi-Fi, danh bạ vCard, email, tùy chỉnh màu sắc và xuất ảnh SVG/PNG.',
+    },
+    keywords: ['qr-generator', 'static-qr-code', 'wifi-qr', 'vcard-qr', 'free-qr-code', 'svg-qr'],
+    isPhase1Flagship: true,
+  },
+
+  // --- EXISTING COMPATIBILITY TOOLS ---
   {
     id: 'base64',
     slug: 'base64-encoder-decoder',
@@ -13,6 +160,11 @@ export const TOOLS: ToolItem[] = [
     icon: 'Binary',
     badge: 'Realtime',
     accentColor: 'from-blue-600 to-indigo-700',
+    studyRelation: ['JavaScript'],
+    seoTitle: {
+      en: 'Base64 & URL Encoder / Decoder — 4TM Tools',
+      vi: 'Mã Hóa & Giải Mã Base64 / URL — 4TM Tools',
+    },
     description: {
       en: 'Encode and decode plain text into Base64 or URL-encoded safe strings with instantaneous live updates and character length statistics.',
       vi: 'Mã hóa và giải mã văn bản thuần sang định dạng Base64 hoặc URL-encoded với cập nhật tức thì và thống kê độ dài ký tự.',
@@ -31,6 +183,11 @@ export const TOOLS: ToolItem[] = [
     icon: 'FileJson',
     badge: 'Validator',
     accentColor: 'from-emerald-500 to-teal-700',
+    studyRelation: ['Python', 'JavaScript'],
+    seoTitle: {
+      en: 'JSON Formatter & Validator — 4TM Tools',
+      vi: 'Định Dạng & Kiểm Tra Cú Pháp JSON — 4TM Tools',
+    },
     description: {
       en: 'Format messy JSON with custom indentation, minify for production payload size, and pinpoint syntax errors with exact row/column warnings.',
       vi: 'Định dạng JSON với số khoảng trắng thụt lề tùy chọn, nén dung lượng và phát hiện lỗi cú pháp kèm thông báo chi tiết.',
@@ -49,6 +206,11 @@ export const TOOLS: ToolItem[] = [
     icon: 'ShieldCheck',
     badge: 'WebCrypto',
     accentColor: 'from-amber-500 to-orange-700',
+    studyRelation: ['Python'],
+    seoTitle: {
+      en: 'Cryptographic Hash Generator — SHA-256, SHA-512 | 4TM Tools',
+      vi: 'Tạo Mã Băm Mật Mã — SHA-256, SHA-512 | 4TM Tools',
+    },
     description: {
       en: 'Securely compute multi-algorithm cryptographic digests client-side without sending text or secrets across the network.',
       vi: 'Tính toán mã băm an toàn hoàn toàn trên trình duyệt người dùng bằng chuẩn Web Crypto API mà không truyền dữ liệu ra mạng.',
@@ -67,6 +229,11 @@ export const TOOLS: ToolItem[] = [
     icon: 'KeyRound',
     badge: 'Security',
     accentColor: 'from-purple-500 to-pink-600',
+    studyRelation: ['JavaScript'],
+    seoTitle: {
+      en: 'JWT Debugger & Inspector — 4TM Tools',
+      vi: 'Kiểm Tra & Phân Tích JWT — 4TM Tools',
+    },
     description: {
       en: 'Inspect and debug JSON Web Tokens without exposing them to third-party endpoints. Parses iat, exp, sub, and custom claims instantly.',
       vi: 'Phân tích và kiểm tra token JWT mà không gửi dữ liệu đến máy chủ thứ ba. Tự động chuyển đổi các timestamp iat, exp thành ngày giờ dễ đọc.',
@@ -85,6 +252,11 @@ export const TOOLS: ToolItem[] = [
     icon: 'Fingerprint',
     badge: 'RFC 4122',
     accentColor: 'from-cyan-500 to-blue-600',
+    studyRelation: ['Python', 'SQL'],
+    seoTitle: {
+      en: 'Cryptographic UUID v4 Generator — 4TM Tools',
+      vi: 'Tạo UUID v4 Chuẩn RFC 4122 — 4TM Tools',
+    },
     description: {
       en: 'Generate bulk cryptographically strong UUIDs using crypto.randomUUID(). Customize uppercase, lowercase, and hyphens.',
       vi: 'Tạo hàng loạt mã định danh UUID v4 ngẫu nhiên bảo mật với crypto.randomUUID(), tùy chọn chữ hoa, chữ thường và gạch nối.',
@@ -103,6 +275,11 @@ export const TOOLS: ToolItem[] = [
     icon: 'Clock',
     badge: 'Epoch Time',
     accentColor: 'from-rose-500 to-red-700',
+    studyRelation: ['SQL', 'Python', 'JavaScript'],
+    seoTitle: {
+      en: 'Unix Timestamp Converter — 4TM Tools',
+      vi: 'Chuyển Đổi Dấu Thời Gian Unix Timestamp — 4TM Tools',
+    },
     description: {
       en: 'Convert Unix epoch timestamps to human-readable formats (UTC, Local, Relative Time) or generate timestamps from datetime pickers.',
       vi: 'Chuyển đổi dấu thời gian Unix sang định dạng ngày giờ dễ đọc (UTC, Địa phương, Thời gian tương đối) và ngược lại.',
@@ -110,3 +287,4 @@ export const TOOLS: ToolItem[] = [
     keywords: ['timestamp', 'epoch', 'unix', 'time', 'iso8601', 'date'],
   },
 ];
+
