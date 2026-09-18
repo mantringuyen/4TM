@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "4tm-ecosystem",
+  "name": "4tm",
   "main": "worker/index.ts",
   "compatibility_date": "2025-02-01",
   "compatibility_flags": [
