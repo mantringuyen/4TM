@@ -280,7 +280,7 @@ export function App() {
         )}
 
         {/* Main View Flow */}
-        <div className="flex-1">
+        <div className="flex-1 w-full min-w-0">
           {activeView === 'catalog' && (
             <CatalogView
               books={EBOOKS}

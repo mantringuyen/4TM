@@ -54,7 +54,7 @@ function renderFormattedText(text: string) {
       return (
         <code
           key={index}
-          className="px-1.5 py-0.5 rounded text-[0.88em] font-mono font-semibold bg-black/5 dark:bg-white/10 text-slate-800 dark:text-slate-200 border border-black/5 dark:border-white/5 mx-0.5"
+          className="px-1.5 py-0.5 rounded text-[0.88em] font-mono font-semibold bg-black/5 dark:bg-white/10 text-slate-800 dark:text-slate-200 border border-black/5 dark:border-white/5 mx-0.5 break-words [overflow-wrap:anywhere]"
         >
           {codeContent}
         </code>
@@ -108,7 +108,7 @@ function renderHighlightedCodeLines(code: string, theme: ReaderPaperTheme) {
     if (commentMatch) {
       return (
         <div key={idx} className="table-row">
-          <span className="table-cell select-none pr-4 text-right opacity-30 font-mono text-xs">
+          <span className="table-cell select-none pr-3 sm:pr-4 text-right opacity-30 font-mono text-xs shrink-0">
             {idx + 1}
           </span>
           <span className={`table-cell whitespace-pre font-mono text-xs sm:text-sm ${commentClass}`}>
@@ -119,15 +119,9 @@ function renderHighlightedCodeLines(code: string, theme: ReaderPaperTheme) {
     }
 
     // Tokenize line
-    // Replace strings with placeholders first, then keywords, then re-insert
-    const tokens: React.ReactNode[] = [];
-    let remaining = line;
-    let tokenIndex = 0;
-
-    // Simple line renderer for reliability
     return (
       <div key={idx} className="table-row">
-        <span className="table-cell select-none pr-4 text-right opacity-30 font-mono text-xs">
+        <span className="table-cell select-none pr-3 sm:pr-4 text-right opacity-30 font-mono text-xs shrink-0">
           {idx + 1}
         </span>
         <span className="table-cell whitespace-pre font-mono text-xs sm:text-sm">
@@ -308,7 +302,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
   const completionPct = Math.round(((currentChapterIndex + 1) / book.chapters.length) * 100);
 
   return (
-    <div className={`min-h-screen transition-colors duration-200 ${currentTheme.bg} ${currentTheme.text}`}>
+    <div className={`min-h-screen transition-colors duration-200 w-full max-w-full ${currentTheme.bg} ${currentTheme.text}`}>
       {/* Scroll Progress Indicator */}
       <div
         className="fixed top-0 left-0 h-1 bg-blue-600 dark:bg-blue-400 z-50 transition-all duration-75"
@@ -323,14 +317,14 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
             : `${currentTheme.bg}/95 ${currentTheme.border}`
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between gap-2 sm:gap-3 w-full min-w-0 box-border">
           {/* Left: Back to Book Overview & Sidebar Toggle */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               type="button"
               id="reader-back-to-book-btn"
               onClick={onBackToBook}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
               title={dict.reader.backToBook}
             >
               <ArrowLeft className="w-4 h-4" />
@@ -342,7 +336,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
               type="button"
               id="mobile-toc-toggle-btn"
               onClick={() => setMobileDrawerOpen(true)}
-              className="lg:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              className="lg:hidden inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
             >
               <Menu className="w-4 h-4" />
               <span>{dict.reader.toc}</span>
@@ -371,7 +365,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
           </div>
 
           {/* Center: Book & Chapter indicator */}
-          <div className="hidden md:flex items-center gap-2 text-xs font-mono truncate max-w-sm">
+          <div className="hidden md:flex items-center gap-2 text-xs font-mono truncate max-w-sm min-w-0">
             <span className="text-slate-400 truncate">{book.title}</span>
             <span className="text-slate-300 dark:text-slate-700">&bull;</span>
             <span className="font-bold text-blue-600 dark:text-blue-400 truncate">
@@ -380,7 +374,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
           </div>
 
           {/* Right: Customization Controls (Font size, Width, Theme, Bookmark) */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* Font Size Selector */}
             <div className="flex items-center p-0.5 rounded-xl border border-black/10 dark:border-white/10 text-xs">
               {(['sm', 'md', 'lg', 'xl'] as ReaderFontSize[]).map((size) => (
@@ -389,7 +383,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                   type="button"
                   id={`fontsize-btn-${size}`}
                   onClick={() => setSettings((s) => ({ ...s, fontSize: size }))}
-                  className={`px-1.5 py-0.5 rounded-md font-mono text-[11px] font-bold cursor-pointer transition-colors ${
+                  className={`px-1.5 py-0.5 rounded-md font-mono text-[10px] sm:text-[11px] font-bold cursor-pointer transition-colors ${
                     settings.fontSize === size
                       ? 'bg-blue-600 text-white'
                       : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -453,7 +447,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
       </header>
 
       {/* Main Container */}
-      <div className="max-w-7xl mx-auto flex">
+      <div className="w-full max-w-7xl mx-auto flex min-w-0">
         {/* DESKTOP Persistent Sticky Left Table of Contents Rail */}
         {desktopSidebarOpen && (
           <aside
@@ -545,7 +539,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
             {/* Drawer */}
             <aside
-              className={`relative w-80 max-w-[85vw] h-full shadow-2xl p-6 overflow-y-auto border-r transition-all z-10 ${
+              className={`relative w-80 max-w-[85vw] h-full shadow-2xl p-6 overflow-y-auto border-r transition-all z-10 box-border ${
                 settings.paperTheme === 'default'
                   ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
                   : `${currentTheme.bg} ${currentTheme.border}`
@@ -591,7 +585,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                       <div className="font-mono text-[10px] mb-0.5 opacity-75">
                         Chapter {ch.number} &bull; {ch.readTimeMinutes} min
                       </div>
-                      <div>{ch.title[language]}</div>
+                      <div className="break-words [overflow-wrap:anywhere]">{ch.title[language]}</div>
                     </button>
                   );
                 })}
@@ -602,87 +596,87 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
         {/* FOCUSED READING COLUMN */}
         <main
-          className={`flex-1 mx-auto px-4 sm:px-8 py-10 sm:py-14 transition-all ${
+          className={`flex-1 min-w-0 w-full max-w-full mx-auto px-4 sm:px-8 py-8 sm:py-14 transition-all box-border ${
             widthClasses[settings.width]
           }`}
         >
           {/* DIGITAL BOOK COVER / FRONTISPIECE PLATE */}
           <div
-            className={`p-6 sm:p-8 rounded-3xl border mb-12 relative overflow-hidden ${currentTheme.cardBg} ${currentTheme.border}`}
+            className={`p-5 sm:p-8 rounded-3xl border mb-10 sm:mb-12 relative overflow-hidden w-full max-w-full min-w-0 box-border ${currentTheme.cardBg} ${currentTheme.border}`}
           >
             {/* Book Spine accent ribbon */}
             <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-blue-600 to-indigo-700" />
 
-            <div className="pl-3 sm:pl-4">
-              <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-slate-400 mb-2">
-                <span>{EBOOK_FIELD.name[language]}</span>
+            <div className="pl-3 sm:pl-4 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-slate-400 mb-2 min-w-0">
+                <span className="break-words">{EBOOK_FIELD.name[language]}</span>
                 {domain && (
                   <>
                     <span>&rsaquo;</span>
-                    <span>{domain.name[language]}</span>
+                    <span className="break-words">{domain.name[language]}</span>
                   </>
                 )}
                 {topic && (
                   <>
                     <span>&rsaquo;</span>
-                    <span className="font-bold text-blue-600 dark:text-blue-400">
+                    <span className="font-bold text-blue-600 dark:text-blue-400 break-words">
                       {topic.name[language]}
                     </span>
                   </>
                 )}
                 <span>&bull;</span>
-                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                <span className="font-semibold text-slate-700 dark:text-slate-300 break-words">
                   {book.bookType}
                 </span>
               </div>
 
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight mb-1">
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight mb-1 break-words [overflow-wrap:anywhere]">
                 {book.title}
               </h2>
-              <p className="text-xs sm:text-sm opacity-75 font-medium mb-3">
+              <p className="text-xs sm:text-sm opacity-75 font-medium mb-3 break-words [overflow-wrap:anywhere]">
                 {book.subtitle[language]}
               </p>
-              <div className="text-[11px] font-mono opacity-60">
+              <div className="text-[11px] font-mono opacity-60 break-words [overflow-wrap:anywhere]">
                 Author: {book.author} &bull; {book.role} &bull; Edition {book.publishedDate}
               </div>
             </div>
           </div>
 
           {/* CHAPTER TITLE & ABSTRACT */}
-          <article className="space-y-8">
-            <header className="pb-8 border-b border-black/10 dark:border-white/10">
+          <article className="space-y-8 w-full max-w-full min-w-0">
+            <header className="pb-8 border-b border-black/10 dark:border-white/10 w-full max-w-full min-w-0">
               <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-3">
                 <span>Chapter {chapter.number} of {book.chapters.length}</span>
                 <span>&bull;</span>
                 <span>{chapter.readTimeMinutes} {dict.card.readTime}</span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black font-reader tracking-tight mb-4 leading-tight">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black font-reader tracking-tight mb-4 leading-tight break-words [overflow-wrap:anywhere] min-w-0">
                 {chapter.title[language]}
               </h1>
 
               {/* Abstract Quote Box */}
               <div
-                className={`p-4 sm:p-5 rounded-2xl border-l-4 border-l-blue-600 ${currentTheme.calloutBg} ${currentTheme.calloutBorder} text-sm sm:text-base italic leading-relaxed`}
+                className={`p-4 sm:p-5 rounded-2xl border-l-4 border-l-blue-600 ${currentTheme.calloutBg} ${currentTheme.calloutBorder} text-sm sm:text-base italic leading-relaxed break-words [overflow-wrap:anywhere] w-full max-w-full min-w-0 box-border`}
               >
                 {chapter.summary[language]}
               </div>
             </header>
 
             {/* CHAPTER SECTIONS */}
-            <div className="space-y-12 pt-2">
+            <div className="space-y-12 pt-2 w-full max-w-full min-w-0">
               {chapter.sections.map((section, sIdx) => (
-                <section key={section.id} id={section.id} className="space-y-5">
-                  <h2 className="text-xl sm:text-2xl font-black font-reader tracking-tight flex items-baseline gap-2">
-                    <span className="text-blue-600 dark:text-blue-400 font-mono text-sm sm:text-base font-bold">
+                <section key={section.id} id={section.id} className="space-y-5 w-full max-w-full min-w-0">
+                  <h2 className="text-lg sm:text-2xl font-black font-reader tracking-tight flex items-baseline gap-2 min-w-0">
+                    <span className="text-blue-600 dark:text-blue-400 font-mono text-sm sm:text-base font-bold shrink-0">
                       {chapter.number}.{sIdx + 1}
                     </span>
-                    <span>{section.title[language]}</span>
+                    <span className="min-w-0 break-words [overflow-wrap:anywhere] flex-1">{section.title[language]}</span>
                   </h2>
 
                   {/* Prose Content */}
                   <div
-                    className={`font-reader text-justify leading-relaxed ${
+                    className={`font-reader text-justify leading-relaxed break-words [overflow-wrap:anywhere] min-w-0 w-full max-w-full ${
                       fontSizeClasses[settings.fontSize]
                     }`}
                   >
@@ -692,13 +686,13 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                   {/* CODE BLOCK (Strictly follows theme settings; Light in Light mode, Dark in Dark mode) */}
                   {section.codeBlock && (
                     <div
-                      className={`my-6 rounded-2xl overflow-hidden border shadow-sm ${currentTheme.codeBorder} ${currentTheme.codeBg}`}
+                      className={`my-6 rounded-2xl overflow-hidden border shadow-xs w-full max-w-full min-w-0 box-border ${currentTheme.codeBorder} ${currentTheme.codeBg}`}
                     >
                       {/* Code Header */}
                       <div
-                        className={`flex items-center justify-between px-4 py-2.5 border-b ${currentTheme.codeBorder} ${currentTheme.codeHeaderBg} ${currentTheme.codeHeaderText} text-xs font-mono`}
+                        className={`flex items-center justify-between px-3.5 sm:px-4 py-2.5 border-b ${currentTheme.codeBorder} ${currentTheme.codeHeaderBg} ${currentTheme.codeHeaderText} text-xs font-mono min-w-0`}
                       >
-                        <span className="font-semibold">
+                        <span className="font-semibold truncate mr-2 min-w-0">
                           {section.codeBlock.filename || section.codeBlock.language}
                         </span>
 
@@ -706,7 +700,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                           type="button"
                           id={`copy-code-btn-${section.id}`}
                           onClick={() => handleCopy(section.codeBlock!.code, section.id)}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition-colors cursor-pointer text-[11px] font-semibold"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition-colors cursor-pointer text-[11px] font-semibold shrink-0"
                         >
                           {copiedCodeId === section.id ? (
                             <>
@@ -726,9 +720,9 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
                       {/* Code Pre/Code Area */}
                       <pre
-                        className={`p-4 sm:p-5 overflow-x-auto text-xs sm:text-sm font-mono leading-relaxed select-text ${currentTheme.codePreBg} ${currentTheme.codePreText}`}
+                        className={`p-3.5 sm:p-5 overflow-x-auto text-xs sm:text-sm font-mono leading-relaxed select-text w-full max-w-full min-w-0 box-border ${currentTheme.codePreBg} ${currentTheme.codePreText}`}
                       >
-                        <code>
+                        <code className="table min-w-full">
                           {renderHighlightedCodeLines(section.codeBlock.code, settings.paperTheme)}
                         </code>
                       </pre>
@@ -736,7 +730,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                       {/* Code Explanation Footer */}
                       {section.codeBlock.explanation && (
                         <div
-                          className={`px-4 py-2.5 border-t text-xs font-sans leading-relaxed ${currentTheme.codeBorder} ${currentTheme.codeExplanationBg} opacity-80`}
+                          className={`px-3.5 sm:px-4 py-2.5 border-t text-xs font-sans leading-relaxed ${currentTheme.codeBorder} ${currentTheme.codeExplanationBg} opacity-80 break-words [overflow-wrap:anywhere] min-w-0 w-full max-w-full`}
                         >
                           {section.codeBlock.explanation[language]}
                         </div>
@@ -747,19 +741,19 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                   {/* KEY ENGINEERING TAKEAWAYS CALLOUT */}
                   {section.keyTakeaways && (
                     <div
-                      className={`p-5 sm:p-6 rounded-2xl border ${currentTheme.calloutBg} ${currentTheme.calloutBorder} space-y-3 shadow-xs`}
+                      className={`p-4 sm:p-6 rounded-2xl border ${currentTheme.calloutBg} ${currentTheme.calloutBorder} space-y-3 shadow-xs min-w-0 w-full max-w-full overflow-hidden box-border`}
                     >
-                      <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                        <span className="text-xs font-mono font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                        <span className="text-xs font-mono font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 truncate">
                           Engineering Takeaways
                         </span>
                       </div>
-                      <ul className="space-y-2 text-xs sm:text-sm list-none p-0 m-0 leading-relaxed opacity-90">
+                      <ul className="space-y-2 text-xs sm:text-sm list-none p-0 m-0 leading-relaxed opacity-90 min-w-0 w-full">
                         {section.keyTakeaways[language].map((takeaway, idx) => (
-                          <li key={idx} className="flex items-start gap-2.5">
+                          <li key={idx} className="flex items-start gap-2.5 min-w-0 w-full">
                             <CheckCircle2 className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                            <span>{renderFormattedText(takeaway)}</span>
+                            <span className="min-w-0 break-words [overflow-wrap:anywhere] flex-1">{renderFormattedText(takeaway)}</span>
                           </li>
                         ))}
                       </ul>
@@ -770,8 +764,8 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
             </div>
 
             {/* CHAPTER NAVIGATION FOOTER */}
-            <footer className="mt-16 pt-8 border-t border-black/10 dark:border-white/10 space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <footer className="mt-16 pt-8 border-t border-black/10 dark:border-white/10 space-y-6 w-full max-w-full min-w-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full min-w-0">
                 {/* Previous Chapter Card */}
                 {currentChapterIndex > 0 ? (
                   <button
@@ -781,10 +775,10 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                       onNavigateChapter(currentChapterIndex - 1);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-3 ${currentTheme.cardBg} ${currentTheme.border} hover:border-blue-500/50 hover:shadow-sm`}
+                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-3 min-w-0 w-full box-border ${currentTheme.cardBg} ${currentTheme.border} hover:border-blue-500/50 hover:shadow-sm`}
                   >
                     <ChevronLeft className="w-5 h-5 text-blue-500 shrink-0" />
-                    <div className="overflow-hidden">
+                    <div className="overflow-hidden min-w-0 flex-1">
                       <div className="text-[10px] font-mono uppercase tracking-wider opacity-60">
                         {dict.reader.prevChapter}
                       </div>
@@ -807,9 +801,9 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                       onNavigateChapter(currentChapterIndex + 1);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="p-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white text-right transition-all cursor-pointer flex items-center justify-end gap-3 shadow-md shadow-blue-600/20"
+                    className="p-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white text-right transition-all cursor-pointer flex items-center justify-end gap-3 shadow-md shadow-blue-600/20 min-w-0 w-full box-border"
                   >
-                    <div className="overflow-hidden">
+                    <div className="overflow-hidden min-w-0 flex-1">
                       <div className="text-[10px] font-mono uppercase tracking-wider text-blue-100">
                         {dict.reader.nextChapter}
                       </div>
@@ -825,13 +819,13 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                     type="button"
                     id="reader-finish-book-btn"
                     onClick={onBackToBook}
-                    className="p-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-right transition-all cursor-pointer flex items-center justify-end gap-3 shadow-md shadow-emerald-600/20"
+                    className="p-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-right transition-all cursor-pointer flex items-center justify-end gap-3 shadow-md shadow-emerald-600/20 min-w-0 w-full box-border"
                   >
-                    <div>
+                    <div className="overflow-hidden min-w-0 flex-1">
                       <div className="text-[10px] font-mono uppercase tracking-wider text-emerald-100">
                         Completed
                       </div>
-                      <div className="text-xs sm:text-sm font-bold">
+                      <div className="text-xs sm:text-sm font-bold truncate">
                         {dict.reader.finishBook}
                       </div>
                     </div>
