@@ -63,8 +63,44 @@ export const PYTHON_EBOOKS: Book[] = [
               vi: 'Trình Thông Dịch CPython & Các Bước Biên Dịch',
             },
             content: {
-              en: 'When running a script, Python compiles `.py` files into `.pyc` bytecode instructions. The CPython Virtual Machine uses a stack-based evaluation loop (`ceval.c`) to execute these instructions.',
-              vi: 'Khi chạy kịch bản, Python biên dịch file `.py` thành các lệnh bytecode trong file `.pyc`. Máy ảo CPython sử dụng vòng lặp dựa trên stack (`ceval.c`) để thực thi các lệnh này.',
+              en: 'Python is an interpreted language that compiles source code (`.py`) into intermediate bytecode (`.pyc`) before runtime execution. When you run a script, CPython performs three main steps: 1) Parsing source code into an Abstract Syntax Tree (AST), 2) Compiling AST nodes into CPython bytecode instructions, and 3) Executing opcodes within a stack-based virtual machine loop (`ceval.c`). Understanding bytecode helps developers optimize hot execution paths and debug low-level runtime behavior.',
+              vi: 'Python là ngôn ngữ thông dịch nhưng thực chất sẽ biên dịch mã nguồn (`.py`) thành bytecode trung gian (`.pyc`) trước khi thực thi. Khi bạn chạy kịch bản, CPython trải qua 3 bước chính: 1) Phân tích mã nguồn thành Cây Cú Pháp Trừu Tượng (AST), 2) Biên dịch AST thành các chỉ thị bytecode của CPython, và 3) Thực thi các opcode trong vòng lặp máy ảo dựa trên stack (`ceval.c`). Việc hiểu bytecode giúp nhà phát triển tối ưu hóa mã nguồn và debug các hành vi runtime chuyên sâu.',
+            },
+            keyIdea: {
+              en: 'CPython does not execute raw text files line-by-line; it compiles source code into intermediate bytecode opcodes evaluated by a C-based evaluation loop.',
+              vi: 'CPython không đọc từng dòng chữ thô để chạy; nó biên dịch toàn bộ mã thành các opcode bytecode trung gian và đánh giá qua vòng lặp bằng C.',
+            },
+            diagram: {
+              title: {
+                en: 'CPython Source to Execution Pipeline',
+                vi: 'Quy Trình Xử Lý Từ Mã Nguồn Đến Thực Thi Của CPython',
+              },
+              steps: [
+                {
+                  number: 1,
+                  label: { en: 'Lexing & AST Parsing', vi: 'Phân Tích Cú Pháp AST' },
+                  description: {
+                    en: 'Source code .py is converted into tokens and built into an Abstract Syntax Tree (AST).',
+                    vi: 'Mã nguồn .py được chuyển thành các token và dựng thành Cây Cú Pháp Trừu Tượng (AST).',
+                  },
+                },
+                {
+                  number: 2,
+                  label: { en: 'Bytecode Compilation', vi: 'Biên Dịch Bytecode' },
+                  description: {
+                    en: 'AST is compiled into CPython bytecode instructions (.pyc opcodes stored in __pycache__).',
+                    vi: 'AST được chuyển đổi thành chỉ thị bytecode CPython (các opcode .pyc lưu trong __pycache__).',
+                  },
+                },
+                {
+                  number: 3,
+                  label: { en: 'Virtual Machine Loop', vi: 'Vòng Lặp Máy Ảo CPython' },
+                  description: {
+                    en: 'ceval.c stack-based evaluation loop executes opcodes on target CPU.',
+                    vi: 'Vòng lặp ceval.c dựa trên stack của máy ảo CPython thực thi từng opcode trên CPU.',
+                  },
+                },
+              ],
             },
             codeBlock: {
               language: 'python',
@@ -75,20 +111,32 @@ def calculate_total(price: float, tax: float) -> float:
     return price * (1 + tax)
 
 # Disassemble function into CPython bytecode instructions
-dis.dis(calculate_total)`,
+print("=== Bytecode Disassembly ===")
+dis.dis(calculate_total)
+
+# Inspect underlying code object attributes
+code_obj = calculate_total.__code__
+print("\\nConstants:", code_obj.co_consts)
+print("Variable names:", code_obj.co_varnames)`,
               explanation: {
-                en: '`dis.dis()` prints raw CPython opcodes like BINARY_OP and RETURN_VALUE.',
-                vi: 'Hàm `dis.dis()` hiển thị các opcode CPython nguyên bản như BINARY_OP và RETURN_VALUE.',
+                en: '`dis.dis()` inspects CPython opcodes (LOAD_FAST, BINARY_OP, RETURN_VALUE) and memory attributes like `co_consts`.',
+                vi: 'Hàm `dis.dis()` soi các opcode CPython (LOAD_FAST, BINARY_OP, RETURN_VALUE) và các thuộc tính bộ nhớ như `co_consts`.',
               },
+            },
+            practicalScenario: {
+              en: 'In high-throughput microservices, inspecting bytecode reveals unnecessary global variable lookups (`LOAD_GLOBAL` vs `LOAD_FAST`). Converting frequently accessed globals into local function parameters speeds up evaluation inside critical loops.',
+              vi: 'Trong các dịch vụ cần xử lý hiệu năng cao, việc soi bytecode giúp phát hiện các truy xuất biến toàn cục không cần thiết (`LOAD_GLOBAL` so với `LOAD_FAST`). Chuyển biến global thành tham số local giúp tăng tốc độ thực thi đáng kể trong vòng lặp.',
             },
             keyTakeaways: {
               en: [
-                'Python is compiled to bytecode before interpretation',
-                'CPython uses a stack-based virtual machine',
+                'Python is compiled to bytecode (.pyc) before VM interpretation',
+                'CPython uses a stack-based virtual machine evaluation loop (ceval.c)',
+                'Local variables (LOAD_FAST) execute faster than global lookups (LOAD_GLOBAL)',
               ],
               vi: [
-                'Python được biên dịch sang bytecode trước khi thông dịch',
-                'CPython vận hành theo cơ chế máy ảo dựa trên stack',
+                'Python được biên dịch sang bytecode (.pyc) trước khi thông dịch trên VM',
+                'CPython vận hành theo cơ chế máy ảo dựa trên stack với vòng lặp ceval.c',
+                'Biến cục bộ (LOAD_FAST) truy cập nhanh hơn biến toàn cục (LOAD_GLOBAL)',
               ],
             },
           },
@@ -111,20 +159,98 @@ dis.dis(calculate_total)`,
           {
             id: 'py-hb-2-1',
             title: {
-              en: 'Mutability and Memory Allocation',
-              vi: 'Tính Khả Biến Và Phân Bổ Bộ Nhớ',
+              en: 'Name Binding, Mutability and Object Model',
+              vi: 'Ràng Buộc Tên (Name Binding), Tính Khả Biến Và Mô Hình Đối Tượng',
             },
             content: {
-              en: 'In Python, everything is an object. Immutable primitives (int, str, tuple) cannot be altered after creation, whereas mutable objects (list, dict, set) allow in-place modification.',
-              vi: 'Trong Python, tất cả mọi thứ đều là đối tượng. Các kiểu bất biến (int, str, tuple) không thể thay đổi sau khi tạo, trong khi các đối tượng khả biến (list, dict, set) cho phép chỉnh sửa tại chỗ.',
+              en: 'In Python, variables are NOT "boxes that store values". Instead, variables are named references (labels) bound to objects residing in memory heap. Every object in Python possesses three core properties: 1) Identity (`id()`), 2) Type (`type()`), and 3) Value. Objects are classified into Immutable (int, float, bool, str, tuple, frozenset) and Mutable (list, dict, set). Modifying an immutable object creates a new object in memory, whereas modifying a mutable object alters its contents in-place without changing its memory identity.',
+              vi: 'Trong Python, biến KHÔNG PHẢI là "những chiếc hộp chứa giá trị". Bản chất biến là các nhãn tên (named references) được gắn nối tới các đối tượng nằm trong bộ nhớ heap. Mỗi đối tượng trong Python sở hữu 3 thuộc tính cốt lõi: 1) Định danh (`id()`), 2) Kiểu dữ liệu (`type()`), và 3) Giá trị. Đối tượng chia làm 2 loại: Bất biến (int, float, bool, str, tuple, frozenset) và Khả biến (list, dict, set). Chỉnh sửa đối tượng bất biến sẽ tạo ra một đối tượng mới hoàn toàn trong bộ nhớ, còn chỉnh sửa đối tượng khả biến sẽ thay đổi nội dung tại chỗ mà không làm đổi định danh id.',
+            },
+            keyIdea: {
+              en: 'Variables in Python are named pointers bound to objects in heap memory. Assignment (`a = b`) copies the reference pointer, not the underlying object data.',
+              vi: 'Biến trong Python là con trỏ nhãn tên gắn vào đối tượng trong bộ nhớ. Phép gán (`a = b`) chia sẻ tham chiếu con trỏ chứ không sao chép dữ liệu bên trong.',
+            },
+            comparisonTable: {
+              headers: [
+                { en: 'Type Category', vi: 'Phân Loại Kiểu' },
+                { en: 'Built-in Data Types', vi: 'Các Kiểu Tích Hợp' },
+                { en: 'Memory Behavior on Edit', vi: 'Hành Vi Bộ Nhớ Khi Sửa' },
+                { en: 'Hashable (Dict Key)?', vi: 'Hashable (Làm Key Dict)?' },
+              ],
+              rows: [
+                {
+                  en: ['Immutable Primitives', 'int, float, bool, str', 'Creates new object (id changes)', 'Yes'],
+                  vi: ['Nguyên Thủy Bất Biến', 'int, float, bool, str', 'Tạo đối tượng mới (id thay đổi)', 'Có'],
+                },
+                {
+                  en: ['Immutable Collections', 'tuple, frozenset', 'Cannot add/remove items', 'Yes (if items hashable)'],
+                  vi: ['Tập Hợp Bất Biến', 'tuple, frozenset', 'Không thể thêm/xóa phần tử', 'Có (nếu phần tử con hashable)'],
+                },
+                {
+                  en: ['Mutable Collections', 'list, dict, set', 'In-place modification (same id)', 'No (Unhashable)'],
+                  vi: ['Tập Hợp Khả Biến', 'list, dict, set', 'Sửa đổi tại chỗ (giữ nguyên id)', 'Không (Unhashable)'],
+                },
+              ],
             },
             codeBlock: {
               language: 'python',
-              filename: 'mutability.py',
-              code: `a = [1, 2, 3]
-b = a  # Shared reference
-b.append(4)
-print(a)  # [1, 2, 3, 4] - mutated in place!`,
+              filename: 'object_model_demo.py',
+              code: `# Example 1 — Basic: Immutable Name Binding
+x = 100
+initial_id = id(x)
+x += 1  # Creates a NEW int object 101!
+print("Int re-bound:", id(x) != initial_id)  # True
+
+# Example 2 — Practical: Shared Reference Mutation
+list_a = [1, 2, 3]
+list_b = list_a  # Both variables point to SAME list object
+list_b.append(99)
+print("list_a mutated:", list_a)  # [1, 2, 3, 99]
+print("Identical IDs:", id(list_a) == id(list_b))  # True
+
+# Example 3 — Edge Case: Tuple containing a mutable list
+mixed_tuple = (10, [20, 30])
+print("Initial tuple:", mixed_tuple)
+mixed_tuple[1].append(40)  # Mutates inner list in-place!
+print("Tuple with mutated list:", mixed_tuple)  # (10, [20, 30, 40])`,
+              explanation: {
+                en: 'Demonstrates immutable object re-binding, shared reference mutation in lists, and edge case of mutating a list nested inside an immutable tuple.',
+                vi: 'Minh họa phép gán re-bind đối tượng bất biến, tham chiếu dùng chung ở list và trường hợp đặc biệt: thay đổi list bên trong một tuple bất biến.',
+              },
+            },
+            commonMistakes: [
+              {
+                mistake: {
+                  en: 'Assuming a = b creates an independent copy of a list or dictionary',
+                  vi: 'Nghĩ rằng a = b sẽ tạo ra bản sao độc lập của list hoặc dict',
+                },
+                why: {
+                  en: 'Assignment only copies the memory reference address, causing unexpected side effects when modifying list_b.',
+                  vi: 'Phép gán chỉ sao chép địa chỉ tham chiếu bộ nhớ, khiến thay đổi trên list_b làm ảnh hưởng cả list_a.',
+                },
+                solution: {
+                  en: 'Use explicit copy methods like `list_b = list_a.copy()` or `copy.deepcopy()` for nested structures.',
+                  vi: 'Sử dụng phương thức sao chép rõ ràng như `list_b = list_a.copy()` hoặc `copy.deepcopy()` cho cấu trúc lồng nhau.',
+                },
+                codeIncorrect: `a = [1, 2, 3]
+b = a
+b.append(4)  # Mutates 'a' too!`,
+                codeCorrect: `a = [1, 2, 3]
+b = a.copy() # Independent copy
+b.append(4)  # 'a' remains [1, 2, 3]`,
+              },
+            ],
+            keyTakeaways: {
+              en: [
+                'Variables are references bound to objects in heap memory',
+                'Immutable objects cannot be changed in-place; reassignment creates new objects',
+                'Mutable objects allow in-place modification, affecting all shared references',
+              ],
+              vi: [
+                'Biến là các con trỏ tham chiếu gắn tới đối tượng trong bộ nhớ heap',
+                'Đối tượng bất biến không thể sửa tại chỗ; phép gán tạo ra đối tượng mới',
+                'Đối tượng khả biến cho phép sửa tại chỗ, ảnh hưởng tới mọi biến dùng chung tham chiếu',
+              ],
             },
           },
         ],
@@ -146,12 +272,90 @@ print(a)  # [1, 2, 3, 4] - mutated in place!`,
           {
             id: 'py-hb-3-1',
             title: {
-              en: 'Absolute vs Relative Imports',
-              vi: 'Import Tuyệt Đối vs Import Tương Đối',
+              en: 'Import Resolution Pipeline & sys.modules Cache',
+              vi: 'Quy Trình Phân Giải Import & Cache sys.modules',
             },
             content: {
-              en: 'Absolute imports specify the full path from the project root directory, avoiding ambiguity. Relative imports use leading dots (`.`) to import relative to the current module location.',
-              vi: 'Import tuyệt đối chỉ rõ đường dẫn từ thư mục gốc dự án, tránh mơ hồ. Import tương đối dùng dấu chấm (`.`) để import theo vị trí module hiện tại.',
+              en: 'When Python encounters an `import foo` statement, it executes a multi-stage lookup algorithm: 1) Checks `sys.modules` dictionary cache to see if `foo` was already imported. If cached, it binds the reference immediately. 2) If not cached, Python searches through directory paths listed in `sys.path` (current directory, `PYTHONPATH`, and standard library paths). 3) Once located, Python compiles the file to bytecode, creates a new module object namespace, executes the module top-level statements, and stores the module instance in `sys.modules`. Absolute imports specify the full package path from project root, preventing naming collisions.',
+              vi: 'Khi Python gặp câu lệnh `import foo`, nó thực thi thuật toán tìm kiếm qua các bước: 1) Kiểm tra dictionary cache `sys.modules` xem `foo` đã được import trước đó chưa. Nếu đã có, nó gán tham chiếu ngay. 2) Nếu chưa có, Python tìm kiếm qua danh sách đường dẫn trong `sys.path` (thư mục hiện tại, `PYTHONPATH` và thư viện chuẩn). 3) Khi tìm thấy, Python biên dịch file sang bytecode, tạo một namespace đối tượng module mới, thực thi các câu lệnh cấp cao của module và lưu đối tượng vào `sys.modules`. Import tuyệt đối chỉ định đầy đủ đường dẫn package từ root, giúp tránh xung đột tên.',
+            },
+            diagram: {
+              title: {
+                en: 'Python Module Import Resolution Flow',
+                vi: 'Quy Trình Phân Giải Import Module Trong Python',
+              },
+              steps: [
+                {
+                  number: 1,
+                  label: { en: 'Cache Lookup in sys.modules', vi: 'Tra Cứu Cache sys.modules' },
+                  description: {
+                    en: 'Python checks if module is already loaded in memory cache.',
+                    vi: 'Python kiểm tra xem module đã được nạp vào cache bộ nhớ chưa.',
+                  },
+                },
+                {
+                  number: 2,
+                  label: { en: 'Path Search via sys.path', vi: 'Tìm Kiếm Đường Dẫn sys.path' },
+                  description: {
+                    en: 'Searches directories in sys.path sequentially for target .py file or package.',
+                    vi: 'Duyệt tuần tự các thư mục trong sys.path để tìm file .py hoặc package chỉ định.',
+                  },
+                },
+                {
+                  number: 3,
+                  label: { en: 'Execution & Namespace Binding', vi: 'Thực Thi & Gán Namespace' },
+                  description: {
+                    en: 'Executes module top-level code, stores instance in sys.modules, and binds module name.',
+                    vi: 'Thực thi mã cấp cao của module, lưu vào sys.modules và gắn tên module vào scope hiện tại.',
+                  },
+                },
+              ],
+            },
+            whenToUse: {
+              use: {
+                en: ['Use Absolute Imports for clear, unambiguous package references across large codebases'],
+                vi: ['Dùng Import Tuyệt Đối cho các dự án lớn để đường dẫn rõ ràng, không bị lẫn lộn'],
+              },
+              avoid: {
+                en: ['Avoid modifying sys.path at runtime; configure PYTHONPATH or virtualenv entrypoints instead'],
+                vi: ['Tránh sửa đổi sys.path lúc runtime; hãy cấu hình PYTHONPATH hoặc venv chuẩn xác'],
+              },
+            },
+            commonMistakes: [
+              {
+                mistake: {
+                  en: 'Circular import dependencies where Module A imports Module B at top-level while B imports A',
+                  vi: 'Lỗi phụ thuộc vòng (Circular Import) khi Module A import B ở top-level còn B lại import A',
+                },
+                why: {
+                  en: 'When B tries to access a symbol from A before A has finished top-level execution, Python raises AttributeError or ImportError.',
+                  vi: 'Khi B truy cập symbol từ A trong khi A chưa thực thi xong cấp top-level, Python sẽ báo lỗi AttributeError hoặc ImportError.',
+                },
+                solution: {
+                  en: 'Refactor shared dependencies into a separate module, or delay imports inside functions.',
+                  vi: 'Tách phần phụ thuộc dùng chung sang module độc lập thứ 3, hoặc chuyển câu lệnh import vào bên trong hàm.',
+                },
+                codeIncorrect: `# module_a.py
+import module_b
+def func_a():
+    return module_b.func_b()`,
+                codeCorrect: `# module_a.py (Deferred import solution)
+def func_a():
+    import module_b
+    return module_b.func_b()`,
+              },
+            ],
+            keyTakeaways: {
+              en: [
+                'sys.modules caches loaded modules; modules are executed ONCE per process lifetime',
+                'sys.path determines directory search order for imported modules',
+                'Absolute imports prevent naming ambiguity in complex applications',
+              ],
+              vi: [
+                'sys.modules lưu cache module đã nạp; mỗi module chỉ chạy top-level MỘT LẦN duy nhất',
+                'sys.path quyết định thứ tự tìm kiếm thư mục cho module',
+                'Import tuyệt đối giúp ngăn ngừa xung đột tên trong ứng dụng phức tạp',
+              ],
             },
           },
         ],
@@ -209,24 +413,94 @@ print(a)  # [1, 2, 3, 4] - mutated in place!`,
           {
             id: 'py-def-1-1',
             title: {
-              en: 'GIL (Global Interpreter Lock)',
-              vi: 'GIL (Global Interpreter Lock)',
+              en: 'GIL (Global Interpreter Lock) & Concurrency Models',
+              vi: 'GIL (Global Interpreter Lock) & Các Mô Hình Đồng Thời',
             },
             content: {
-              en: 'GIL is a mutex that protects access to Python objects, preventing multiple native threads from executing CPython bytecodes in parallel on multiple CPU cores.',
-              vi: 'GIL (Global Interpreter Lock) là một khóa mutex bảo vệ quyền truy cập đối tượng Python, ngăn nhiều native thread thực thi CPython bytecode cùng lúc trên nhiều lõi CPU.',
+              en: 'The Global Interpreter Lock (GIL) is a mutual exclusion lock used by CPython to ensure that only one native thread executes Python bytecode at a time per process. The GIL exists because CPython internal memory management is not thread-safe (reference counting `ob_refcnt` is susceptible to race conditions). While the GIL limits CPU-bound multithreading across multiple CPU cores, I/O-bound operations (network requests, disk access) release the GIL while waiting. For CPU-heavy parallel processing, developers use `multiprocessing` or process pools.',
+              vi: 'Global Interpreter Lock (GIL) là một khóa mutex trong CPython đảm bảo chỉ có duy nhất một native thread được thực thi CPython bytecode tại một thời điểm trong mỗi tiến trình. GIL tồn tại vì cơ chế quản lý bộ nhớ nội bộ của CPython không thread-safe (đếm tham chiếu `ob_refcnt` dễ gặp race condition). Dù GIL hạn chế đa luồng xử lý CPU-bound trên nhiều core, các tác vụ I/O-bound (truy vấn mạng, đọc đĩa) sẽ nhả GIL khi chờ đợi. Với các bài toán nặng về tính toán CPU, nhà phát triển sử dụng module `multiprocessing` để tạo nhiều process riêng biệt.',
+            },
+            keyIdea: {
+              en: 'The GIL prevents CPython threads from running CPU-bound bytecodes in parallel. Choose multiprocessing for CPU-bound tasks and threading/asyncio for I/O-bound tasks.',
+              vi: 'GIL ngăn thread CPython chạy song song các công việc tính toán nặng trên CPU. Hãy chọn multiprocessing cho CPU-bound và threading/asyncio cho I/O-bound.',
+            },
+            comparisonTable: {
+              headers: [
+                { en: 'Concurrency Mechanism', vi: 'Cơ Chế Đồng Thời' },
+                { en: 'Bypasses GIL?', vi: 'Vượt Qua GIL?' },
+                { en: 'Memory Model', vi: 'Mô Hình Bộ Nhớ' },
+                { en: 'Optimal Workload', vi: 'Tác Vụ Tối Ưu' },
+              ],
+              rows: [
+                {
+                  en: ['threading', 'No', 'Shared process memory', 'I/O-bound (web requests, file I/O)'],
+                  vi: ['threading', 'Không', 'Bộ nhớ dùng chung', 'I/O-bound (gọi API, đọc file)'],
+                },
+                {
+                  en: ['multiprocessing', 'Yes (Separate processes)', 'Isolated memory (IPC required)', 'CPU-bound (data processing, ML)'],
+                  vi: ['multiprocessing', 'Có (Tiến trình riêng)', 'Bộ nhớ cô lập (Cần IPC)', 'CPU-bound (tính toán, xử lý dữ liệu)'],
+                },
+                {
+                  en: ['asyncio', 'No (Single-threaded event loop)', 'Single thread memory', 'High-concurrency I/O networking'],
+                  vi: ['asyncio', 'Không (Event loop đơn luồng)', 'Bộ nhớ đơn luồng', 'I/O mạng hàng ngàn kết nối'],
+                },
+              ],
             },
           },
           {
             id: 'py-def-1-2',
             title: {
-              en: 'LEGB Scope Rule',
-              vi: 'Quy Tắc Phạm Vi LEGB',
+              en: 'LEGB Scope Resolution Rule',
+              vi: 'Quy Tắc Phân Giải Phạm Vi LEGB',
             },
             content: {
-              en: 'LEGB defines the variable lookup hierarchy: Local → Enclosing → Global → Built-in.',
-              vi: 'LEGB định nghĩa thứ tự tìm kiếm biến: Local (Cục bộ) → Enclosing (Bao quanh) → Global (Toàn cục) → Built-in (Tích hợp sẵn).',
+              en: 'The LEGB rule dictates the search hierarchy when Python looks up variable names: 1) Local (L): Variables defined inside the current function/lambda, 2) Enclosing (E): Variables in outer enclosing functions (closures), 3) Global (G): Module top-level variables, and 4) Built-in (B): Preloaded Python names (`len`, `ValueError`, `range`). Understanding LEGB prevents `UnboundLocalError` when modifying global or enclosing variables.',
+              vi: 'Quy tắc LEGB định nghĩa thứ tự ưu tiên khi Python tìm kiếm tên biến: 1) Local (L): Biến cục bộ trong hàm hiện tại, 2) Enclosing (E): Biến ở các hàm bao ngoài (closure), 3) Global (G): Biến cấp cao nhất của module, và 4) Built-in (B): Các tên được nạp sẵn (`len`, `ValueError`, `range`). Nắm vững LEGB giúp tránh lỗi `UnboundLocalError` khi chỉnh sửa biến global hoặc enclosing.',
             },
+            codeBlock: {
+              language: 'python',
+              filename: 'legb_scope.py',
+              code: `x = "GLOBAL"  # G in LEGB
+
+def outer():
+    x = "ENCLOSING"  # E in LEGB
+    
+    def inner():
+        nonlocal x   # Modifies Enclosing scope!
+        x = "MUTATED_ENCLOSING"
+        y = "LOCAL"  # L in LEGB
+        print(y, x, len([1, 2])) # len is B in LEGB
+        
+    inner()
+    print("Outer x:", x) # Prints MUTATED_ENCLOSING
+
+outer()`,
+            },
+            commonMistakes: [
+              {
+                mistake: {
+                  en: 'UnboundLocalError when referencing a global variable and assigning to it inside a function without global keyword',
+                  vi: 'Lỗi UnboundLocalError khi gán biến trùng tên với global trong hàm mà không dùng từ khóa global',
+                },
+                why: {
+                  en: 'Python compiles any variable assigned inside a function body as a Local variable for the ENTIRE function scope.',
+                  vi: 'Python mặc định coi bất kỳ biến nào có lệnh gán trong hàm là biến Cục bộ (Local) cho TOÀN BỘ phạm vi hàm đó.',
+                },
+                solution: {
+                  en: 'Declare `global x` or `nonlocal x` explicitly before assignment if mutating outer variables.',
+                  vi: 'Khai báo `global x` hoặc `nonlocal x` trước khi gán nếu muốn thay đổi biến ở scope ngoài.',
+                },
+                codeIncorrect: `counter = 0
+def increment():
+    print(counter) # UnboundLocalError!
+    counter += 1`,
+                codeCorrect: `counter = 0
+def increment():
+    global counter
+    print(counter)
+    counter += 1`,
+              },
+            ],
           },
         ],
       },
@@ -247,12 +521,37 @@ print(a)  # [1, 2, 3, 4] - mutated in place!`,
           {
             id: 'py-def-2-1',
             title: {
-              en: 'MRO (Method Resolution Order)',
-              vi: 'MRO (Method Resolution Order)',
+              en: 'MRO (Method Resolution Order) & C3 Linearization',
+              vi: 'MRO (Method Resolution Order) & Thuật Toán C3 Linearization',
             },
             content: {
-              en: 'MRO determines the order in which Python searches parent classes for a method during inheritance, calculated using C3 Linearization order.',
-              vi: 'MRO quyết định thứ tự Python tìm kiếm phương thức ở các lớp cha khi kế thừa, được xác định qua cơ chế C3 Linearization.',
+              en: 'Method Resolution Order (MRO) is the deterministic order Python uses to search for methods and attributes in a class hierarchy during multiple inheritance. Python uses the C3 Linearization algorithm to calculate MRO, ensuring three key guarantees: 1) Subclasses are always checked before their base classes, 2) Multiple inheritance parents are searched in the order specified in class definition, and 3) Monotonicity is maintained across inheritance graphs. Developers inspect MRO using `Class.__mro__` or `Class.mro()`.',
+              vi: 'Method Resolution Order (MRO) là thứ tự tìm kiếm phương thức và thuộc tính trong hệ thống đa kế thừa của Python. Python áp dụng thuật toán C3 Linearization để tính toán MRO, đảm bảo 3 nguyên tắc: 1) Lớp con luôn được kiểm tra trước lớp cha, 2) Các lớp cha trong đa kế thừa được duyệt đúng theo thứ tự khai báo, và 3) Tính đơn điệu (monotonicity) được giữ nguyên trên toàn cây kế thừa. Bạn có thể xem MRO qua `Class.__mro__`.',
+            },
+            keyIdea: {
+              en: 'MRO resolves multiple inheritance ambiguity and governs how `super()` delegates method calls up the inheritance chain.',
+              vi: 'MRO giải quyết sự mơ hồ trong đa kế thừa và điều phối cách `super()` chuyển tiếp lời gọi phương thức lên lớp cha.',
+            },
+            codeBlock: {
+              language: 'python',
+              filename: 'mro_c3_demo.py',
+              code: `class Base:
+    def speak(self): return "Base"
+
+class A(Base):
+    def speak(self): return f"A -> {super().speak()}"
+
+class B(Base):
+    def speak(self): return f"B -> {super().speak()}"
+
+class Child(A, B): # Multiple inheritance
+    def speak(self): return f"Child -> {super().speak()}"
+
+c = Child()
+print(c.speak()) # Child -> A -> B -> Base
+print("\\nCalculated MRO:")
+for cls in Child.__mro__:
+    print(f"- {cls.__name__}")`,
             },
           },
         ],
@@ -316,18 +615,37 @@ print(a)  # [1, 2, 3, 4] - mutated in place!`,
           {
             id: 'pt-1-1',
             title: {
-              en: 'Star Unpacking for Sequences',
-              vi: 'Kỹ Thuật Star Unpacking Dãy Số',
+              en: 'Star Unpacking & Idiomatic Iteration Idioms',
+              vi: 'Kỹ Thuật Star Unpacking & Vòng Lặp Pythonic',
             },
             content: {
-              en: 'Use the starred operator `*` to capture head, middle, or tail sequences cleanly in single line assignments.',
-              vi: 'Sử dụng toán tử dấu sao `*` để gom phần tử đầu, giữa hoặc cuối danh sách trong một dòng lệnh.',
+              en: 'Avoid manual C-style indexing loops (`for i in range(len(lst)):`) in Python. Use `enumerate()` when element indices are needed, `zip()` for parallel iteration over multiple iterables, and extended star unpacking (`*rest`) to extract arbitrary elements from tuples and lists cleanly.',
+              vi: 'Tránh viết vòng lặp kiểu C-style thủ công (`for i in range(len(lst)):`) trong Python. Hãy dùng `enumerate()` khi cần chỉ số, dùng `zip()` để lặp song song nhiều danh sách, và dùng star unpacking mở rộng (`*rest`) để bóc tách dữ liệu tinh gọn.',
             },
             codeBlock: {
               language: 'python',
-              filename: 'unpack.py',
-              code: `first, *middle, last = [10, 20, 30, 40, 50]
-print(first, middle, last)  # 10 [20, 30, 40] 50`,
+              filename: 'unpacking_tips.py',
+              code: `# Example 1 — Extended Star Unpacking
+record = ["USR-102", "Alice", 98.5, "Active", "Engineering"]
+user_id, name, *details, dept = record
+print(f"ID: {user_id}, Name: {name}, Dept: {dept}")
+print(f"Captured Details: {details}") # [98.5, 'Active']
+
+# Example 2 — Parallel Iteration with zip
+names = ["Alice", "Bob", "Charlie"]
+scores = [95, 88, 92]
+for name, score in zip(names, scores, strict=True):
+    print(f"{name}: {score}")`,
+            },
+            bestPractices: {
+              en: [
+                'Pass strict=True to zip() in Python 3.10+ to raise ValueError if iterables have unequal lengths',
+                'Use enumerate(iterable, start=1) for 1-based human indexing',
+              ],
+              vi: [
+                'Truyền strict=True vào zip() từ Python 3.10+ để báo lỗi nếu độ dài hai danh sách không bằng nhau',
+                'Dùng enumerate(iterable, start=1) khi cần đánh số thứ tự từ 1',
+              ],
             },
           },
         ],
@@ -349,20 +667,49 @@ print(first, middle, last)  # 10 [20, 30, 40] 50`,
           {
             id: 'pt-2-1',
             title: {
-              en: 'Filter and Compute Simultaneously',
-              vi: 'Vừa Tính Toán Vừa Lọc Dữ Liệu',
+              en: 'Walrus Operator (:=) Patterns & Syntax Rules',
+              vi: 'Các Mẫu Thiết Kế & Quy Tắc Cú Pháp Của Toán Tử Walrus (:=)',
             },
             content: {
-              en: 'Assign values to variables inside conditional checks to streamline parsing pipelines.',
-              vi: 'Gán giá trị vào biến ngay trong câu lệnh điều kiện để tinh gọn quy trình parse dữ liệu.',
+              en: 'Introduced in PEP 572 (Python 3.8), assignment expressions (`:=`) allow you to assign values to variables inside expressions. This eliminates duplicate costly function evaluations inside `while` stream loops, `if` conditionals, and list filtering comprehensions.',
+              vi: 'Được giới thiệu trong PEP 572 (Python 3.8), toán tử walrus (`:=`) cho phép vừa gán giá trị vừa trả về kết quả ngay trong một biểu thức. Giúp loại bỏ việc tính toán lặp lại các hàm tốn kém trong vòng lặp `while`, câu lệnh `if` và list comprehension.',
+            },
+            whenToUse: {
+              use: {
+                en: [
+                  'Reading chunked streams in while loops: while (chunk := file.read(8192)):',
+                  'Filtering and transforming in list comprehensions without double function evaluation',
+                ],
+                vi: [
+                  'Đọc stream theo từng chunk trong while loop: while (chunk := file.read(8192)):',
+                  'Vừa lọc vừa biến đổi trong list comprehension mà không phải gọi lại hàm tốn kém',
+                ],
+              },
+              avoid: {
+                en: [
+                  'Avoid overusing walrus operators in simple assignments where plain = is cleaner',
+                ],
+                vi: [
+                  'Tránh lạm dụng toán tử walrus ở phép gán đơn giản khiến code khó đọc',
+                ],
+              },
             },
             codeBlock: {
               language: 'python',
-              filename: 'walrus.py',
-              code: `results = [
-    data for raw in stream
-    if (data := process(raw)) is not None
-]`,
+              filename: 'walrus_idioms.py',
+              code: `import re
+
+# Practical Example: Regex Pattern Extraction Pipeline
+data_lines = ["USER: alice_99", "INVALID LINE", "USER: bob_2025"]
+pattern = re.compile(r"^USER:\\s*(\\w+)$")
+
+# Walrus assigns 'match' inside comprehension filter!
+usernames = [
+    m.group(1)
+    for line in data_lines
+    if (m := pattern.match(line)) is not None
+]
+print("Extracted users:", usernames) # ['alice_99', 'bob_2025']`,
             },
           },
         ],
@@ -384,12 +731,46 @@ print(first, middle, last)  # 10 [20, 30, 40] 50`,
           {
             id: 'pt-3-1',
             title: {
-              en: 'Non-Destructive Dict Union',
-              vi: 'Gộp Từ Điển Không Biến Đổi Data Gốc',
+              en: 'Non-Destructive Dict Union (|) & Set Lookups',
+              vi: 'Gộp Dict Không Biến Đổi Dữ Liệu (|) & Tra Cứu Tập Hợp',
             },
             content: {
-              en: 'Python 3.9+ introduced the `|` operator for non-destructive dictionary merges.',
-              vi: 'Python 3.9+ hỗ trợ toán tử `|` để gộp hai từ điển mà không biến đổi dữ liệu ban đầu.',
+              en: 'Python 3.9+ introduced dictionary union operators `|` (merge) and `|=` (update in-place). For high-speed membership testing, Python `set` and `dict` lookups operate in average O(1) time complexity using hash tables, compared to O(N) linear search in Python `list`. Converting lists to sets before performing repeated `in` checks yields massive performance gains.',
+              vi: 'Python 3.9+ hỗ trợ toán tử hợp dict `|` (gộp mới) và `|=` (cập nhật tại chỗ). Để kiểm tra sự tồn tại (membership test) tốc độ cao, `set` và `dict` trong Python chạy với độ phức tạp trung bình O(1) nhờ bảng băm (hash table), so với O(N) tìm kiếm tuyến tính ở `list`. Chuyển list sang set trước khi kiểm tra `in` lặp đi lặp lại giúp tăng tốc độ vượt trội.',
+            },
+            comparisonTable: {
+              headers: [
+                { en: 'Merge Syntax', vi: 'Cú Pháp Gộp' },
+                { en: 'Python Version', vi: 'Phiên Bản Python' },
+                { en: 'Mutates Target?', vi: 'Thay Đổi Dict Gốc?' },
+                { en: 'Behavior', vi: 'Hành Vi' },
+              ],
+              rows: [
+                {
+                  en: ['dict_a | dict_b', '3.9+', 'No (Returns new dict)', 'Right-hand side keys override left-hand keys'],
+                  vi: ['dict_a | dict_b', '3.9+', 'Không (Trả về dict mới)', 'Key bên phải đè lên key trùng bên trái'],
+                },
+                {
+                  en: ['dict_a |= dict_b', '3.9+', 'Yes (In-place update)', 'Updates dict_a in-place with dict_b items'],
+                  vi: ['dict_a |= dict_b', '3.9+', 'Có (Cập nhật tại chỗ)', 'Cập nhật trực tiếp vào dict_a'],
+                },
+                {
+                  en: ['{**dict_a, **dict_b}', '3.5+', 'No', 'Unpacks keys into new dictionary literal'],
+                  vi: ['{**dict_a, **dict_b}', '3.5+', 'Không', 'Unpack key vào dict mới'],
+                },
+              ],
+            },
+            codeBlock: {
+              language: 'python',
+              filename: 'dict_merge_perf.py',
+              code: `# Example: Merging Configuration Layers
+default_cfg = {"host": "localhost", "port": 8080, "debug": False}
+env_cfg = {"port": 9000, "debug": True}
+
+# Clean non-destructive merge using |
+final_cfg = default_cfg | env_cfg
+print("Merged Config:", final_cfg)
+# {'host': 'localhost', 'port': 9000, 'debug': True}`,
             },
           },
         ],
@@ -453,22 +834,54 @@ print(first, middle, last)  # 10 [20, 30, 40] 50`,
           {
             id: 'pce-1-1',
             title: {
-              en: 'Definition Time vs Call Time Evaluation',
-              vi: 'Thời Điểm Định Nghĩa vs Thời Điểm Gọi Hàm',
+              en: 'Definition Time Evaluation & The Sentinel Pattern',
+              vi: 'Đánh Giá Thời Điểm Định Nghĩa & Mẫu Sentinel',
             },
             content: {
-              en: 'Default argument expressions are evaluated ONCE when the function is defined, NOT on invocation. Use `None` sentinel pattern instead.',
-              vi: 'Biểu thức tham số mặc định được tính toán MỘT LẦN duy nhất khi định nghĩa hàm. Hãy sử dụng mẫu `None` sentinel để khắc phục.',
+              en: 'In Python, default argument expressions in function signatures are evaluated ONCE when the function definition is executed, NOT on subsequent function invocations. If a default argument is mutable (such as `list`, `dict`, or `set`), that single object instance is stored in `function.__defaults__` and shared across ALL calls to that function.',
+              vi: 'Trong Python, biểu thức tham số mặc định ở khai báo hàm được tính toán MỘT LẦN duy nhất khi câu lệnh định nghĩa hàm thực thi, KHÔNG PHẢI ở mỗi lần gọi hàm sau đó. Nếu tham số mặc định là đối tượng khả biến (như `list`, `dict`, `set`), đối tượng duy nhất đó được lưu vào `function.__defaults__` và dùng chung cho TẤT CẢ các lần gọi hàm.',
             },
-            codeBlock: {
-              language: 'python',
-              filename: 'mutable_fix.py',
-              code: `# SAFE IDIOM:
-def add_entry(item: str, target_list: list | None = None):
-    if target_list is None:
-        target_list = []
-    target_list.append(item)
-    return target_list`,
+            commonMistakes: [
+              {
+                mistake: {
+                  en: 'Using def append_to_list(val, target=[]) which retains items across separate calls',
+                  vi: 'Dùng def append_to_list(val, target=[]) khiến dữ liệu bị cộng dồn qua các lần gọi độc lập',
+                },
+                why: {
+                  en: 'The target list [] is instantiated once at function compile time and stored in __defaults__.',
+                  vi: 'List target [] được khởi tạo đúng 1 lần khi định nghĩa hàm và lưu vào __defaults__.',
+                },
+                solution: {
+                  en: 'Use None as the sentinel default value and instantiate a fresh list inside the function body.',
+                  vi: 'Dùng None làm giá trị mặc định dạng sentinel và khởi tạo list mới bên trong thân hàm.',
+                },
+                codeIncorrect: `def add_item(val, items=[]): # DANGEROUS!
+    items.append(val)
+    return items
+
+print(add_item(1)) # [1]
+print(add_item(2)) # [1, 2] - State leak!`,
+                codeCorrect: `def add_item(val, items=None): # SAFE SENTINEL
+    if items is None:
+        items = []
+    items.append(val)
+    return items
+
+print(add_item(1)) # [1]
+print(add_item(2)) # [2] - Isolated!`,
+              },
+            ],
+            keyTakeaways: {
+              en: [
+                'Default arguments evaluate once at module load time into function.__defaults__',
+                'Never use mutable objects (list, dict, set) directly in function signatures',
+                'Always use None sentinel pattern for optional mutable parameters',
+              ],
+              vi: [
+                'Tham số mặc định được tính toán 1 lần khi nạp module vào function.__defaults__',
+                'Không bao giờ dùng đối tượng khả biến (list, dict, set) làm default trong chữ ký hàm',
+                'Luôn dùng mẫu None sentinel cho tham số khả biến tùy chọn',
+              ],
             },
           },
         ],
@@ -490,13 +903,33 @@ def add_entry(item: str, target_list: list | None = None):
           {
             id: 'pce-2-1',
             title: {
-              en: 'Binding by Variable Name vs Value',
-              vi: 'Liên Kết Biến Theo Tên vs Giá Trị',
+              en: 'Late-Binding Variable Reference Resolution',
+              vi: 'Cơ Chế Phân Giải Tham Chiếu Trễ Trong Closure',
             },
             content: {
-              en: 'Python closures capture variable names in enclosing scopes, looking up their current values when invoked later.',
-              vi: 'Closure trong Python ghi nhớ tên biến ở phạm vi ngoài và chỉ truy xuất giá trị thực khi hàm được gọi sau đó.',
+              en: 'Python closures bind variables by *reference*, not by value. When function closures or lambdas are created inside a loop, they capture the variable name in the enclosing scope. By the time the closures are executed later, the loop has completed, and all closures resolve the variable to its final iteration value.',
+              vi: 'Closure trong Python ghi nhớ biến theo *tham chiếu* (reference) chứ không theo giá trị. Khi các hàm closure hoặc lambda được tạo trong vòng lặp, chúng lưu lại tên biến ở phạm vi chứa ngoài. Đến khi các hàm này thực thi sau đó, vòng lặp đã chạy xong và tất cả closure đều đọc ra giá trị ở vòng lặp cuối cùng.',
             },
+            commonMistakes: [
+              {
+                mistake: {
+                  en: 'Creating a list of functions inside a loop [lambda: i for i in range(5)] where all functions return 4',
+                  vi: 'Tạo danh sách hàm trong vòng lặp [lambda: i for i in range(5)] khiến tất cả hàm đều trả về 4',
+                },
+                why: {
+                  en: 'The closures look up variable i in enclosing scope at invocation time, after the loop ended at 4.',
+                  vi: 'Các closure truy xuất biến i ở scope ngoài lúc được gọi, khi vòng lặp đã dừng ở giá trị 4.',
+                },
+                solution: {
+                  en: 'Bind the current iteration value immediately using default argument trick (lambda i=i: i) or functools.partial.',
+                  vi: 'Đóng gói giá trị hiện tại ngay lập tức qua mẹo tham số mặc định (lambda i=i: i) hoặc dùng functools.partial.',
+                },
+                codeIncorrect: `handlers = [lambda: i for i in range(3)]
+print([h() for h in handlers]) # [2, 2, 2]`,
+                codeCorrect: `handlers = [lambda i=i: i for i in range(3)]
+print([h() for h in handlers]) # [0, 1, 2]`,
+              },
+            ],
           },
         ],
       },
@@ -517,12 +950,34 @@ def add_entry(item: str, target_list: list | None = None):
           {
             id: 'pce-3-1',
             title: {
-              en: 'Deep copy for Nested Structures',
-              vi: 'Dùng copy.deepcopy cho Cấu Trúc Đa Chiều',
+              en: 'Container Clones vs Reference Sharing',
+              vi: 'Sao Chép Vỏ Container vs Chia Sẻ Tham Chiếu',
             },
             content: {
-              en: 'Shallow copies clone top-level containers but share references to nested lists/dicts. Use `copy.deepcopy()` for independent mutations.',
-              vi: 'Shallow copy chỉ tạo vỏ mới nhưng giữ nguyên tham chiếu đối tượng bên trong. Dùng `copy.deepcopy()` khi cần biến đổi hoàn toàn độc lập.',
+              en: 'In Python, shallow copy operations (`list.copy()`, `dict.copy()`, or `copy.copy()`) create a new outer container object, but copy references to the inner nested items. Modifying a nested mutable object inside a shallow copy will mutate the original container structure as well. To duplicate nested structures independently, use `copy.deepcopy()`.',
+              vi: 'Trong Python, phép sao chép nông (`list.copy()`, `dict.copy()`, hay `copy.copy()`) tạo ra một vỏ container outer mới, nhưng lại sao chép tham chiếu tới các đối tượng con bên trong. Việc thay đổi đối tượng con khả biến trong bản sao nông sẽ làm biến đổi cả dữ liệu gốc. Để sao chép hoàn toàn độc lập tất cả các cấp lồng nhau, hãy dùng `copy.deepcopy()`.',
+            },
+            comparisonTable: {
+              headers: [
+                { en: 'Copy Technique', vi: 'Kỹ Thuật Copy' },
+                { en: 'Outer Container ID', vi: 'ID Container Ngoài' },
+                { en: 'Nested Items ID', vi: 'ID Phần Tử Con' },
+                { en: 'Use Case', vi: 'Trường Hợp Dùng' },
+              ],
+              rows: [
+                {
+                  en: ['Assignment (b = a)', 'Same ID', 'Same ID', 'Creating variable aliases'],
+                  vi: ['Phép gán (b = a)', 'Cùng ID', 'Cùng ID', 'Tạo tên bí danh cho biến'],
+                },
+                {
+                  en: ['Shallow Copy (a.copy())', 'New ID', 'Same ID (Shared)', 'Flat 1D collections'],
+                  vi: ['Sao chép nông (a.copy())', 'ID Mới', 'Cùng ID (Dùng chung)', 'Danh sách phẳng 1 chiều'],
+                },
+                {
+                  en: ['Deep Copy (copy.deepcopy(a))', 'New ID', 'New ID (Cloned)', 'Nested multi-level dicts/lists'],
+                  vi: ['Sao chép sâu (copy.deepcopy)', 'ID Mới', 'ID Mới (Sao chép hết)', 'Cấu trúc lồng nhau nhiều cấp'],
+                },
+              ],
             },
           },
         ],
@@ -580,20 +1035,30 @@ def add_entry(item: str, target_list: list | None = None):
           {
             id: 'pbp-1-1',
             title: {
-              en: 'Modern Union Syntax & Generics',
-              vi: 'Cú Pháp Union Hiện Đại & Generics',
+              en: 'Modern Union Syntax & Protocols',
+              vi: 'Cú Pháp Union Hiện Đại & Protocols',
             },
             content: {
-              en: 'Replace verbose `Optional[Union[int, str]]` with concise `int | str | None`. Use `TypeGuard` for narrowing custom types.',
-              vi: 'Thay thế `Optional[Union[int, str]]` bằng cú pháp gọn `int | str | None`. Dùng `TypeGuard` để thu hẹp kiểu dữ liệu tùy chỉnh.',
+              en: 'Modern Python (3.10+) simplifies type annotations using pipe union operators (`int | str`) instead of `typing.Union`. For duck-typing static analysis, use `typing.Protocol` (structural subtyping) instead of heavy Abstract Base Classes (ABC). Classes satisfying a Protocol interface do not need to explicitly inherit from it.',
+              vi: 'Python hiện đại (3.10+) đơn giản hóa khai báo kiểu với toán tử union thanh đứng (`int | str`) thay cho `typing.Union`. Với mô hình duck-typing tĩnh, hãy dùng `typing.Protocol` (structural subtyping) thay cho lớp trừu tượng ABC cồng kềnh. Các lớp đáp ứng đúng interface của Protocol không cần phải kế thừa trực tiếp từ nó.',
             },
             codeBlock: {
               language: 'python',
-              filename: 'typing_best_practice.py',
-              code: `from typing import TypeGuard
+              filename: 'typing_protocols.py',
+              code: `from typing import Protocol
 
-def is_str_list(val: list[object]) -> TypeGuard[list[str]]:
-    return all(isinstance(x, str) for x in val)`,
+class Renderable(Protocol):
+    def render(self) -> str: ...
+
+class HTMLWidget:
+    def render(self) -> str:
+        return "<div>Widget</div>"
+
+def display(item: Renderable) -> None:
+    print(item.render())
+
+# HTMLWidget automatically satisfies Renderable protocol!
+display(HTMLWidget())`,
             },
           },
         ],
@@ -615,12 +1080,30 @@ def is_str_list(val: list[object]) -> TypeGuard[list[str]]:
           {
             id: 'pbp-2-1',
             title: {
-              en: 'Root App Exception Base Class',
-              vi: 'Lớp Lỗi Khởi Tạo Dành Cho Ứng Dụng',
+              en: 'Structured App Error Base & Exception Chaining',
+              vi: 'Lớp Lỗi Khởi Tạo Dành Cho App & Exception Chaining',
             },
             content: {
-              en: 'Create a base `AppError` class for all custom exceptions to facilitate catch-all error logging in API middleware.',
-              vi: 'Tạo lớp gốc `AppError` cho tất cả ngoại lệ tự định nghĩa để middleware API dễ dàng log lỗi.',
+              en: 'In production systems, never catch or raise generic `Exception`. Define a single base `AppError` exception class for your application, and derive specific domain errors (`NotFoundError`, `ValidationError`, `AuthError`) from it. Use exception chaining (`raise CustomError() from err`) to preserve original traceback causes (`__cause__`).',
+              vi: 'Trong hệ thống production, không bao giờ bắt hoặc raise `Exception` chung chung. Hãy định nghĩa một lớp lỗi gốc `AppError` cho ứng dụng và kế thừa các lỗi nghiệp vụ cụ thể (`NotFoundError`, `ValidationError`, `AuthError`). Dùng exception chaining (`raise CustomError() from err`) để giữ nguyên vết traceback nguyên bản (`__cause__`).',
+            },
+            codeBlock: {
+              language: 'python',
+              filename: 'exception_hierarchy.py',
+              code: `class BaseAppError(Exception):
+    """Base exception for all application errors."""
+    def __init__(self, message: str, code: str):
+        super().__init__(message)
+        self.code = code
+
+class UserNotFoundError(BaseAppError):
+    def __init__(self, user_id: str):
+        super().__init__(f"User {user_id} not found", "USER_NOT_FOUND")
+
+try:
+    raise ValueError("DB Connection Timeout")
+except ValueError as err:
+    raise UserNotFoundError("USR-101") from err`,
             },
           },
         ],
@@ -725,12 +1208,28 @@ def main():
           {
             id: 'ppg-2-1',
             title: {
-              en: 'Global Terminal Command Linking',
-              vi: 'Đăng Ký Lệnh Chạy Toàn Cục Trực Tiếp Trên Terminal',
+              en: 'Global Terminal Command Linking with pyproject.toml',
+              vi: 'Đăng Ký Lệnh Terminal Toàn Cục Với pyproject.toml',
             },
             content: {
-              en: 'Define script entry points in `pyproject.toml` so `pip install -e .` creates executable binary symlinks in your PATH.',
-              vi: 'Định nghĩa entry point trong `pyproject.toml` để lệnh `pip install -e .` tự tạo file thực thi trong hệ thống PATH.',
+              en: 'Modern Python packaging uses `pyproject.toml` (PEP 621) to define build metadata and CLI script entry points under `[project.scripts]`. Running `pip install -e .` links executable entry points directly into virtual environment PATH binaries.',
+              vi: 'Đóng gói Python hiện đại sử dụng file `pyproject.toml` (PEP 621) để khai báo metadata và CLI script entrypoint trong mục `[project.scripts]`. Chạy `pip install -e .` sẽ tự liên kết file thực thi trực tiếp vào thư mục PATH của môi trường ảo.',
+            },
+            codeBlock: {
+              language: 'toml',
+              filename: 'pyproject.toml',
+              code: `[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "4tm-cli"
+version = "1.0.0"
+description = "4TM Production CLI Audit Tool"
+dependencies = ["rich>=13.0.0"]
+
+[project.scripts]
+my-cli = "my_package.cli:main"`,
             },
           },
         ],
@@ -792,8 +1291,8 @@ def main():
               vi: 'Pattern Strategy Dạng Hàm Tinh Gọn',
             },
             content: {
-              en: 'In Python, you do not need abstract class hierarchies for the Strategy pattern; pass plain callable functions as strategy parameters directly.',
-              vi: 'Trong Python, bạn không cần tạo cả hệ thống lớp trừu tượng cho Strategy pattern; chỉ cần truyền trực tiếp các hàm làm tham số.',
+              en: 'In Python, because functions are first-class objects, you do not need heavy abstract class hierarchies to implement the Strategy pattern. You can pass plain callable functions or lambda signatures directly as strategy parameters.',
+              vi: 'Trong Python, do hàm là đối tượng First-class, bạn không cần tạo cả hệ thống lớp trừu tượng cồng kềnh cho Strategy pattern. Bạn chỉ cần truyền trực tiếp các hàm hoặc lambda làm tham số chiến lược.',
             },
             codeBlock: {
               language: 'python',
@@ -835,8 +1334,25 @@ def compute_checkout(price: float, strategy: DiscountStrategy) -> float:
               vi: 'Pattern Repository Khái Quát Cho Lớp Persistence',
             },
             content: {
-              en: 'Use the Repository pattern to decouple application business logic from underlying database clients (SQLAlchemy, Redis, or Mongo).',
-              vi: 'Sử dụng Repository pattern để tách biệt logic nghiệp vụ khỏi client cơ sở dữ liệu bên dưới.',
+              en: 'Use the Repository pattern to decouple core business logic from underlying database persistence engines (SQLAlchemy, Redis, Mongo, or mock in-memory stores).',
+              vi: 'Sử dụng Repository pattern để tách biệt logic nghiệp vụ khỏi engine cơ sở dữ liệu bên dưới (SQLAlchemy, Redis, Mongo hoặc mock in-memory).',
+            },
+            codeBlock: {
+              language: 'python',
+              filename: 'repository_pattern.py',
+              code: `from typing import Protocol
+
+class UserRepository(Protocol):
+    def get_by_id(self, user_id: str) -> dict | None: ...
+    def save(self, user_data: dict) -> None: ...
+
+class InMemoryUserRepo:
+    def __init__(self):
+        self._db = {}
+    def get_by_id(self, user_id: str) -> dict | None:
+        return self._db.get(user_id)
+    def save(self, user_data: dict) -> None:
+        self._db[user_data["id"]] = user_data`,
             },
           },
         ],
