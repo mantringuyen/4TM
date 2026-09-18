@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { BrandLogo, ProductSwitcher, ThemeSelector } from '@shared';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../i18n/translations';
@@ -21,7 +21,50 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSignOut,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileDrawerRef = useRef<HTMLDivElement>(null);
+  const mobileToggleBtnRef = useRef<HTMLButtonElement>(null);
   const dict = TRANSLATIONS[language];
+
+  // Close mobile drawer when tapping/clicking outside
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const handleOutsideInteraction = (e: PointerEvent | MouseEvent | TouchEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
+
+      if (mobileDrawerRef.current && mobileDrawerRef.current.contains(target)) {
+        return;
+      }
+
+      if (mobileToggleBtnRef.current && mobileToggleBtnRef.current.contains(target)) {
+        return;
+      }
+
+      setMobileMenuOpen(false);
+    };
+
+    const pointerEvent = typeof window !== 'undefined' && 'PointerEvent' in window ? 'pointerdown' : 'mousedown';
+
+    document.addEventListener(pointerEvent, handleOutsideInteraction, true);
+    document.addEventListener('touchstart', handleOutsideInteraction, true);
+
+    return () => {
+      document.removeEventListener(pointerEvent, handleOutsideInteraction, true);
+      document.removeEventListener('touchstart', handleOutsideInteraction, true);
+    };
+  }, [mobileMenuOpen]);
+
+  // Close mobile drawer on escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileMenuOpen(false);
+    };
+    if (mobileMenuOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [mobileMenuOpen]);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md transition-colors text-slate-900 dark:text-white">
@@ -122,6 +165,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Mobile Drawer Toggle */}
           <button
+            ref={mobileToggleBtnRef}
             type="button"
             id="apps-mobile-menu-btn"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -133,8 +177,22 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
+      {/* Mobile Backdrop Overlay */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-950 px-4 py-4 space-y-3">
+        <div
+          className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-30 md:hidden animate-in fade-in duration-150"
+          onClick={() => setMobileMenuOpen(false)}
+          onPointerDown={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div
+          ref={mobileDrawerRef}
+          className="relative z-40 md:hidden border-t border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-950 px-4 py-4 space-y-3"
+        >
           <div className="pb-3 border-b border-slate-200 dark:border-slate-850">
             <p className="text-xs font-mono text-slate-400 mb-2">Ecosystem Navigation</p>
             <ProductSwitcher currentProductId="apps" />

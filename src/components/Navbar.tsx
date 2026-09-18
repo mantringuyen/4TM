@@ -24,6 +24,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
   const mobileDrawerRef = useRef<HTMLDivElement>(null);
+  const mobileToggleBtnRef = useRef<HTMLButtonElement>(null);
   const products = getCanonicalEcosystemProducts('hub', language);
 
   // Close user dropdown on outside click
@@ -37,6 +38,36 @@ export const Navbar: React.FC<NavbarProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [userDropdownOpen]);
+
+  // Close mobile drawer when tapping/clicking outside
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const handleOutsideInteraction = (e: PointerEvent | MouseEvent | TouchEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
+
+      if (mobileDrawerRef.current && mobileDrawerRef.current.contains(target)) {
+        return;
+      }
+
+      if (mobileToggleBtnRef.current && mobileToggleBtnRef.current.contains(target)) {
+        return;
+      }
+
+      setMobileMenuOpen(false);
+    };
+
+    const pointerEvent = typeof window !== 'undefined' && 'PointerEvent' in window ? 'pointerdown' : 'mousedown';
+
+    document.addEventListener(pointerEvent, handleOutsideInteraction, true);
+    document.addEventListener('touchstart', handleOutsideInteraction, true);
+
+    return () => {
+      document.removeEventListener(pointerEvent, handleOutsideInteraction, true);
+      document.removeEventListener('touchstart', handleOutsideInteraction, true);
+    };
+  }, [mobileMenuOpen]);
 
   // Close mobile drawer on escape key
   useEffect(() => {
@@ -193,6 +224,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Mobile Hamburger Button */}
           <button
+            ref={mobileToggleBtnRef}
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
@@ -204,11 +236,21 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
+      {/* Mobile Backdrop Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-30 md:hidden animate-in fade-in duration-150"
+          onClick={() => setMobileMenuOpen(false)}
+          onPointerDown={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div
           ref={mobileDrawerRef}
-          className="md:hidden border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 pt-3 pb-6 space-y-4 animate-in slide-in-from-top duration-200"
+          className="relative z-40 md:hidden border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 pt-3 pb-6 space-y-4 animate-in slide-in-from-top duration-200"
         >
           <div className="py-2">
             <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-2">

@@ -50,15 +50,17 @@ export const ProductSwitcher: React.FC<ProductSwitcherProps> = ({
       if (e.key === 'Escape') setIsOpen(false);
     };
 
-    const pointerEvent = typeof window !== 'undefined' && 'PointerEvent' in window ? 'pointerdown' : 'mousedown';
-
-    document.addEventListener(pointerEvent, handleOutsideInteraction, true);
+    document.addEventListener('pointerdown', handleOutsideInteraction, true);
+    document.addEventListener('mousedown', handleOutsideInteraction, true);
     document.addEventListener('touchstart', handleOutsideInteraction, true);
+    document.addEventListener('click', handleOutsideInteraction, true);
     document.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      document.removeEventListener(pointerEvent, handleOutsideInteraction, true);
+      document.removeEventListener('pointerdown', handleOutsideInteraction, true);
+      document.removeEventListener('mousedown', handleOutsideInteraction, true);
       document.removeEventListener('touchstart', handleOutsideInteraction, true);
+      document.removeEventListener('click', handleOutsideInteraction, true);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen]);
