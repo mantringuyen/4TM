@@ -77,18 +77,22 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   }[size];
 
   // Rich continuous multicolor spectrum ring gradient (Blue -> Cyan -> Green -> Yellow -> Orange -> Red -> Magenta -> Purple -> Blue)
-  const brandSpectrumRingGradient = 'bg-[conic-gradient(from_135deg_at_50%_50%,#2563EB_0%,#06B6D4_12%,#10B981_25%,#F59E0B_37%,#F97316_50%,#EF4444_62%,#EC4899_75%,#8B5CF6_87%,#2563EB_100%)]';
+  const spectrumGradientStyle: React.CSSProperties = {
+    background: 'conic-gradient(from 135deg at 50% 50%, #2563EB 0%, #06B6D4 12%, #10B981 25%, #F59E0B 37%, #F97316 50%, #EF4444 62%, #EC4899 75%, #8B5CF6 87%, #2563EB 100%)',
+  };
 
   const content = (
     <>
       {showMark && (
         <div
-          className={`relative flex items-center justify-center shrink-0 shadow-xs group-hover:scale-[1.03] transition-transform duration-200 ${sizeClasses.mark} ${brandSpectrumRingGradient}`}
+          className={`relative flex items-center justify-center shrink-0 shadow-xs group-hover:scale-[1.03] transition-transform duration-200 ${sizeClasses.mark}`}
+          style={spectrumGradientStyle}
           aria-hidden="true"
         >
           {/* Solid near-black background core */}
           <div
-            className={`w-full h-full bg-[#090D16] dark:bg-[#070A10] flex items-center justify-center select-none ${sizeClasses.inner}`}
+            className={`w-full h-full flex items-center justify-center select-none ${sizeClasses.inner}`}
+            style={{ backgroundColor: '#090D16' }}
           >
             {/* Clean, bold solid white 4TM lettering inside mark */}
             <span className={`text-white leading-none ${sizeClasses.markText}`}>

@@ -51,11 +51,13 @@ export const ProductSwitcher: React.FC<ProductSwitcherProps> = ({
 
     document.addEventListener('pointerdown', handleOutsideInteraction, true);
     document.addEventListener('touchstart', handleOutsideInteraction, true);
+    document.addEventListener('mousedown', handleOutsideInteraction, true);
     document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       document.removeEventListener('pointerdown', handleOutsideInteraction, true);
       document.removeEventListener('touchstart', handleOutsideInteraction, true);
+      document.removeEventListener('mousedown', handleOutsideInteraction, true);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen]);
@@ -77,7 +79,7 @@ export const ProductSwitcher: React.FC<ProductSwitcherProps> = ({
       {isOpen && (
         <div
           role="listbox"
-          className="absolute left-0 mt-2 w-64 py-2 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-700/80 ring-1 ring-black/5 dark:ring-white/10 opacity-100 z-50 animate-in fade-in zoom-in-95 duration-100 overflow-hidden"
+          className="absolute left-0 mt-2 w-64 py-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 ring-1 ring-black/10 dark:ring-white/10 opacity-100 z-50 overflow-hidden"
         >
           <div className="px-3.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800/80 mb-1">
             4TM Digital Ecosystem
