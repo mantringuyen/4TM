@@ -24,11 +24,11 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-slate-900">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-slate-200 dark:border-slate-800">
           {/* Brand Column */}
           <div className="space-y-3">
             <BrandLogo size="md" productName="Games" showText={true} showMark={true} href="#" />
-            <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm leading-relaxed">
               {dict.footer.tagline}
             </p>
             <div className="text-[11px] font-mono text-slate-500">
@@ -38,14 +38,14 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
 
           {/* Ecosystem Links */}
           <div className="space-y-2.5">
-            <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-white">
+            <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-900 dark:text-white">
               4TM Ecosystem
             </h4>
             <ul className="space-y-1.5 list-none p-0 m-0 text-xs">
               <li>
                 <a
                   href="https://4tm.io.vn"
-                  className="text-slate-400 hover:text-rose-400 transition-colors inline-flex items-center gap-1"
+                  className="text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors inline-flex items-center gap-1"
                 >
                   <span>4TM Portal</span>
                   <ExternalLink className="w-3 h-3 opacity-60" />
@@ -54,7 +54,7 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
               <li>
                 <a
                   href="https://study.4tm.io.vn"
-                  className="text-slate-400 hover:text-rose-400 transition-colors inline-flex items-center gap-1"
+                  className="text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors inline-flex items-center gap-1"
                 >
                   <span>Study — 4TM</span>
                   <ExternalLink className="w-3 h-3 opacity-60" />
@@ -63,7 +63,7 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
               <li>
                 <a
                   href="https://ebook.4tm.io.vn"
-                  className="text-slate-400 hover:text-rose-400 transition-colors inline-flex items-center gap-1"
+                  className="text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors inline-flex items-center gap-1"
                 >
                   <span>Ebook — 4TM</span>
                   <ExternalLink className="w-3 h-3 opacity-60" />
@@ -72,7 +72,7 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
               <li>
                 <a
                   href="https://apps.4tm.io.vn"
-                  className="text-slate-400 hover:text-rose-400 transition-colors inline-flex items-center gap-1"
+                  className="text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors inline-flex items-center gap-1"
                 >
                   <span>Apps — 4TM</span>
                   <ExternalLink className="w-3 h-3 opacity-60" />
@@ -81,7 +81,7 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
               <li>
                 <a
                   href="https://tools.4tm.io.vn"
-                  className="text-slate-400 hover:text-rose-400 transition-colors inline-flex items-center gap-1"
+                  className="text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors inline-flex items-center gap-1"
                 >
                   <span>Tools — 4TM</span>
                   <ExternalLink className="w-3 h-3 opacity-60" />
@@ -92,10 +92,10 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
 
           {/* Game Standards */}
           <div className="space-y-2.5">
-            <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-white">
+            <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-900 dark:text-white">
               Game Engine Architecture
             </h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Zero-install, browser-native game engines built with HTML5 Canvas, modern Web APIs, and client-side logic verification.
             </p>
           </div>
