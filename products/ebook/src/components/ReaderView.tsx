@@ -206,17 +206,17 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
   // Typography font size classes
   const fontSizeClasses: Record<ReaderFontSize, string> = {
-    sm: 'text-sm sm:text-base leading-relaxed',
-    md: 'text-base sm:text-lg leading-relaxed sm:leading-loose',
-    lg: 'text-lg sm:text-xl leading-loose',
-    xl: 'text-xl sm:text-2xl leading-loose',
+    sm: 'text-sm leading-relaxed',
+    md: 'text-base sm:text-lg leading-relaxed',
+    lg: 'text-lg sm:text-xl leading-relaxed',
+    xl: 'text-xl sm:text-2xl leading-relaxed',
   };
 
-  // Max width container classes
+  // Max width container classes (comfortable editorial measure)
   const widthClasses: Record<ReaderWidth, string> = {
     compact: 'max-w-[65ch]',
-    standard: 'max-w-[75ch]',
-    wide: 'max-w-[90ch]',
+    standard: 'max-w-[72ch]',
+    wide: 'max-w-[78ch]',
   };
 
   // Theme container classes (Guarantees light mode has crisp light code blocks)
@@ -385,39 +385,48 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
           {/* Right: Customization Controls (Font size, Width, Theme, Bookmark) */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-            {/* Font Size Selector */}
-            <div className="flex items-center p-0.5 rounded-xl border border-black/10 dark:border-white/10 text-xs">
-              {(['sm', 'md', 'lg', 'xl'] as ReaderFontSize[]).map((size) => (
-                <button
-                  key={size}
-                  type="button"
-                  id={`fontsize-btn-${size}`}
-                  onClick={() => setSettings((s) => ({ ...s, fontSize: size }))}
-                  className={`px-1.5 py-0.5 rounded-md font-mono text-[10px] sm:text-[11px] font-bold cursor-pointer transition-colors ${
-                    settings.fontSize === size
-                      ? 'bg-blue-600 text-white'
-                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  {size.toUpperCase()}
-                </button>
-              ))}
+            {/* Real Typography Font Size Selector */}
+            <div className="flex items-center p-0.5 rounded-xl border border-black/10 dark:border-white/10 text-xs gap-0.5">
+              <button
+                type="button"
+                id="fontsize-btn-sm"
+                onClick={() => setSettings((s) => ({ ...s, fontSize: 'sm' }))}
+                className={`px-2 py-0.5 rounded-md font-sans text-xs font-bold cursor-pointer transition-colors ${
+                  settings.fontSize === 'sm'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+                title="Font Size: Small (A-)"
+              >
+                A-
+              </button>
+              <button
+                type="button"
+                id="fontsize-btn-md"
+                onClick={() => setSettings((s) => ({ ...s, fontSize: 'md' }))}
+                className={`px-2 py-0.5 rounded-md font-sans text-xs font-bold cursor-pointer transition-colors ${
+                  settings.fontSize === 'md'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+                title="Font Size: Default (A)"
+              >
+                A
+              </button>
+              <button
+                type="button"
+                id="fontsize-btn-lg"
+                onClick={() => setSettings((s) => ({ ...s, fontSize: 'lg' }))}
+                className={`px-2 py-0.5 rounded-md font-sans text-xs font-bold cursor-pointer transition-colors ${
+                  settings.fontSize === 'lg'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+                title="Font Size: Large (A+)"
+              >
+                A+
+              </button>
             </div>
-
-            {/* Reading Width Selector */}
-            <button
-              type="button"
-              id="reading-width-toggle-btn"
-              onClick={() => {
-                const widths: ReaderWidth[] = ['compact', 'standard', 'wide'];
-                const nextIdx = (widths.indexOf(settings.width) + 1) % widths.length;
-                setSettings((s) => ({ ...s, width: widths[nextIdx] }));
-              }}
-              className="p-1.5 rounded-xl border border-black/10 dark:border-white/10 text-slate-500 hover:text-slate-900 dark:hover:text-white cursor-pointer"
-              title={`${dict.reader.width}: ${settings.width}`}
-            >
-              <Maximize2 className="w-3.5 h-3.5" />
-            </button>
 
             {/* Paper Theme Selector */}
             <button
@@ -686,7 +695,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
                   {/* Prose Content */}
                   <div
-                    className={`font-reader text-justify leading-relaxed break-words [overflow-wrap:anywhere] min-w-0 w-full max-w-full ${
+                    className={`font-reader text-left leading-relaxed break-words [overflow-wrap:anywhere] min-w-0 w-full max-w-full ${
                       fontSizeClasses[settings.fontSize]
                     }`}
                   >
