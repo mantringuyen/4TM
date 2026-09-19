@@ -1,7 +1,8 @@
 import React from 'react';
-import { Game, Language } from '../types';
+import { Game, Language, getGameTitle } from '../types';
 import { TRANSLATIONS } from '../i18n/translations';
-import { ArrowLeft, Gamepad2, ShieldCheck, Zap, Sparkles } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Zap, Globe, Smartphone, Clock, Sparkles } from 'lucide-react';
+import { BlockPuzzleGame } from './games/BlockPuzzleGame';
 import { BinarySearchGame } from './games/BinarySearchGame';
 import { SyntaxMemoryGame } from './games/SyntaxMemoryGame';
 import { SortingVisualizerGame } from './games/SortingVisualizerGame';
@@ -15,9 +16,12 @@ export interface PlayViewProps {
 
 export const PlayView: React.FC<PlayViewProps> = ({ game, language, onBackToCatalog }) => {
   const dict = TRANSLATIONS[language];
+  const titleText = getGameTitle(game, language);
 
   const renderGameArena = () => {
     switch (game.id) {
+      case 'block-puzzle':
+        return <BlockPuzzleGame language={language} />;
       case 'binary-search':
         return <BinarySearchGame language={language} />;
       case 'syntax-memory':
@@ -27,9 +31,33 @@ export const PlayView: React.FC<PlayViewProps> = ({ game, language, onBackToCata
       case 'regex-door':
         return <RegexDoorGame language={language} />;
       default:
-        return <div>Game coming soon</div>;
+        return (
+          <div className="p-12 text-center rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="inline-flex p-4 rounded-full bg-blue-500/10 text-blue-500">
+              <Clock className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+              {dict.status.planned} — {dict.platforms.comingSoon}
+            </h3>
+            <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+              {game.description[language]}
+            </p>
+          </div>
+        );
     }
   };
+
+  const statusLabel =
+    game.status === 'in-development'
+      ? dict.status.inDevelopment
+      : game.status === 'planned'
+      ? dict.status.planned
+      : game.status;
+
+  const statusBadgeClass =
+    game.status === 'in-development'
+      ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30'
+      : 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30';
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
@@ -47,22 +75,52 @@ export const PlayView: React.FC<PlayViewProps> = ({ game, language, onBackToCata
       {/* Arena Title Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono text-rose-700 dark:text-rose-400 font-bold uppercase mb-1">
-            <span>{game.genre[language]}</span>
-            <span>&bull;</span>
-            <span>{game.badge}</span>
+          <div className="flex flex-wrap items-center gap-2 text-xs font-mono mb-2">
+            <span className={`px-2.5 py-0.5 rounded-full border font-bold uppercase ${statusBadgeClass}`}>
+              {statusLabel}
+            </span>
+            <span className="text-rose-700 dark:text-rose-400 font-bold uppercase">
+              {game.genre[language]}
+            </span>
+            <span className="text-slate-400">&bull;</span>
+            <span className="text-slate-500 dark:text-slate-400">{game.badge}</span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-            {game.title}
+            {titleText}
           </h1>
         </div>
 
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-mono border border-slate-200 dark:border-slate-700">
-            {game.difficulty}
+            {dict.card.difficulty}: {game.difficulty}
           </span>
           <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-mono border border-slate-200 dark:border-slate-700">
-            Est: {game.playEstimate}
+            {dict.card.estimate}: {game.playEstimate}
+          </span>
+        </div>
+      </div>
+
+      {/* Supported Platforms Bar */}
+      <div className="mb-8 p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <span className="font-mono font-bold uppercase text-slate-500 text-[11px]">
+          {dict.platforms.title}:
+        </span>
+        <div className="flex flex-wrap items-center gap-3 font-semibold">
+          {game.platforms?.web !== false && (
+            <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
+              <Globe className="w-3.5 h-3.5" />
+              <span>{dict.platforms.web}</span>
+            </span>
+          )}
+
+          <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
+            <Smartphone className="w-3.5 h-3.5" />
+            <span>App Store ({dict.platforms.comingSoon})</span>
+          </span>
+
+          <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
+            <Smartphone className="w-3.5 h-3.5" />
+            <span>Google Play ({dict.platforms.comingSoon})</span>
           </span>
         </div>
       </div>
