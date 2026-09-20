@@ -6,3 +6,4 @@ export * from './sso';
 export * from './tokens';
 export * from './AdSlot';
 export * from './systemSettings';
+export * from './Header';

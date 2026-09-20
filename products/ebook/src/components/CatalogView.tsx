@@ -18,12 +18,16 @@ export interface CatalogViewProps {
   subjects: Subject[];
   language: Language;
   onSelectBook: (book: Book) => void;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
 }
 
 export const CatalogView: React.FC<CatalogViewProps> = ({
   books,
   language,
   onSelectBook,
+  searchQuery: propSearchQuery,
+  onSearchChange,
 }) => {
   const dict = TRANSLATIONS[language];
 
@@ -32,7 +36,9 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   const [selectedBookType, setSelectedBookType] = useState<string>('all');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
   const [selectedDomain, setSelectedDomain] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [internalSearchQuery, setInternalSearchQuery] = useState('');
+  const searchQuery = propSearchQuery !== undefined ? propSearchQuery : internalSearchQuery;
+  const setSearchQuery = onSearchChange || setInternalSearchQuery;
 
   // Check if any filter or search query is active
   const hasActiveFilters = useMemo(() => {

@@ -5235,7 +5235,7 @@ export async function extractProductSpecs(description: string) {
                   vi: 'Luôn khai báo `responseMimeType: "application/json"` kèm `responseSchema` tường minh trong cấu hình.',
                 },
                 codeIncorrect: `// Fragile hack:
-const clean = text.replace(/\\`\\`\\`json/g, '').replace(/\\`\\`\\`/g, '');
+const clean = text.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '');
 const data = JSON.parse(clean);`,
                 codeCorrect: `// Robust configuration:
 const response = await ai.models.generateContent({

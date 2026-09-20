@@ -77,6 +77,15 @@ export function App() {
     }
   };
 
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearchChange = (q: string) => {
+    setSearchQuery(q);
+    if (activeGame && q) {
+      setActiveGame(null);
+    }
+  };
+
   const handleSignOut = async () => {
     if (supabase) {
       await supabase.auth.signOut();
@@ -92,11 +101,14 @@ export function App() {
           onLanguageChange={handleLanguageChange}
           onNavigateHome={() => {
             setActiveGame(null);
+            setSearchQuery('');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           user={user}
           onSignIn={handleSignIn}
           onSignOut={handleSignOut}
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
         />
 
         <div className="flex-1">
@@ -117,6 +129,8 @@ export function App() {
                 setActiveGame(game);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
+              searchQuery={searchQuery}
+              onSearchChange={handleSearchChange}
             />
           )}
         </div>

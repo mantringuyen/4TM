@@ -7,11 +7,21 @@ export interface GameCatalogProps {
   games: Game[];
   language: Language;
   onSelectGame: (game: Game) => void;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
 }
 
-export const GameCatalog: React.FC<GameCatalogProps> = ({ games, language, onSelectGame }) => {
+export const GameCatalog: React.FC<GameCatalogProps> = ({
+  games,
+  language,
+  onSelectGame,
+  searchQuery: propSearchQuery,
+  onSearchChange,
+}) => {
   const dict = TRANSLATIONS[language];
-  const [searchQuery, setSearchQuery] = useState('');
+  const [internalSearchQuery, setInternalSearchQuery] = useState('');
+  const searchQuery = propSearchQuery !== undefined ? propSearchQuery : internalSearchQuery;
+  const setSearchQuery = onSearchChange || setInternalSearchQuery;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
 

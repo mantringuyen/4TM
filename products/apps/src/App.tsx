@@ -99,6 +99,8 @@ export function App() {
     }
   };
 
+  const [searchQuery, setSearchQuery] = useState('');
+
   const handleSignOut = async () => {
     if (supabase) {
       await supabase.auth.signOut();
@@ -115,6 +117,8 @@ export function App() {
           user={user}
           onSignIn={handleSignIn}
           onSignOut={handleSignOut}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
         />
 
         <div className="flex-1">
@@ -124,6 +128,8 @@ export function App() {
             onSelectApp={(app) => setSelectedApp(app)}
             favorites={favorites}
             onToggleFavorite={handleToggleFavorite}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
           />
         </div>
 

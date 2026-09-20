@@ -75,6 +75,8 @@ export function App() {
     }
   };
 
+  const [searchQuery, setSearchQuery] = useState('');
+
   const handleSignOut = async () => {
     if (supabase) {
       await supabase.auth.signOut();
@@ -91,10 +93,17 @@ export function App() {
           user={user}
           onSignIn={handleSignIn}
           onSignOut={handleSignOut}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
         />
 
         <div className="flex-1">
-          <Workbench tools={TOOLS} language={language} />
+          <Workbench
+            tools={TOOLS}
+            language={language}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+          />
         </div>
 
         <AdSlot product="tools" user={user} supabaseClient={supabase} />

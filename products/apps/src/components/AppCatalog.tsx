@@ -9,6 +9,8 @@ export interface AppCatalogProps {
   onSelectApp: (app: AppItem) => void;
   favorites: string[];
   onToggleFavorite: (id: string) => void;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
 }
 
 export const AppCatalog: React.FC<AppCatalogProps> = ({
@@ -17,9 +19,13 @@ export const AppCatalog: React.FC<AppCatalogProps> = ({
   onSelectApp,
   favorites,
   onToggleFavorite,
+  searchQuery: propSearchQuery,
+  onSearchChange,
 }) => {
   const dict = TRANSLATIONS[language];
-  const [searchQuery, setSearchQuery] = useState('');
+  const [internalSearchQuery, setInternalSearchQuery] = useState('');
+  const searchQuery = propSearchQuery !== undefined ? propSearchQuery : internalSearchQuery;
+  const setSearchQuery = onSearchChange || setInternalSearchQuery;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const filteredApps = useMemo(() => {

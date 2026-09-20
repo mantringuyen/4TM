@@ -62,9 +62,16 @@ const TimestampTool = React.lazy(() =>
 export interface WorkbenchProps {
   tools: ToolItem[];
   language: Language;
+  searchQuery?: string;
+  onSearchChange?: (q: string) => void;
 }
 
-export const Workbench: React.FC<WorkbenchProps> = ({ tools, language }) => {
+export const Workbench: React.FC<WorkbenchProps> = ({
+  tools,
+  language,
+  searchQuery: propSearchQuery,
+  onSearchChange,
+}) => {
   const dict = TRANSLATIONS[language];
 
   // Initialize tool based on current URL path using slug
@@ -80,7 +87,9 @@ export const Workbench: React.FC<WorkbenchProps> = ({ tools, language }) => {
   };
 
   const [activeToolId, setActiveToolId] = useState<ToolId>(getToolIdFromUrl);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [internalSearchQuery, setInternalSearchQuery] = useState('');
+  const searchQuery = propSearchQuery !== undefined ? propSearchQuery : internalSearchQuery;
+  const setSearchQuery = onSearchChange || setInternalSearchQuery;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   // Handle browser back / forward navigation

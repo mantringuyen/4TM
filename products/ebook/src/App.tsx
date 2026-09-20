@@ -101,6 +101,16 @@ export function App() {
   });
 
   const [user, setUser] = useState<User | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearchChange = (q: string) => {
+    setSearchQuery(q);
+    if (activeView !== 'catalog' && q) {
+      setActiveView('catalog');
+      setSelectedBook(null);
+      setHashUrl('#/catalog');
+    }
+  };
 
   // Sync route state from window.location.hash
   const syncRouteFromHash = useCallback(() => {
@@ -270,12 +280,15 @@ export function App() {
             onNavigateHome={() => {
               setActiveView('catalog');
               setSelectedBook(null);
+              setSearchQuery('');
               setHashUrl('#/catalog');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             user={user}
             onSignIn={handleSignIn}
             onSignOut={handleSignOut}
+            searchQuery={searchQuery}
+            onSearchChange={handleSearchChange}
           />
         )}
 
@@ -288,6 +301,8 @@ export function App() {
               subjects={SUBJECTS}
               language={language}
               onSelectBook={handleSelectBook}
+              searchQuery={searchQuery}
+              onSearchChange={handleSearchChange}
             />
           )}
 
