@@ -1,6 +1,7 @@
 import React from 'react';
 import { Chapter, Book, Language, ReaderPaperTheme } from '../types';
 import { TRANSLATIONS } from '../i18n/translations';
+import { getPublicationTemplate } from '../data/publicationRegistry';
 import { Clock, BookOpen, Bookmark, CheckCircle, ChevronDown } from 'lucide-react';
 
 export interface ChapterOpenerProps {
@@ -27,7 +28,9 @@ export const ChapterOpener: React.FC<ChapterOpenerProps> = ({
   onScrollToSection,
 }) => {
   const dict = TRANSLATIONS[language];
+  const template = getPublicationTemplate(book.bookType);
   const chapterNumberFormatted = String(chapter.number).padStart(2, '0');
+  const openerPrefix = template.visualStyle.openerLabel[language] || (language === 'vi' ? 'CHƯƠNG' : 'CHAPTER');
 
   // Theme-adaptive styles for chapter opener
   const themeStyles = {
@@ -74,7 +77,7 @@ export const ChapterOpener: React.FC<ChapterOpenerProps> = ({
 
         <div className="flex items-center gap-4 text-[11px] font-medium">
           <span>
-            {language === 'vi' ? 'Chương' : 'Chapter'} {chapter.number} / {totalChapters}
+            {openerPrefix} {chapter.number} / {totalChapters}
           </span>
           {onToggleBookmark && (
             <button
@@ -118,11 +121,11 @@ export const ChapterOpener: React.FC<ChapterOpenerProps> = ({
           <span
             className={`text-xs sm:text-sm font-mono font-bold tracking-widest uppercase ${themeStyles.eyebrow}`}
           >
-            {language === 'vi' ? 'CHƯƠNG' : 'CHAPTER'} {chapterNumberFormatted}
+            {openerPrefix} {chapterNumberFormatted}
           </span>
           <span className="h-px flex-1 bg-current opacity-20 max-w-[80px]" />
-          <span className={`text-xs font-mono ${themeStyles.metaText}`}>
-            {book.bookType}
+          <span className={`text-xs font-mono font-semibold ${themeStyles.metaText}`}>
+            {template.name[language]}
           </span>
         </div>
 

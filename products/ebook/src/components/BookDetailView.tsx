@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Book, Language } from '../types';
 import { TRANSLATIONS } from '../i18n/translations';
 import { DOMAINS, TOPICS, EBOOK_FIELD } from '../data/ebooks';
+import { getPublicationTemplate } from '../data/publicationRegistry';
 import { BookCover } from './BookCover';
 import {
   ArrowLeft,
@@ -14,6 +15,7 @@ import {
   Info,
   GraduationCap,
   Sparkles,
+  Layers,
 } from 'lucide-react';
 
 export interface BookDetailViewProps {
@@ -33,6 +35,7 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
 }) => {
   const dict = TRANSLATIONS[language];
   const [detailsExpanded, setDetailsExpanded] = useState(false);
+  const template = getPublicationTemplate(book.bookType);
 
   // Resolve taxonomy entities
   const topic = TOPICS.find((t) => t.id === book.categoryId);
@@ -207,22 +210,36 @@ export const BookDetailView: React.FC<BookDetailViewProps> = ({
         </button>
 
         {detailsExpanded && (
-          <div className="mt-3 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div>
-              <div className="text-[10px] font-mono text-slate-400 uppercase">{dict.bookDetail.fieldLabel}</div>
-              <div className="font-bold text-slate-800 dark:text-slate-200">{EBOOK_FIELD.name[language]}</div>
+          <div className="mt-3 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div>
+                <div className="text-[10px] font-mono text-slate-400 uppercase">{dict.bookDetail.fieldLabel}</div>
+                <div className="font-bold text-slate-800 dark:text-slate-200">{EBOOK_FIELD.name[language]}</div>
+              </div>
+              <div>
+                <div className="text-[10px] font-mono text-slate-400 uppercase">{dict.bookDetail.domainLabel}</div>
+                <div className="font-bold text-slate-800 dark:text-slate-200">{domain ? domain.name[language] : 'General'}</div>
+              </div>
+              <div>
+                <div className="text-[10px] font-mono text-slate-400 uppercase">{dict.bookDetail.topicLabel}</div>
+                <div className="font-bold text-blue-600 dark:text-blue-400">{topic ? topic.name[language] : 'General'}</div>
+              </div>
+              <div>
+                <div className="text-[10px] font-mono text-slate-400 uppercase">{dict.bookDetail.authorRole}</div>
+                <div className="font-bold text-slate-800 dark:text-slate-200">{book.role}</div>
+              </div>
             </div>
-            <div>
-              <div className="text-[10px] font-mono text-slate-400 uppercase">{dict.bookDetail.domainLabel}</div>
-              <div className="font-bold text-slate-800 dark:text-slate-200">{domain ? domain.name[language] : 'General'}</div>
-            </div>
-            <div>
-              <div className="text-[10px] font-mono text-slate-400 uppercase">{dict.bookDetail.topicLabel}</div>
-              <div className="font-bold text-blue-600 dark:text-blue-400">{topic ? topic.name[language] : 'General'}</div>
-            </div>
-            <div>
-              <div className="text-[10px] font-mono text-slate-400 uppercase">{dict.bookDetail.authorRole}</div>
-              <div className="font-bold text-slate-800 dark:text-slate-200">{book.role}</div>
+
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-slate-400 uppercase">
+                  {language === 'vi' ? 'Định dạng xuất bản:' : 'Publication Type:'}
+                </span>
+                <span className="font-bold text-slate-800 dark:text-slate-200">{template.name[language]}</span>
+              </div>
+              <div className="text-slate-500 dark:text-slate-400 italic">
+                {template.editorialStructure.recommendedReadingMode[language]}
+              </div>
             </div>
           </div>
         )}

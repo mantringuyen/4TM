@@ -1,38 +1,36 @@
 export type Language = 'en' | 'vi';
 
+export type LocalizedString = {
+  en: string;
+  vi: string;
+};
+
+export type LocalizedArray = {
+  en: string[];
+  vi: string[];
+};
+
 export type BookType = 
   | 'Handbook'
   | 'Definitions'
   | 'Tips'
+  | 'Practical Guides'
   | 'Common Errors'
   | 'Best Practices'
-  | 'Practical Guides'
   | 'Patterns / Recipes';
 
 export interface EbookField {
   id: string;
-  name: {
-    en: string;
-    vi: string;
-  };
-  description: {
-    en: string;
-    vi: string;
-  };
+  name: LocalizedString;
+  description: LocalizedString;
   domains: string[];
 }
 
 export interface EbookDomain {
   id: string;
   fieldId: string;
-  name: {
-    en: string;
-    vi: string;
-  };
-  description: {
-    en: string;
-    vi: string;
-  };
+  name: LocalizedString;
+  description: LocalizedString;
   topics: string[];
   icon: string;
 }
@@ -40,14 +38,8 @@ export interface EbookDomain {
 export interface EbookTopic {
   id: string;
   domainIds: string[];
-  name: {
-    en: string;
-    vi: string;
-  };
-  description: {
-    en: string;
-    vi: string;
-  };
+  name: LocalizedString;
+  description: LocalizedString;
   icon: string;
 }
 
@@ -56,143 +48,201 @@ export type Category = EbookTopic;
 export interface Subject {
   id: string;
   categoryId: string;
-  name: {
-    en: string;
-    vi: string;
-  };
-  description: {
-    en: string;
-    vi: string;
-  };
+  name: LocalizedString;
+  description: LocalizedString;
 }
 
 export interface CodeBlock {
   language: string;
   code: string;
   filename?: string;
-  explanation?: {
-    en: string;
-    vi: string;
-  };
+  explanation?: LocalizedString;
 }
 
 export interface CommonMistakeItem {
-  mistake: { en: string; vi: string };
-  why: { en: string; vi: string };
-  solution: { en: string; vi: string };
+  mistake: LocalizedString;
+  why: LocalizedString;
+  solution: LocalizedString;
   codeIncorrect?: string;
   codeCorrect?: string;
 }
 
 export interface ComparisonMatrix {
-  headers: { en: string; vi: string }[];
+  headers: LocalizedString[];
   rows: { en: string[]; vi: string[] }[];
 }
 
 export interface ProcessDiagram {
-  title: { en: string; vi: string };
+  title: LocalizedString;
   steps: {
     number: number;
-    label: { en: string; vi: string };
-    description: { en: string; vi: string };
+    label: LocalizedString;
+    description: LocalizedString;
   }[];
 }
 
 export interface DeepDiveItem {
-  title: { en: string; vi: string };
-  badge?: { en: string; vi: string };
-  content: { en: string; vi: string };
+  title: LocalizedString;
+  badge?: LocalizedString;
+  content: LocalizedString;
   codeBlock?: CodeBlock;
 }
 
 export interface SelfReviewItem {
-  question: { en: string; vi: string };
-  hint?: { en: string; vi: string };
-  answer: { en: string; vi: string };
+  question: LocalizedString;
+  hint?: LocalizedString;
+  answer: LocalizedString;
 }
 
 export interface ChapterSummary {
-  mentalModels: { en: string[]; vi: string[] };
-  rules: { en: string[]; vi: string[] };
-  commonTraps: { en: string[]; vi: string[] };
-  takeaway: { en: string; vi: string };
+  mentalModels: LocalizedArray;
+  rules: LocalizedArray;
+  commonTraps: LocalizedArray;
+  takeaway: LocalizedString;
 }
 
 export interface ChapterPart {
   number: number;
   romanNumeral: string;
-  title: {
-    en: string;
-    vi: string;
-  };
-  description?: {
-    en: string;
-    vi: string;
-  };
+  title: LocalizedString;
+  description?: LocalizedString;
+}
+
+// ---------------------------------------------------------------------------
+// 7 PUBLICATION TYPES — SPECIALIZED EDITORIAL MODELS
+// ---------------------------------------------------------------------------
+
+// 1. Definitions Model: Concept -> Definition -> Mental Model -> Why It Matters -> Misconception -> Quick Ref
+export interface DefinitionSectionDetails {
+  term?: LocalizedString;
+  formalDefinition?: LocalizedString;
+  mentalModel?: LocalizedString;
+  whyItMatters?: LocalizedString;
+  commonMisconception?: LocalizedString;
+  quickReference?: LocalizedArray;
+}
+
+// 2. Tips Model: Problem / Situation -> Quick Insight -> Recommended Pattern -> Why It Works -> Takeaway
+export interface TipSectionDetails {
+  problemSituation?: LocalizedString;
+  quickInsight?: LocalizedString;
+  recommendedPattern?: LocalizedString;
+  whyItWorks?: LocalizedString;
+  pitfallOrLimitation?: LocalizedString;
+  quickTakeaway?: LocalizedString;
+}
+
+// 3. Practical Guides Model: Goal -> Prerequisites -> Step-by-Step -> Verification -> Troubleshooting -> Checklist
+export interface GuideStepItem {
+  stepNumber: number;
+  title: LocalizedString;
+  instruction: LocalizedString;
+  codeBlock?: CodeBlock;
+  expectedOutput?: LocalizedString;
+  warningOrNote?: LocalizedString;
+}
+
+export interface TroubleshootingItem {
+  symptom: LocalizedString;
+  cause: LocalizedString;
+  fix: LocalizedString;
+}
+
+export interface GuideSectionDetails {
+  goal?: LocalizedString;
+  prerequisites?: LocalizedArray;
+  preparation?: LocalizedString;
+  steps?: GuideStepItem[];
+  verification?: LocalizedString;
+  troubleshooting?: TroubleshootingItem[];
+  checklist?: LocalizedArray;
+}
+
+// 4. Common Errors Model: Error -> Symptoms -> Minimal Reproduction -> Why It Happens -> Diagnosis -> Fix -> Prevention
+export interface ErrorSectionDetails {
+  errorSignature?: LocalizedString;
+  symptoms?: LocalizedArray;
+  minimalReproduction?: CodeBlock;
+  whyItHappens?: LocalizedString;
+  diagnosisSteps?: LocalizedArray;
+  correctFix?: CodeBlock;
+  fixExplanation?: LocalizedString;
+  preventionRules?: LocalizedArray;
+}
+
+// 5. Best Practices Model: Context -> Recommended Practice -> Why -> Good vs Risky -> Trade-offs -> Checklist
+export interface PracticeSectionDetails {
+  context?: LocalizedString;
+  recommendedPractice?: LocalizedString;
+  whyItMatters?: LocalizedString;
+  goodExample?: CodeBlock;
+  riskyExample?: CodeBlock;
+  tradeOffs?: LocalizedArray;
+  exceptions?: LocalizedArray;
+  checklist?: LocalizedArray;
+}
+
+// 6. Patterns / Recipes Model: Problem -> Context -> Solution -> Implementation -> Variations -> Trade-offs -> Gotchas
+export interface PatternVariationItem {
+  name: LocalizedString;
+  description: LocalizedString;
+  codeBlock?: CodeBlock;
+}
+
+export interface PatternSectionDetails {
+  problem?: LocalizedString;
+  context?: LocalizedString;
+  solutionOverview?: LocalizedString;
+  architectureDiagram?: ProcessDiagram;
+  implementation?: CodeBlock;
+  explanation?: LocalizedString;
+  variations?: PatternVariationItem[];
+  tradeOffs?: LocalizedArray;
+  gotchas?: LocalizedArray;
+  whenNotToUse?: LocalizedArray;
+  relatedPatterns?: LocalizedArray;
 }
 
 export interface ChapterSection {
   id: string;
-  title: {
-    en: string;
-    vi: string;
-  };
-  content: {
-    en: string;
-    vi: string;
-  };
-  keyIdea?: {
-    en: string;
-    vi: string;
-  };
+  title: LocalizedString;
+  content: LocalizedString;
+  keyIdea?: LocalizedString;
   codeBlock?: CodeBlock;
   whenToUse?: {
-    use: { en: string[]; vi: string[] };
-    avoid?: { en: string[]; vi: string[] };
+    use: LocalizedArray;
+    avoid?: LocalizedArray;
   };
   commonMistakes?: CommonMistakeItem[];
   comparisonTable?: ComparisonMatrix;
   diagram?: ProcessDiagram;
   deepDive?: DeepDiveItem;
-  bestPractices?: {
-    en: string[];
-    vi: string[];
-  };
-  practicalScenario?: {
-    en: string;
-    vi: string;
-  };
-  relatedConcepts?: {
-    en: string[];
-    vi: string[];
-  };
+  bestPractices?: LocalizedArray;
+  practicalScenario?: LocalizedString;
+  relatedConcepts?: LocalizedArray;
   studyLink?: {
     topicSlug: string;
-    label: { en: string; vi: string };
+    label: LocalizedString;
   };
-  keyTakeaways?: {
-    en: string[];
-    vi: string[];
-  };
+  keyTakeaways?: LocalizedArray;
+
+  // Publication-type specialized extensions (optional, composable)
+  definitionDetails?: DefinitionSectionDetails;
+  tipDetails?: TipSectionDetails;
+  guideDetails?: GuideSectionDetails;
+  errorDetails?: ErrorSectionDetails;
+  practiceDetails?: PracticeSectionDetails;
+  patternDetails?: PatternSectionDetails;
 }
 
 export interface Chapter {
   id: string;
   number: number;
   partNumber?: number;
-  partTitle?: {
-    en: string;
-    vi: string;
-  };
+  partTitle?: LocalizedString;
   slug: string;
-  title: {
-    en: string;
-    vi: string;
-  };
-  summary: {
-    en: string;
-    vi: string;
-  };
+  title: LocalizedString;
+  summary: LocalizedString;
   readTimeMinutes: number;
   sections: ChapterSection[];
   chapterSummary?: ChapterSummary;
@@ -203,10 +253,7 @@ export interface GlossaryEntry {
   term: string;
   vietnameseTerm?: string;
   category?: string;
-  definition: {
-    en: string;
-    vi: string;
-  };
+  definition: LocalizedString;
   relatedChapter?: number;
 }
 
@@ -215,20 +262,14 @@ export interface ReferenceItem {
   authorOrSource: string;
   year?: string;
   url?: string;
-  description: {
-    en: string;
-    vi: string;
-  };
+  description: LocalizedString;
 }
 
 export interface Book {
   id: string;
   slug: string;
   title: string;
-  subtitle: {
-    en: string;
-    vi: string;
-  };
+  subtitle: LocalizedString;
   bookType: BookType;
   fieldId?: string;
   domainIds?: string[];
@@ -243,23 +284,55 @@ export interface Book {
   publishedDate: string;
   accentColor: string;
   tags: string[];
-  description: {
-    en: string;
-    vi: string;
-  };
-  prerequisites: {
-    en: string[];
-    vi: string[];
-  };
-  outcomes: {
-    en: string[];
-    vi: string[];
-  };
+  description: LocalizedString;
+  prerequisites: LocalizedArray;
+  outcomes: LocalizedArray;
   parts?: ChapterPart[];
   glossary?: GlossaryEntry[];
   furtherReading?: ReferenceItem[];
   references?: ReferenceItem[];
   chapters: Chapter[];
+}
+
+// ---------------------------------------------------------------------------
+// PUBLICATION TEMPLATE REGISTRY TYPES
+// ---------------------------------------------------------------------------
+
+export type LayoutDensity = 
+  | 'deep-handbook'
+  | 'reference-cards'
+  | 'scannable-tips'
+  | 'procedural-steps'
+  | 'diagnostic-flow'
+  | 'tradeoff-matrix'
+  | 'solution-recipe';
+
+export type NavigationStyle = 
+  | 'parts-and-chapters'
+  | 'concept-index'
+  | 'tip-stream'
+  | 'step-workflow'
+  | 'error-catalog'
+  | 'practice-matrix'
+  | 'pattern-library';
+
+export interface PublicationTemplate {
+  id: BookType;
+  slug: string;
+  name: LocalizedString;
+  tagline: LocalizedString;
+  purpose: LocalizedString;
+  editorialStructure: LocalizedArray;
+  recommendedPrimitives: string[];
+  visualStyle: {
+    badgeTone: string;
+    accentColor: string;
+    layoutDensity: LayoutDensity;
+    openerLabel: LocalizedString;
+    iconName: string;
+  };
+  navigationStyle: NavigationStyle;
+  readingPacing: LocalizedString;
 }
 
 export type ReaderFontSize = 'sm' | 'md' | 'lg' | 'xl';

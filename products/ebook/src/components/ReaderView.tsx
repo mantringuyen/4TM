@@ -26,7 +26,16 @@ import {
   DeepDiveBlock,
   SelfReviewBlock,
   ChapterSummaryBlock,
+  DefinitionCardBlock,
+  TipInsightBlock,
+  GuideStepWorkflowBlock,
+  TroubleshootingMatrixBlock,
+  ErrorDiagnosisBlock,
+  BestPracticeComparisonBlock,
+  PatternRecipeBlock,
+  EditorialChecklistBlock,
 } from './EditorialPrimitives';
+import { getPublicationTemplate } from '../data/publicationRegistry';
 import {
   ArrowLeft,
   Bookmark,
@@ -707,6 +716,79 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                     >
                       {renderFormattedText(section.content[language])}
                     </div>
+
+                    {/* DEFINITION BLOCK (Definitions Publication Type) */}
+                    {section.definitionDetails && (
+                      <DefinitionCardBlock
+                        details={section.definitionDetails}
+                        language={language}
+                        theme={settings.paperTheme}
+                      />
+                    )}
+
+                    {/* TIP INSIGHT BLOCK (Tips Publication Type) */}
+                    {section.tipDetails && (
+                      <TipInsightBlock
+                        details={section.tipDetails}
+                        language={language}
+                        theme={settings.paperTheme}
+                      />
+                    )}
+
+                    {/* GUIDE WORKFLOW BLOCK (Practical Guides Publication Type) */}
+                    {section.guideDetails && (
+                      <GuideStepWorkflowBlock
+                        details={section.guideDetails}
+                        language={language}
+                        theme={settings.paperTheme}
+                      />
+                    )}
+
+                    {/* TROUBLESHOOTING MATRIX */}
+                    {section.troubleshooting && (
+                      <TroubleshootingMatrixBlock
+                        items={section.troubleshooting}
+                        language={language}
+                        theme={settings.paperTheme}
+                      />
+                    )}
+
+                    {/* ERROR DIAGNOSIS BLOCK (Common Errors Publication Type) */}
+                    {section.errorDetails && (
+                      <ErrorDiagnosisBlock
+                        details={section.errorDetails}
+                        language={language}
+                        theme={settings.paperTheme}
+                      />
+                    )}
+
+                    {/* BEST PRACTICE COMPARISON BLOCK (Best Practices Publication Type) */}
+                    {section.practiceDetails && (
+                      <BestPracticeComparisonBlock
+                        details={section.practiceDetails}
+                        language={language}
+                        theme={settings.paperTheme}
+                      />
+                    )}
+
+                    {/* PATTERN RECIPE BLOCK (Patterns / Recipes Publication Type) */}
+                    {section.patternDetails && (
+                      <PatternRecipeBlock
+                        details={section.patternDetails}
+                        language={language}
+                        theme={settings.paperTheme}
+                      />
+                    )}
+
+                    {/* EDITORIAL CHECKLIST */}
+                    {section.checklist && (
+                      <EditorialChecklistBlock
+                        title={section.checklist.title}
+                        items={section.checklist.items}
+                        language={language}
+                        theme={settings.paperTheme}
+                      />
+                    )}
 
                     {/* KEY IDEA CALLOUT */}
                     {section.keyIdea && (
