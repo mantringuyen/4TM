@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { AppItem, AppCategory, Language } from '../types';
 import { TRANSLATIONS } from '../i18n/translations';
-import { Search, LayoutGrid, Sparkles, ExternalLink, Heart, ArrowRight } from 'lucide-react';
+import { Search, LayoutGrid, Sparkles, ExternalLink, Heart, ArrowRight, X } from 'lucide-react';
 
 export interface AppCatalogProps {
   apps: AppItem[];
@@ -70,9 +70,23 @@ export const AppCatalog: React.FC<AppCatalogProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setSearchQuery('');
+            }}
             placeholder={dict.hero.searchPlaceholder}
-            className="w-full pl-11 pr-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+            className="w-full pl-11 pr-10 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              id="apps-search-clear-btn"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
+              aria-label={language === 'vi' ? 'Xóa tìm kiếm' : 'Clear search'}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         {/* Category Filter Pills */}

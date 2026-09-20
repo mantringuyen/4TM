@@ -27,6 +27,8 @@ export interface SystemSettingsState {
   ad_provider: AdProviderConfig;
 }
 
+export type SystemSettings = SystemSettingsState;
+
 export const DEFAULT_SYSTEM_SETTINGS: SystemSettingsState = {
   public_registration_enabled: false,
   ads_enabled: true,

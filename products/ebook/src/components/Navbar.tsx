@@ -34,8 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       label: dict.nav.library,
       href: '#catalog',
       icon: BookOpen,
-      onClick: (e) => {
-        e.preventDefault();
+      onClick: () => {
         onNavigateHome();
       },
     },
@@ -46,9 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       productId="ebook"
       productName="ebook"
       navItems={navItems}
-      searchQuery={searchQuery}
-      onSearchChange={onSearchChange}
-      searchPlaceholder={language === 'vi' ? 'Tìm sách, tác giả...' : 'Search books, authors...'}
+      showSearch={false}
       language={language}
       onLanguageChange={onLanguageChange}
       user={user ? { email: user.email, name: user.user_metadata?.full_name } : null}

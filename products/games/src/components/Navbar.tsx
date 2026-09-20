@@ -46,9 +46,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       productId="games"
       productName="games"
       navItems={navItems}
-      searchQuery={searchQuery}
-      onSearchChange={onSearchChange}
-      searchPlaceholder={language === 'vi' ? 'Tìm trò chơi...' : 'Search games...'}
+      showSearch={false}
       language={language}
       onLanguageChange={onLanguageChange}
       user={user ? { email: user.email, name: user.user_metadata?.full_name } : null}

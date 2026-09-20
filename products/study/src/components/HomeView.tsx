@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Terminal, 
   Sparkles, 
@@ -17,7 +17,9 @@ import {
   Globe,
   Compass,
   Play,
-  Check
+  Check,
+  Search,
+  X
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { CourseId } from '../types';
@@ -33,6 +35,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onSelectCourse,
 }) => {
   const { t, dict, language } = useLanguage();
+  const [heroSearch, setHeroSearch] = useState<string>('');
 
   const structuredPaths = [
     {
@@ -107,6 +110,63 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl mx-auto">
             {dict.home.heroDescription}
           </p>
+
+          {/* Landing Body Search Input */}
+          <div className="max-w-xl mx-auto w-full pt-2">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
+              <input
+                id="study-home-search-input"
+                type="text"
+                value={heroSearch}
+                onChange={(e) => setHeroSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && heroSearch.trim()) {
+                    onNavigate('courses', { searchQuery: heroSearch.trim() });
+                  }
+                  if (e.key === 'Escape') {
+                    setHeroSearch('');
+                  }
+                }}
+                placeholder={
+                  dict.nav.searchPlaceholder ||
+                  (language === 'vi'
+                    ? 'Tìm bài học, chủ đề (ví dụ: Python, SQL JOIN, Excel)...'
+                    : 'Search lessons, topics (e.g. Python, SQL JOIN, Excel)...')
+                }
+                className="w-full pl-11 pr-24 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs transition-all text-left"
+                aria-label={language === 'vi' ? 'Tìm kiếm bài học và khóa học' : 'Search lessons and courses'}
+              />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                {heroSearch && (
+                  <button
+                    type="button"
+                    id="study-home-search-clear-btn"
+                    onClick={() => setHeroSearch('')}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                    aria-label={language === 'vi' ? 'Xóa tìm kiếm' : 'Clear search'}
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  id="study-home-search-submit-btn"
+                  onClick={() => {
+                    if (heroSearch.trim()) {
+                      onNavigate('courses', { searchQuery: heroSearch.trim() });
+                    } else {
+                      onNavigate('courses');
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                >
+                  <Search className="w-3 h-3" />
+                  <span className="hidden sm:inline">{language === 'vi' ? 'Tìm' : 'Search'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
 
           {/* CTA Buttons */}
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">

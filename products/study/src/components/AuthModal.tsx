@@ -52,7 +52,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   initialMode,
   initialErrorMsg,
 }) => {
-  const { dict } = useLanguage();
+  const { dict, language } = useLanguage();
   const [mode, setMode] = useState<AuthModalMode>(initialMode || 'signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -228,7 +228,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       } else if (mode === 'signup') {
         if (!publicRegistrationEnabled) {
           setErrorMsg(
-            dict.language === 'vi'
+            language === 'vi'
               ? 'Đăng ký công khai hiện đang tạm khóa. Vui lòng liên hệ quản trị viên hoặc đăng nhập bằng tài khoản hiện có.'
               : 'Public registration is currently disabled. Please contact the administrator or sign in with an existing account.'
           );
@@ -601,10 +601,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
             <div className="leading-relaxed">
               <p className="font-bold">
-                {dict.language === 'vi' ? 'Đăng ký công khai đang tạm khóa' : 'Public Registration Disabled'}
+                {language === 'vi' ? 'Đăng ký công khai đang tạm khóa' : 'Public Registration Disabled'}
               </p>
               <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-0.5">
-                {dict.language === 'vi'
+                {language === 'vi'
                   ? 'Hệ thống hiện không nhận đăng ký mới từ công chúng. Vui lòng đăng nhập nếu bạn đã có tài khoản.'
                   : 'New user self-registration is closed. Please sign in if you already have an approved account.'}
               </p>
@@ -685,7 +685,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 : mode === 'signin'
                 ? dict.auth.submitSignIn
                 : !publicRegistrationEnabled
-                ? (dict.language === 'vi' ? 'Đăng Ký Đang Khóa' : 'Registration Closed')
+                ? (language === 'vi' ? 'Đăng Ký Đang Khóa' : 'Registration Closed')
                 : dict.auth.submitSignUp}
             </button>
           </form>

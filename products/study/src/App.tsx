@@ -58,6 +58,7 @@ function AppContent() {
   const [authModalInitialMode, setAuthModalInitialMode] = useState<AuthModalMode>('signin');
   const [authModalInitialError, setAuthModalInitialError] = useState<string>('');
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [bookmarksModalOpen, setBookmarksModalOpen] = useState(false);
   const [notesModalOpen, setNotesModalOpen] = useState(false);
@@ -562,6 +563,8 @@ function AppContent() {
               user={user}
               onNavigate={handleNavigate}
               onSelectCourse={cId => handleNavigate('course-detail', { courseId: cId })}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
             />
           )}
 

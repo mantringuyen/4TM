@@ -92,19 +92,19 @@ export const AdminDashboard: React.FC = () => {
   }, []);
 
   const handleUpdateSetting = async (key: keyof SystemSettings, val: any) => {
-    setUpdatingKey(key);
+    setUpdatingKey(String(key));
     setActionMessage(null);
     try {
-      const res = await adminUpdateSystemSetting(supabase, key, val);
+      const res = await adminUpdateSystemSetting(String(key), val, supabase);
       if (res.success) {
         setSystemSettings(prev => ({ ...prev, [key]: val }));
         setActionMessage({
-          text: `Setting "${key}" successfully saved to database.`,
+          text: `Setting "${String(key)}" successfully saved to database.`,
           type: 'success'
         });
       } else {
         setActionMessage({
-          text: res.error || `Failed to update ${key}.`,
+          text: res.error || `Failed to update ${String(key)}.`,
           type: 'error'
         });
       }
@@ -800,12 +800,13 @@ export const AdminDashboard: React.FC = () => {
                   Ad Provider Engine
                 </label>
                 <select
-                  value={systemSettings.ad_provider}
-                  onChange={(e) => handleUpdateSetting('ad_provider', e.target.value)}
+                  value={systemSettings.ad_provider?.type || 'partner_banner'}
+                  onChange={(e) => handleUpdateSetting('ad_provider', { ...systemSettings.ad_provider, type: e.target.value as any })}
                   className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-purple-500"
                 >
-                  <option value="custom_house_ads">4TM Custom House Campaigns (Internal Network)</option>
-                  <option value="google_adsense">Google AdSense Responsive Unit</option>
+                  <option value="partner_banner">4TM Custom House Campaigns (Internal Network)</option>
+                  <option value="custom">Google AdSense Responsive Unit</option>
+                  <option value="none">None (Disabled)</option>
                 </select>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   Custom house ads cross-promote 4TM ecosystem products with zero third-party tracking.
@@ -817,14 +818,14 @@ export const AdminDashboard: React.FC = () => {
                   House Ads Active Campaign
                 </label>
                 <select
-                  value={systemSettings.custom_ad_campaign}
-                  onChange={(e) => handleUpdateSetting('custom_ad_campaign', e.target.value)}
+                  value={systemSettings.ad_provider?.network || 'house'}
+                  onChange={(e) => handleUpdateSetting('ad_provider', { ...systemSettings.ad_provider, network: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-purple-500"
                 >
-                  <option value="auto_rotate">Auto Rotate All Campaigns (Study, Ebook, Tools)</option>
-                  <option value="study_pro">Study Pro: Interactive WASM Python & SQL Track</option>
-                  <option value="ebook_hub">4TM Ebook: 54 Engineering Handbooks</option>
-                  <option value="developer_tools">DevTools: Fast Developer Utilities & Formatters</option>
+                  <option value="house">Auto Rotate All Campaigns (Study, Ebook, Tools)</option>
+                  <option value="study">Study Pro: Interactive WASM Python & SQL Track</option>
+                  <option value="ebook">4TM Ebook: 54 Engineering Handbooks</option>
+                  <option value="tools">DevTools: Fast Developer Utilities & Formatters</option>
                 </select>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   Select a targeted product campaign or allow smart automatic rotation.

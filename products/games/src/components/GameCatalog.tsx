@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Game, GameCategory, Language, getGameTitle, isPublicGameStatus } from '../types';
 import { TRANSLATIONS } from '../i18n/translations';
-import { Search, Gamepad2, Play, Clock, Star, Globe, Smartphone, RotateCcw, Layers } from 'lucide-react';
+import { Search, Gamepad2, Play, Clock, Star, Globe, Smartphone, RotateCcw, Layers, X } from 'lucide-react';
 
 export interface GameCatalogProps {
   games: Game[];
@@ -92,9 +92,23 @@ export const GameCatalog: React.FC<GameCatalogProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setSearchQuery('');
+            }}
             placeholder={dict.hero.searchPlaceholder}
-            className="w-full pl-11 pr-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 shadow-xs"
+            className="w-full pl-11 pr-10 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 shadow-xs"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              id="games-search-clear-btn"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
+              aria-label={language === 'vi' ? 'Xóa tìm kiếm' : 'Clear search'}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         {/* Filters Row: Categories & Status */}

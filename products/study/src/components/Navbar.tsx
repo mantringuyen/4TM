@@ -28,7 +28,7 @@ export interface NavbarProps {
   user: UserProfile;
   onOpenAuth: () => void;
   onSignOut: () => void;
-  onOpenSearch: () => void;
+  onOpenSearch?: () => void;
   onOpenSecuritySettings?: () => void;
   onOpenAccountSettings?: (initialTab?: 'profile' | 'security' | 'appearance') => void;
 }
@@ -148,8 +148,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         productName="study"
         navItems={navItems}
         extraHeaderControls={quickAccessControls}
-        onOpenSearch={onOpenSearch}
-        searchPlaceholder={dict.nav.searchPlaceholder || 'Search lessons, topics, courses...'}
+        showSearch={false}
         language={language}
         onLanguageChange={setLanguage}
         onLogoClick={(e) => {

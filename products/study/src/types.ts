@@ -43,6 +43,7 @@ export interface LearnSection {
     code?: string;
   }[];
   tips?: LocalizedString[];
+  keyTakeaways?: LocalizedString[];
   practiceStarterCode?: string;
   practice?: LearnPractice;
   practicePool?: LearnPractice[];

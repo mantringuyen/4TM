@@ -20,7 +20,7 @@ export interface HeaderNavItem {
   label: string;
   href?: string;
   icon?: React.ComponentType<{ className?: string }>;
-  onClick?: () => void;
+  onClick?: (e?: any) => void;
   badge?: string;
   active?: boolean;
 }
@@ -35,7 +35,8 @@ export interface HeaderProps {
   navItems?: HeaderNavItem[];
   children?: React.ReactNode;
 
-  // Search
+  // Search (Header search ONLY active on Root: 4tm.io.vn)
+  showSearch?: boolean;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
   onSearchSubmit?: (query: string) => void;
@@ -75,6 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
   onLogoClick,
   navItems,
   children,
+  showSearch,
   searchQuery = '',
   onSearchChange,
   onSearchSubmit,
@@ -100,6 +102,8 @@ export const Header: React.FC<HeaderProps> = ({
 
   const resolvedProductId = (productId === 'hub' ? 'ecosystem' : productId) as ProductId;
   const accent = getProductAccent(resolvedProductId);
+  // Header Search is ONLY enabled on Root (ecosystem) by default
+  const shouldRenderSearch = showSearch !== undefined ? showSearch : (resolvedProductId === 'ecosystem');
 
   const defaultPlaceholder = language === 'vi' ? 'Tìm kiếm...' : 'Search...';
   const resolvedPlaceholder = searchPlaceholder || defaultPlaceholder;
@@ -239,42 +243,46 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {extraHeaderControls}
 
-          {/* Search Control */}
-          {/* Desktop Search Input */}
-          <div className="hidden md:flex items-center relative">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
-            <input
-              type="text"
-              id={`${resolvedProductId}-desktop-search`}
-              value={searchQuery}
-              readOnly={!!onOpenSearch && !onSearchChange}
-              onChange={(e) => onSearchChange?.(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  onSearchSubmit?.(searchQuery);
-                }
-              }}
-              onClick={handleDesktopSearchClick}
-              placeholder={resolvedPlaceholder}
-              className={`w-32 lg:w-48 xl:w-60 pl-8 ${onOpenSearch ? 'pr-12 cursor-pointer' : 'pr-3'} py-1.5 rounded-xl text-xs bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-400/30 transition-all shadow-2xs`}
-            />
-            {onOpenSearch && (
-              <kbd className="absolute right-2 text-[10px] font-mono px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 pointer-events-none border border-slate-300 dark:border-slate-700">
-                Ctrl+K
-              </kbd>
-            )}
-          </div>
+          {/* Search Control (Header Search ONLY on Root: 4tm.io.vn) */}
+          {shouldRenderSearch && (
+            <>
+              {/* Desktop Search Input */}
+              <div className="hidden md:flex items-center relative">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
+                <input
+                  type="text"
+                  id={`${resolvedProductId}-desktop-search`}
+                  value={searchQuery}
+                  readOnly={!!onOpenSearch && !onSearchChange}
+                  onChange={(e) => onSearchChange?.(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      onSearchSubmit?.(searchQuery);
+                    }
+                  }}
+                  onClick={handleDesktopSearchClick}
+                  placeholder={resolvedPlaceholder}
+                  className={`w-32 lg:w-48 xl:w-60 pl-8 ${onOpenSearch ? 'pr-12 cursor-pointer' : 'pr-3'} py-1.5 rounded-xl text-xs bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-400/30 transition-all shadow-2xs`}
+                />
+                {onOpenSearch && (
+                  <kbd className="absolute right-2 text-[10px] font-mono px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 pointer-events-none border border-slate-300 dark:border-slate-700">
+                    Ctrl+K
+                  </kbd>
+                )}
+              </div>
 
-          {/* Mobile Search Icon Button */}
-          <button
-            type="button"
-            id={`${resolvedProductId}-mobile-search-btn`}
-            onClick={handleMobileSearchClick}
-            className="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer"
-            aria-label={resolvedPlaceholder}
-          >
-            <Search className="w-4 h-4" />
-          </button>
+              {/* Mobile Search Icon Button */}
+              <button
+                type="button"
+                id={`${resolvedProductId}-mobile-search-btn`}
+                onClick={handleMobileSearchClick}
+                className="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer"
+                aria-label={resolvedPlaceholder}
+              >
+                <Search className="w-4 h-4" />
+              </button>
+            </>
+          )}
 
           {/* Language Switcher [EN] [VI] */}
           <div
@@ -328,8 +336,8 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Expandable Mobile Search Bar */}
-      {mobileSearchOpen && (
+      {/* Expandable Mobile Search Bar (Header Search ONLY on Root: 4tm.io.vn) */}
+      {shouldRenderSearch && mobileSearchOpen && (
         <div
           id={`${resolvedProductId}-mobile-search-bar`}
           className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 flex items-center gap-2"
