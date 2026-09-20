@@ -84,8 +84,8 @@ print("Exact equality (total == Decimal('0.30')):", total == Decimal("0.30"))  #
           vi: 'Chuỗi Ký Tự Bất Biến & Cơ Chế Hoạt Động F-Strings',
         },
         content: {
-          en: 'Python strings (`str`) are immutable sequences of Unicode characters. Because strings cannot be mutated in place, string concatenation in tight loops using `+=` repeatedly allocates new memory buffers, degrading performance to `O(N^2)`. Modern Python code relies on `''.join(list_of_strings)` or formatted string literals (**f-strings**, PEP 498). F-strings are evaluated at runtime by compiling formatting expressions directly into optimized bytecode opcodes (`FORMAT_VALUE` and `BUILD_STRING`), making them significantly faster than legacy `%` formatting or `str.format()`.',
-          vi: 'Chuỗi trong Python (`str`) là dãy ký tự Unicode bất biến. Do chuỗi không thể sửa tại chỗ, việc cộng dồn chuỗi trong vòng lặp bằng `+=` sẽ liên tục cấp phát vùng nhớ mới, làm giảm hiệu năng xuống `O(N^2)`. Lập trình Python hiện đại ưu tiên dùng `''.join(danh_sach)` hoặc **f-strings** (PEP 498). F-string được biên dịch trực tiếp thành các opcode tối ưu (`FORMAT_VALUE` và `BUILD_STRING`), nhanh hơn rõ rệt so với định dạng `%` cũ hoặc hàm `str.format()`.',
+          en: 'Python strings (`str`) are immutable sequences of Unicode characters. Because strings cannot be mutated in place, string concatenation in tight loops using `+=` repeatedly allocates new memory buffers, degrading performance to `O(N^2)`. Modern Python code relies on \'\' .join(list_of_strings) or formatted string literals (**f-strings**, PEP 498). F-strings are evaluated at runtime by compiling formatting expressions directly into optimized bytecode opcodes (`FORMAT_VALUE` and `BUILD_STRING`), making them significantly faster than legacy `%` formatting or `str.format()`.',
+          vi: 'Chuỗi trong Python (`str`) là dãy ký tự Unicode bất biến. Do chuỗi không thể sửa tại chỗ, việc cộng dồn chuỗi trong vòng lặp bằng `+=` sẽ liên tục cấp phát vùng nhớ mới, làm giảm hiệu năng xuống `O(N^2)`. Lập trình Python hiện đại ưu tiên dùng \'\' .join(danh_sach) hoặc **f-strings** (PEP 498). F-string được biên dịch trực tiếp thành các opcode tối ưu (`FORMAT_VALUE` và `BUILD_STRING`), nhanh hơn rõ rệt so với định dạng `%` cũ hoặc hàm `str.format()`.',
         },
         codeBlock: {
           language: 'python',
@@ -115,8 +115,8 @@ print(f"{delta=}")  # Outputs: delta=45.2`,
           vi: 'Unicode, UTF-8 & Ranh Giới Giữa bytes và str',
         },
         content: {
-          en: 'One of the most critical architectural principles in modern Python is the **Unicode Sandwich**. Python strictly separates human-readable text (`str`) from raw binary data (`bytes`): 1) Text (`str`) represents abstract Unicode code points inside the application. 2) Binary (`bytes`) represents raw 8-bit byte sequences stored on disk or transmitted over networks. Converting `bytes` to `str` requires explicit decoding (`bytes.decode('utf-8')`), and converting `str` to `bytes` requires explicit encoding (`str.encode('utf-8')`).',
-          vi: 'Một nguyên lý kiến trúc sống còn trong Python hiện đại là **Mô hình Bánh mì kẹp Unicode (Unicode Sandwich)**. Python phân định rạch ròi giữa văn bản (`str`) và dữ liệu nhị phân thô (`bytes`): 1) Văn bản (`str`) là tập các mã điểm Unicode trừu tượng chạy bên trong ứng dụng. 2) Dữ liệu nhị phân (`bytes`) là dãy byte 8-bit lưu trên ổ cứng hoặc truyền qua mạng. Chuyển từ `bytes` sang `str` phải qua giải mã (`bytes.decode('utf-8')`), và ngược lại phải mã hóa (`str.encode('utf-8')`).',
+          en: 'One of the most critical architectural principles in modern Python is the **Unicode Sandwich**. Python strictly separates human-readable text (`str`) from raw binary data (`bytes`): 1) Text (`str`) represents abstract Unicode code points inside the application. 2) Binary (`bytes`) represents raw 8-bit byte sequences stored on disk or transmitted over networks. Converting `bytes` to `str` requires explicit decoding (`bytes.decode(\'utf-8\')`), and converting `str` to `bytes` requires explicit encoding (`str.encode(\'utf-8\')`).',
+          vi: 'Một nguyên lý kiến trúc sống còn trong Python hiện đại là **Mô hình Bánh mì kẹp Unicode (Unicode Sandwich)**. Python phân định rạch ròi giữa văn bản (`str`) và dữ liệu nhị phân thô (`bytes`): 1) Văn bản (`str`) là tập các mã điểm Unicode trừu tượng chạy bên trong ứng dụng. 2) Dữ liệu nhị phân (`bytes`) là dãy byte 8-bit lưu trên ổ cứng hoặc truyền qua mạng. Chuyển từ `bytes` sang `str` phải qua giải mã (`bytes.decode(\'utf-8\')`), và ngược lại phải mã hóa (`str.encode(\'utf-8\')`).',
         },
         diagram: {
           title: {
@@ -207,16 +207,16 @@ print(f"{delta=}")  # Outputs: delta=45.2`,
     selfReview: [
       {
         question: {
-          en: 'Why is `''.join(chunks)` asymptotically faster than `s += chunk` inside a loop?',
-          vi: 'Tại sao dùng `''.join(chunks)` nhanh hơn hẳn phép cộng chuỗi `s += chunk` trong vòng lặp?',
+          en: 'Why is \'\' .join(chunks) asymptotically faster than `s += chunk` inside a loop?',
+          vi: 'Tại sao dùng \'\' .join(chunks) nhanh hơn hẳn phép cộng chuỗi `s += chunk` trong vòng lặp?',
         },
         hint: {
           en: 'Think about string immutability and memory buffer re-allocation.',
           vi: 'Hãy nghĩ về tính bất biến của chuỗi và việc cấp phát lại buffer bộ nhớ.',
         },
         answer: {
-          en: 'Strings are immutable. In each loop iteration, `s += chunk` allocates a new memory buffer of size `len(s) + len(chunk)` and copies all previous characters, yielding `O(N^2)` complexity. In contrast, `''.join(chunks)` calculates the total required memory upfront in a single pass, allocating the exact buffer once in `O(N)` time.',
-          vi: 'Chuỗi trong Python là bất biến. Mỗi lần lặp `s += chunk`, Python phải cấp phát vùng nhớ mới và sao chép lại toàn bộ chuỗi cũ, độ phức tạp là `O(N^2)`. Ngược lại, `''.join(chunks)` tính toán tổng độ dài chuỗi trước rồi cấp phát bộ nhớ đúng một lần duy nhất với độ phức tạp `O(N)`.',
+          en: 'Strings are immutable. In each loop iteration, `s += chunk` allocates a new memory buffer of size `len(s) + len(chunk)` and copies all previous characters, yielding `O(N^2)` complexity. In contrast, \'\' .join(chunks) calculates the total required memory upfront in a single pass, allocating the exact buffer once in `O(N)` time.',
+          vi: 'Chuỗi trong Python là bất biến. Mỗi lần lặp `s += chunk`, Python phải cấp phát vùng nhớ mới và sao chép lại toàn bộ chuỗi cũ, độ phức tạp là `O(N^2)`. Ngược lại, \'\' .join(chunks) tính toán tổng độ dài chuỗi trước rồi cấp phát bộ nhớ đúng một lần duy nhất với độ phức tạp `O(N)`.',
         },
       },
     ],
@@ -655,8 +655,8 @@ print("Exclusive to one (Symmetric Diff):", admin_roles ^ user_permissions)`,
     selfReview: [
       {
         question: {
-          en: 'Why does Python raise `TypeError: unhashable type: 'list'` when using a list as a dictionary key?',
-          vi: 'Tại sao Python báo lỗi `TypeError: unhashable type: 'list'` khi dùng list làm key trong dictionary?',
+          en: 'Why does Python raise `TypeError: unhashable type: \'list\'` when using a list as a dictionary key?',
+          vi: 'Tại sao Python báo lỗi `TypeError: unhashable type: \'list\'` khi dùng list làm key trong dictionary?',
         },
         hint: {
           en: 'What would happen if the list contents were modified after being inserted into the dictionary?',

@@ -7,6 +7,7 @@ import { JAVASCRIPT_EBOOKS } from './javascriptEbooks';
 import { EXCEL_EBOOKS } from './excelEbooks';
 import { POWERBI_EBOOKS } from './powerbiEbooks';
 import { AI_EBOOKS } from './aiEbooks';
+import { PILOT_PUBLICATIONS } from './pilots';
 
 export const EBOOK_FIELD: EbookField = {
   id: 'computer-science',
@@ -255,6 +256,7 @@ export const SUBJECTS: Subject[] = [
 
 const RAW_EBOOKS: Book[] = [
   ...PYTHON_EBOOKS,
+  ...PILOT_PUBLICATIONS,
   ...SQL_EBOOKS,
   ...HTML_EBOOKS,
   ...CSS_EBOOKS,
