@@ -119,10 +119,7 @@ export const KeyIdeaBlock: React.FC<{
 
 // 2. WHEN TO USE & WHEN TO AVOID (Editorial Trade-off Matrix)
 export const WhenToUseBlock: React.FC<{
-  whenToUse: {
-    use: { en: string[]; vi: string[] };
-    avoid?: { en: string[]; vi: string[] };
-  };
+  whenToUse: any;
 } & EditorialProps> = ({ whenToUse, language, theme }) => {
   const isDark = theme === 'dark' || theme === 'midnight';
   const isSepia = theme === 'sepia';
@@ -296,12 +293,12 @@ export const ComparisonTableBlock: React.FC<{
         <table className="w-full text-left text-xs sm:text-sm border-collapse font-sans">
           <thead>
             <tr className={headerBg}>
-              {matrix.headers.map((h, idx) => (
+              {(Array.isArray(matrix.headers) ? matrix.headers : (matrix.headers as any)[language] || []).map((h: any, idx: number) => (
                 <th
                   key={idx}
                   className="p-3 sm:p-3.5 font-bold font-mono border-b border-inherit uppercase tracking-wider text-[11px]"
                 >
-                  {h[language]}
+                  {typeof h === 'string' ? h : h[language]}
                 </th>
               ))}
             </tr>
@@ -428,7 +425,7 @@ export const BestPracticesBlock: React.FC<{
 };
 
 export const PracticalScenarioBlock: React.FC<{
-  scenario: { en: string; vi: string };
+  scenario: any;
 } & EditorialProps> = ({ scenario, language, theme }) => {
   return (
     <aside
@@ -450,7 +447,7 @@ export const PracticalScenarioBlock: React.FC<{
 
 // 7. RELATED CONCEPTS & STUDY LINK
 export const RelatedConceptsBlock: React.FC<{
-  concepts: { en: string[]; vi: string[] };
+  concepts: any;
   studyLink?: { topicSlug: string; label: { en: string; vi: string } };
 } & EditorialProps> = ({ concepts, studyLink, language, theme }) => {
   return (
@@ -868,6 +865,20 @@ export const DefinitionCardBlock: React.FC<{
         </div>
       )}
 
+      {/* Minimal Code Example */}
+      {details.minimalExample && (
+        <div className="space-y-1.5">
+          <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-teal-700 dark:text-teal-300">
+            {language === 'en' ? 'Minimal Specification Example' : 'Ví Dụ Minh Họa Chuẩn'}
+          </div>
+          <div className="rounded-xl overflow-hidden border border-black/10 dark:border-white/10 bg-slate-950 text-slate-100 font-mono text-xs p-3.5">
+            <pre className="m-0 overflow-x-auto">
+              <code>{details.minimalExample.code}</code>
+            </pre>
+          </div>
+        </div>
+      )}
+
       {/* Quick Reference Points */}
       {details.quickReference && details.quickReference[language].length > 0 && (
         <div className="pt-3 border-t border-black/10 dark:border-white/10 space-y-2">
@@ -954,6 +965,20 @@ export const TipInsightBlock: React.FC<{
           <p className="m-0 leading-relaxed [overflow-wrap:anywhere]">
             {renderInlineText(details.whyItWorks[language])}
           </p>
+        </div>
+      )}
+
+      {/* Working Code Example */}
+      {details.workingExample && (
+        <div className="space-y-1.5">
+          <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+            {language === 'en' ? 'Working Code Technique' : 'Mã Minh Họa Kỹ Thuật'}
+          </div>
+          <div className="rounded-xl overflow-hidden border border-black/10 dark:border-white/10 bg-slate-950 text-slate-100 font-mono text-xs p-3.5">
+            <pre className="m-0 overflow-x-auto">
+              <code>{details.workingExample.code}</code>
+            </pre>
+          </div>
         </div>
       )}
 

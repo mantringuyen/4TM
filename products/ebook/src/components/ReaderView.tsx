@@ -709,13 +709,15 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                     </div>
 
                     {/* Section Body Prose in Newsreader */}
-                    <div
-                      className={`font-reader text-left break-words [overflow-wrap:anywhere] min-w-0 w-full max-w-full opacity-95 ${
-                        fontSizeClasses[settings.fontSize]
-                      }`}
-                    >
-                      {renderFormattedText(section.content[language])}
-                    </div>
+                    {section.content && section.content[language] && (
+                      <div
+                        className={`font-reader text-left break-words [overflow-wrap:anywhere] min-w-0 w-full max-w-full opacity-95 ${
+                          fontSizeClasses[settings.fontSize]
+                        }`}
+                      >
+                        {renderFormattedText(section.content[language])}
+                      </div>
+                    )}
 
                     {/* DEFINITION BLOCK (Definitions Publication Type) */}
                     {section.definitionDetails && (

@@ -61,7 +61,7 @@ export const TIPS_PILOT_BOOK: Book = {
             vi: 'Duyệt Chỉ Số Chuẩn Pythonic',
           },
           tipDetails: {
-            situation: {
+            problemSituation: {
               en: 'You need both the index position and the element item while looping through a sequence.',
               vi: 'Bạn cần cả chỉ số vị trí và phần tử dữ liệu trong khi duyệt qua một danh sách.',
             },
@@ -74,12 +74,7 @@ export const TIPS_PILOT_BOOK: Book = {
               vi: 'Dùng `for idx, item in enumerate(danh_sach, start=0):`. Tùy chỉnh `start=1` khi cần hiển thị số dòng báo cáo cho người dùng.',
             },
             workingExample: {
-              language: 'python',
-              filename: 'enumerate_idiom.py',
-              explanation: {
-                en: 'Clean 1-indexed report formatting using enumerate.',
-                vi: 'Đánh số thứ tự bắt đầu từ 1 sạch đẹp với enumerate.',
-              },
+              language: "python",
               code: `servers = ["app-prod-01", "db-prod-01", "cache-prod-01"]
 
 # Idiomatic: direct index unpacking with 1-based start
@@ -90,7 +85,7 @@ for rank, host in enumerate(servers, start=1):
               en: '`enumerate` returns an iterator yielding 2-tuples containing the incremented C-integer and the underlying item reference without creating any intermediate list allocations in memory.',
               vi: '`enumerate` trả về một iterator sinh các tuple gồm số nguyên C tự tăng và tham chiếu phần tử mà không tạo thêm bất kỳ danh sách trung gian nào trong RAM.',
             },
-            limitations: {
+            pitfallOrLimitation: {
               en: 'Do not use `enumerate` if you do not actually use the index variable. Use plain `for item in items:` instead.',
               vi: 'Không dùng `enumerate` nếu bạn không thực sự cần dùng đến biến chỉ số. Hãy dùng `for item in items:` thông thường.',
             },
@@ -123,7 +118,7 @@ for rank, host in enumerate(servers, start=1):
             vi: 'Truy Xuất Key Dictionary An Toàn',
           },
           tipDetails: {
-            situation: {
+            problemSituation: {
               en: 'Extracting optional configuration values or grouping items into dictionary lists.',
               vi: 'Trích xuất các giá trị cấu hình tùy chọn hoặc gom nhóm dữ liệu vào dictionary.',
             },
@@ -136,12 +131,7 @@ for rank, host in enumerate(servers, start=1):
               vi: 'Dùng `.get()` khi đọc key có giá trị dự phòng. Dùng `.setdefault()` hoặc `defaultdict` khi tích lũy danh sách/tập hợp.',
             },
             workingExample: {
-              language: 'python',
-              filename: 'dict_fallbacks.py',
-              explanation: {
-                en: 'Safe config retrieval and grouping with setdefault.',
-                vi: 'Đọc cấu hình an toàn và gom nhóm dữ liệu với setdefault.',
-              },
+              language: "python",
               code: `config = {"timeout": 30, "retries": 3}
 # Safe fallback without KeyError
 timeout = config.get("timeout", 10)
@@ -157,7 +147,7 @@ for category, event in events:
               en: '`.get()` bypasses the `KeyError` branch internally in C, executing in single-pass `O(1)` time.',
               vi: '`.get()` bỏ qua nhánh phát sinh `KeyError` ngay trong mã nguồn C, chạy ở độ phức tạp `O(1)` một lần duy nhất.',
             },
-            limitations: {
+            pitfallOrLimitation: {
               en: 'If `None` is a valid stored value in your dictionary, `d.get("key", default)` will return `None`, not the default. In that specific case, check `if "key" in d:`.',
               vi: 'Nếu `None` là một giá trị hợp lệ được lưu trong dict, `d.get("key", default)` sẽ trả về `None` chứ không trả về default. Trong trường hợp đó, hãy dùng `if "key" in d:`.',
             },
@@ -190,7 +180,7 @@ for category, event in events:
             vi: 'Bảo Đảm Tính Toàn Vẹn Độ Dài Với zip(strict=True)',
           },
           tipDetails: {
-            situation: {
+            problemSituation: {
               en: 'Iterating through paired sequences (e.g., column headers and row cells, or user IDs and permissions).',
               vi: 'Duyệt qua các cặp chuỗi song song (như tên cột và giá trị dòng, hoặc ID người dùng và quyền hạn).',
             },
@@ -203,12 +193,7 @@ for category, event in events:
               vi: 'Luôn truyền `strict=True` vào hàm `zip()` trừ khi bạn có chủ đích muốn cắt bớt chuỗi theo phần tử ngắn nhất.',
             },
             workingExample: {
-              language: 'python',
-              filename: 'zip_strict.py',
-              explanation: {
-                en: 'Catching data mismatch bugs early during CSV header mapping.',
-                vi: 'Bắt lỗi lệch dữ liệu sớm khi ghép header CSV với dữ liệu dòng.',
-              },
+              language: "python",
               code: `headers = ["name", "email", "role"]
 row_data = ["Alice", "alice@example.com"]  # Missing 3rd field!
 
@@ -221,7 +206,7 @@ except ValueError as e:
               en: '`strict=True` checks if any iterator has remaining unconsumed items when the first iterator exhausts, ensuring complete data consistency.',
               vi: '`strict=True` kiểm tra xem có iterator nào còn dữ liệu thừa khi iterator đầu tiên kết thúc hay không, đảm bảo dữ liệu toàn vẹn 100%.',
             },
-            limitations: {
+            pitfallOrLimitation: {
               en: 'Requires Python 3.10+. In older Python versions, use `itertools.zip_longest` with a sentinel check.',
               vi: 'Yêu cầu Python 3.10+. Trên các bản Python cũ hơn, dùng `itertools.zip_longest` và kiểm tra giá trị sentinel.',
             },
@@ -254,7 +239,7 @@ except ValueError as e:
             vi: 'Chuyển Đổi Dữ Liệu Thuần Túy',
           },
           tipDetails: {
-            situation: {
+            problemSituation: {
               en: 'Transforming, filtering, or mapping elements from an existing sequence into a new container.',
               vi: 'Chuyển đổi, lọc hoặc ánh xạ các phần tử từ một chuỗi có sẵn sang tập hợp mới.',
             },
@@ -267,12 +252,7 @@ except ValueError as e:
               vi: 'Dùng comprehension khi bạn cần tạo ra một cấu trúc dữ liệu mới. Dùng vòng lặp `for` thông thường khi thực thi các tác vụ hay thay đổi trạng thái ngoài.',
             },
             workingExample: {
-              language: 'python',
-              filename: 'clean_comprehensions.py',
-              explanation: {
-                en: 'Clean dict and set comprehensions for lookup index creation.',
-                vi: 'Tạo chỉ mục tra cứu nhanh bằng dict và set comprehension.',
-              },
+              language: "python",
               code: `users = [
     {"id": "u1", "email": "a@x.com", "active": True},
     {"id": "u2", "email": "b@x.com", "active": False},
@@ -289,7 +269,7 @@ user_by_id = {u["id"]: u for u in users}`,
               en: 'Bytecode executes container allocation and item insertion directly on the CPython evaluation stack.',
               vi: 'Bytecode thực thi việc cấp phát container và chèn phần tử trực tiếp trên evaluation stack của CPython.',
             },
-            limitations: {
+            pitfallOrLimitation: {
               en: 'Avoid nested comprehensions with more than 2 levels of looping or complex branching. If it exceeds 2 lines of logic, write a readable for loop.',
               vi: 'Tránh lồng comprehension quá 2 cấp vòng lặp hoặc điều kiện rẽ nhánh phức tạp. Nếu logic dài hơn 2 dòng, hãy viết vòng for rõ ràng.',
             },
@@ -322,7 +302,7 @@ user_by_id = {u["id"]: u for u in users}`,
             vi: 'Mẫu Thiết Kế Sentinel None',
           },
           tipDetails: {
-            situation: {
+            problemSituation: {
               en: 'Creating a function with an optional container argument (list, dict, set, or custom object).',
               vi: 'Tạo hàm có tham số tùy chọn là một cấu trúc dữ liệu khả biến (list, dict, set hoặc object).',
             },
@@ -335,12 +315,7 @@ user_by_id = {u["id"]: u for u in users}`,
               vi: 'Đặt giá trị mặc định là `None` trên chữ ký hàm, và khởi tạo đối tượng mới bên trong thân hàm (`if items is None: items = []`).',
             },
             workingExample: {
-              language: 'python',
-              filename: 'none_sentinel.py',
-              explanation: {
-                en: 'Defensive argument initialization guaranteeing isolated state.',
-                vi: 'Khởi tạo tham số an toàn đảm bảo trạng thái độc lập cho từng lần gọi.',
-              },
+              language: "python",
               code: `def append_event(event_name: str, log: list[str] | None = None) -> list[str]:
     # Correct: isolated instance created per call
     if log is None:
@@ -357,7 +332,7 @@ print(second)  # ['PASSWORD_RESET'] (No state leak!)`,
               en: '`None` is an immutable singleton. Checking `if log is None` dynamically allocates a fresh `list` on heap memory for each distinct function execution.',
               vi: '`None` là một singleton bất biến. Kiểm tra `if log is None` sẽ cấp phát một `list` mới tinh trên heap cho từng lần chạy hàm riêng biệt.',
             },
-            limitations: {
+            pitfallOrLimitation: {
               en: 'If callers legitimately pass `None` meaning "empty", ensure internal logic respects that distinction.',
               vi: 'Nếu caller truyền vào `None` với ý nghĩa là "không làm gì", hãy xử lý cẩn thận để phân biệt với trường hợp dùng giá trị mặc định.',
             },
@@ -390,7 +365,7 @@ print(second)  # ['PASSWORD_RESET'] (No state leak!)`,
             vi: 'Bảo Tồn Metadata Hàm Bằng @wraps',
           },
           tipDetails: {
-            situation: {
+            problemSituation: {
               en: 'Writing custom function decorators for logging, authentication, caching, or performance timing.',
               vi: 'Viết decorator tùy biến cho việc ghi log, xác thực, bộ nhớ đệm hoặc đo thời gian chạy.',
             },
@@ -403,12 +378,7 @@ print(second)  # ['PASSWORD_RESET'] (No state leak!)`,
               vi: 'Luôn gắn `@functools.wraps(fn)` lên hàm `wrapper(*args, **kwargs)` bên trong decorator.',
             },
             workingExample: {
-              language: 'python',
-              filename: 'decorator_wraps.py',
-              explanation: {
-                en: 'Writing a production-safe timing decorator.',
-                vi: 'Viết decorator đo thời gian chuẩn sản xuất với metadata nguyên vẹn.',
-              },
+              language: "python",
               code: `import functools
 import time
 
@@ -435,7 +405,7 @@ print(calculate_metrics.__doc__)   # 'Calculate complex system metrics.'`,
               en: '`@functools.wraps` copies `__module__`, `__name__`, `__qualname__`, `__doc__`, and `__annotations__` from the wrapped function onto the wrapper object.',
               vi: '`@functools.wraps` tự động sao chép các thuộc tính `__name__`, `__doc__`, `__annotations__`, v.v. từ hàm gốc sang đối tượng wrapper.',
             },
-            limitations: {
+            pitfallOrLimitation: {
               en: 'If your wrapper changes argument signatures significantly, inspect `__wrapped__` when testing signature reflection.',
               vi: 'Nếu wrapper thay đổi hoàn toàn tham số truyền vào, hãy kiểm tra thuộc tính `__wrapped__` khi viết unit test.',
             },
@@ -468,7 +438,7 @@ print(calculate_metrics.__doc__)   # 'Calculate complex system metrics.'`,
             vi: 'Xử Lý Đường Dẫn Hướng Đối Tượng Hiện Đại',
           },
           tipDetails: {
-            situation: {
+            problemSituation: {
               en: 'Building file paths, reading file contents, iterating directories, or checking file existence.',
               vi: 'Tạo đường dẫn file, đọc nội dung file, duyệt thư mục hoặc kiểm tra file tồn tại.',
             },
@@ -481,12 +451,7 @@ print(calculate_metrics.__doc__)   # 'Calculate complex system metrics.'`,
               vi: 'Dùng `from pathlib import Path`. Đại diện cho mọi đường dẫn file bằng đối tượng `Path` thay vì chuỗi thuần.',
             },
             workingExample: {
-              language: 'python',
-              filename: 'pathlib_idiom.py',
-              explanation: {
-                en: 'Cross-platform file reading and directory creation in 3 lines.',
-                vi: 'Đọc ghi file và tạo thư mục đa nền tảng chỉ trong 3 dòng.',
-              },
+              language: "python",
               code: `from pathlib import Path
 
 # Relative path anchored to current script directory
@@ -504,7 +469,7 @@ print(f"Loaded config: {content}")`,
               en: '`Path` overrides the division operator (`__truediv__`) to seamlessly join path segments using OS-native separators.',
               vi: '`Path` nạp chồng toán tử chia (`__truediv__`) để ghép các phân đoạn đường dẫn một cách tự nhiên theo chuẩn của từng hệ điều hành.',
             },
-            limitations: {
+            pitfallOrLimitation: {
               en: 'Some very old 3rd-party C extensions may expect strings. In such legacy cases, convert via `str(path)` or pass `os.fspath(path)`.',
               vi: 'Một số thư viện C rất cũ có thể yêu cầu chuỗi `str`. Khi đó bạn có thể ép kiểu `str(path)` hoặc dùng `os.fspath(path)`.',
             },
@@ -537,7 +502,7 @@ print(f"Loaded config: {content}")`,
             vi: 'Tạo Context Bằng Generator Tiện Lợi',
           },
           tipDetails: {
-            situation: {
+            problemSituation: {
               en: 'You need temporary resource scoping (e.g. temporary directory, temporary log level, database transaction commit/rollback).',
               vi: 'Bạn cần quản lý ngữ cảnh tạm thời (như thư mục tạm, đổi mức log tạm thời, commit/rollback transaction).',
             },
@@ -550,12 +515,7 @@ print(f"Loaded config: {content}")`,
               vi: 'Gắn `@contextlib.contextmanager` lên hàm generator và luôn đặt lệnh dọn dẹp trong khối `try...finally`.',
             },
             workingExample: {
-              language: 'python',
-              filename: 'context_decorator.py',
-              explanation: {
-                en: 'Temporary environment variable override context manager.',
-                vi: 'Context manager ghi đè biến môi trường tạm thời và tự khôi phục.',
-              },
+              language: "python",
               code: `import os
 from contextlib import contextmanager
 
@@ -579,7 +539,7 @@ print(f"Outside with: {os.environ.get('STAGE')}")`,
               en: '`contextmanager` executes the generator up to `yield` on `__enter__`, and resumes the generator on `__exit__`, passing any raised exceptions into `throw()`.',
               vi: '`contextmanager` chạy generator đến `yield` khi vào `__enter__`, và chạy tiếp phần còn lại trong `__exit__`, chuyển ngoại lệ phát sinh vào `throw()`.',
             },
-            limitations: {
+            pitfallOrLimitation: {
               en: 'If you need complex state tracking or custom inspection methods on the context object, a class-based context manager is better.',
               vi: 'Nếu cần lưu trạng thái phức tạp hoặc có các phương thức phụ trợ, viết class đầy đủ sẽ phù hợp hơn.',
             },
@@ -612,7 +572,7 @@ print(f"Outside with: {os.environ.get('STAGE')}")`,
             vi: 'Đối Tượng Dữ Liệu Hiệu Năng Cao & Bất Biến',
           },
           tipDetails: {
-            situation: {
+            problemSituation: {
               en: 'Modeling domain entities, API payloads, or config structures that carry data without complex OOP behavior.',
               vi: 'Xây dựng entity nghiệp vụ, payload API hoặc cấu trúc config thuần chứa dữ liệu.',
             },
@@ -625,12 +585,7 @@ print(f"Outside with: {os.environ.get('STAGE')}")`,
               vi: 'Dùng `@dataclass(frozen=True, slots=True)` cho các đối tượng giá trị (value objects) trên Python 3.10+.',
             },
             workingExample: {
-              language: 'python',
-              filename: 'dataclass_slots.py',
-              explanation: {
-                en: 'An immutable, memory-efficient Point3D value object.',
-                vi: 'Đối tượng Point3D bất biến, tiết kiệm bộ nhớ và hashable.',
-              },
+              language: "python",
               code: `from dataclasses import dataclass
 
 @dataclass(frozen=True, slots=True)
@@ -650,7 +605,7 @@ lookup = {p1: "Active Datacenter"}`,
               en: '`slots=True` assigns fixed C-level array pointers for attributes instead of dynamic hash table lookups.',
               vi: '`slots=True` cấp phát mảng con trỏ C cố định cho các thuộc tính thay vì dùng bảng băm động.',
             },
-            limitations: {
+            pitfallOrLimitation: {
               en: '`slots=True` requires Python 3.10+. If you need dynamic runtime attribute attachment, omit `slots=True`.',
               vi: '`slots=True` yêu cầu Python 3.10+. Nếu bạn cần gán thuộc tính tùy ý lúc runtime, hãy bỏ tham số slots.',
             },
@@ -683,7 +638,7 @@ lookup = {p1: "Active Datacenter"}`,
             vi: 'Phạm Vi Bắt Lỗi An Toàn',
           },
           tipDetails: {
-            situation: {
+            problemSituation: {
               en: 'Handling potential errors during network I/O, file reading, or JSON parsing.',
               vi: 'Xử lý lỗi có thể phát sinh khi gọi mạng, đọc file hoặc phân tích JSON.',
             },
@@ -696,12 +651,7 @@ lookup = {p1: "Active Datacenter"}`,
               vi: 'Luôn bắt kiểu ngoại lệ cụ thể (ví dụ `except (json.JSONDecodeError, KeyError) as err:`) và ghi log hoặc ném lại lỗi kèm ngữ cảnh bằng cú pháp `raise NewError(...) from err`.',
             },
             workingExample: {
-              language: 'python',
-              filename: 'explicit_exceptions.py',
-              explanation: {
-                en: 'Catching specific network and parsing errors with explicit chaining.',
-                vi: 'Bắt lỗi cụ thể và liên kết chuỗi ngoại lệ tường minh.',
-              },
+              language: "python",
               code: `import json
 
 def parse_user_payload(raw_json: str) -> dict:
@@ -716,7 +666,7 @@ def parse_user_payload(raw_json: str) -> dict:
               en: '`from err` populates `__cause__` on the new exception, allowing Sentry and trace logs to display the full root-cause chain.',
               vi: '`from err` lưu vết vào thuộc tính `__cause__`, giúp hệ thống giám sát log hiển thị trọn vẹn chuỗi nguyên nhân gốc.',
             },
-            limitations: {
+            pitfallOrLimitation: {
               en: 'Do not catch exceptions too early if the calling layer has better context to handle the failure.',
               vi: 'Không nên bắt ngoại lệ quá sớm nếu tầng gọi bên ngoài có đủ ngữ cảnh để xử lý lỗi tốt hơn.',
             },
@@ -749,7 +699,7 @@ def parse_user_payload(raw_json: str) -> dict:
             vi: 'Xây Dựng Pipeline Dữ Liệu Tiết Kiệm RAM',
           },
           tipDetails: {
-            situation: {
+            problemSituation: {
               en: 'Filtering, mapping, or aggregating large log files, database cursors, or API streams.',
               vi: 'Lọc, chuyển đổi hoặc tính tổng dữ liệu log dung lượng lớn, con trỏ database hoặc stream API.',
             },
@@ -762,12 +712,7 @@ def parse_user_payload(raw_json: str) -> dict:
               vi: 'Kết nối các generator expression như các đường ống Unix: `nguồn -> lọc -> biến đổi -> tổng hợp`.',
             },
             workingExample: {
-              language: 'python',
-              filename: 'generator_stream.py',
-              explanation: {
-                en: 'Streaming log processor aggregating 4xx/5xx HTTP status codes in O(1) memory.',
-                vi: 'Bộ xử lý log dạng luồng tổng hợp mã lỗi HTTP trong bộ nhớ O(1).',
-              },
+              language: "python",
               code: `log_lines = [
     '200 GET /index.html 0.05',
     '500 POST /api/checkout 1.20',
@@ -792,7 +737,7 @@ print(f"Total error latency: {total_error_time:.2f}s")`,
               en: 'Generators evaluate lazily item-by-item on the CPU without allocating intermediate arrays.',
               vi: 'Generator chỉ tính toán từng phần tử khi được yêu cầu mà không cấp phát các mảng trung gian.',
             },
-            limitations: {
+            pitfallOrLimitation: {
               en: 'Generators can only be consumed once. If you need multiple passes, materialize with `list()` or reconstruct the generator.',
               vi: 'Generator chỉ duyệt được một lần. Nếu cần duyệt nhiều lần, hãy nạp thành `list()` hoặc tạo lại generator.',
             },
@@ -825,7 +770,7 @@ print(f"Total error latency: {total_error_time:.2f}s")`,
             vi: 'Định Kiểu Hiện Đại Với Toán Tử Hợp (|)',
           },
           tipDetails: {
-            situation: {
+            problemSituation: {
               en: 'Writing functions and methods consumed by team members or external package users.',
               vi: 'Viết các hàm và phương thức dùng chung trong nhóm hoặc thư viện cho người khác sử dụng.',
             },
@@ -838,12 +783,7 @@ print(f"Total error latency: {total_error_time:.2f}s")`,
               vi: 'Ghi chú kiểu cho toàn bộ tham số và kiểu trả về trên các hàm và phương thức công khai.',
             },
             workingExample: {
-              language: 'python',
-              filename: 'modern_typing.py',
-              explanation: {
-                en: 'Clean type annotations using built-in generic syntax.',
-                vi: 'Khai báo kiểu chuẩn hiện đại dùng cú pháp tích hợp sẵn.',
-              },
+              language: "python",
               code: `from collections.abc import Sequence
 
 def find_first_match(
@@ -861,7 +801,7 @@ def find_first_match(
               en: 'Type hints are stored in `func.__annotations__` as metadata without adding runtime execution overhead.',
               vi: 'Type hint được lưu trong `__annotations__` dưới dạng metadata mà không làm chậm tốc độ chạy lúc runtime.',
             },
-            limitations: {
+            pitfallOrLimitation: {
               en: 'Python remains dynamically typed at runtime; type annotations are not enforced unless verified with tools like `mypy` or `pydantic`.',
               vi: 'Python vẫn là ngôn ngữ định kiểu động lúc runtime; type annotation cần công cụ như `mypy` hoặc `pydantic` để kiểm tra.',
             },

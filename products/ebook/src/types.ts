@@ -68,15 +68,17 @@ export interface CommonMistakeItem {
 }
 
 export interface ComparisonMatrix {
-  headers: LocalizedString[];
-  rows: { en: string[]; vi: string[] }[];
+  headers: LocalizedArray | { en: string[]; vi: string[] } | LocalizedString[];
+  rows: ( { en: string[]; vi: string[] } | { feature: LocalizedString; optionA: LocalizedString; optionB: LocalizedString; optionC?: LocalizedString } | any )[];
 }
 
 export interface ProcessDiagram {
   title: LocalizedString;
   steps: {
-    number: number;
-    label: LocalizedString;
+    number?: number;
+    stepNumber?: number;
+    label?: LocalizedString;
+    title?: LocalizedString;
     description: LocalizedString;
   }[];
 }
@@ -102,10 +104,12 @@ export interface ChapterSummary {
 }
 
 export interface ChapterPart {
-  number: number;
-  romanNumeral: string;
+  number?: number;
+  partNumber?: number;
+  romanNumeral?: string;
   title: LocalizedString;
   description?: LocalizedString;
+  chapters?: Chapter[];
 }
 
 // ---------------------------------------------------------------------------
@@ -120,6 +124,7 @@ export interface DefinitionSectionDetails {
   whyItMatters?: LocalizedString;
   commonMisconception?: LocalizedString;
   quickReference?: LocalizedArray;
+  minimalExample?: CodeBlock;
 }
 
 // 2. Tips Model: Problem / Situation -> Quick Insight -> Recommended Pattern -> Why It Works -> Takeaway
@@ -130,6 +135,7 @@ export interface TipSectionDetails {
   whyItWorks?: LocalizedString;
   pitfallOrLimitation?: LocalizedString;
   quickTakeaway?: LocalizedString;
+  workingExample?: CodeBlock;
 }
 
 // 3. Practical Guides Model: Goal -> Prerequisites -> Step-by-Step -> Verification -> Troubleshooting -> Checklist
@@ -138,6 +144,8 @@ export interface GuideStepItem {
   title: LocalizedString;
   instruction: LocalizedString;
   codeBlock?: CodeBlock;
+  codeSnippet?: CodeBlock;
+  commandSnippet?: CodeBlock;
   expectedOutput?: LocalizedString;
   warningOrNote?: LocalizedString;
 }
@@ -203,13 +211,24 @@ export interface PatternSectionDetails {
   relatedPatterns?: LocalizedArray;
 }
 
+export type BookLevel =
+  | 'Foundational'
+  | 'Intermediate'
+  | 'Advanced'
+  | 'Foundational to Intermediate'
+  | 'Intermediate to Advanced'
+  | 'Practical / Applied'
+  | 'Practical / All Levels'
+  | 'Professional / Team Standards'
+  | 'Comprehensive';
+
 export interface ChapterSection {
   id: string;
   title: LocalizedString;
-  content: LocalizedString;
+  content?: LocalizedString;
   keyIdea?: LocalizedString;
   codeBlock?: CodeBlock;
-  whenToUse?: {
+  whenToUse?: LocalizedString | LocalizedArray | {
     use: LocalizedArray;
     avoid?: LocalizedArray;
   };
@@ -218,13 +237,15 @@ export interface ChapterSection {
   diagram?: ProcessDiagram;
   deepDive?: DeepDiveItem;
   bestPractices?: LocalizedArray;
-  practicalScenario?: LocalizedString;
-  relatedConcepts?: LocalizedArray;
+  practicalScenario?: LocalizedString | { title: LocalizedString; description: LocalizedString };
+  relatedConcepts?: LocalizedArray | string[];
   studyLink?: {
     topicSlug: string;
     label: LocalizedString;
   };
   keyTakeaways?: LocalizedArray;
+  checklist?: { title?: LocalizedString; items: LocalizedArray };
+  troubleshooting?: TroubleshootingItem[];
 
   // Publication-type specialized extensions (optional, composable)
   definitionDetails?: DefinitionSectionDetails;
@@ -259,10 +280,11 @@ export interface GlossaryEntry {
 
 export interface ReferenceItem {
   title: string;
-  authorOrSource: string;
+  authorOrSource?: string;
   year?: string;
   url?: string;
-  description: LocalizedString;
+  description?: LocalizedString;
+  annotation?: LocalizedString;
 }
 
 export interface Book {
@@ -272,21 +294,27 @@ export interface Book {
   subtitle: LocalizedString;
   bookType: BookType;
   fieldId?: string;
+  domainId?: string;
   domainIds?: string[];
   topicId?: string;
   categoryId: string;
   subjectId: string;
   author: string;
   role: string;
-  level: 'Foundational' | 'Intermediate' | 'Advanced';
+  level: BookLevel;
   estimatedReadTime: string;
   chaptersCount: number;
+  edition?: string;
+  isbn?: string;
   publishedDate: string;
+  publishedYear?: number;
   accentColor: string;
   tags: string[];
   description: LocalizedString;
   prerequisites: LocalizedArray;
   outcomes: LocalizedArray;
+  learningOutcomes?: any;
+  recommendedReadingMode?: LocalizedString;
   parts?: ChapterPart[];
   glossary?: GlossaryEntry[];
   furtherReading?: ReferenceItem[];
@@ -322,7 +350,7 @@ export interface PublicationTemplate {
   name: LocalizedString;
   tagline: LocalizedString;
   purpose: LocalizedString;
-  editorialStructure: LocalizedArray;
+  editorialStructure: any;
   recommendedPrimitives: string[];
   visualStyle: {
     badgeTone: string;
