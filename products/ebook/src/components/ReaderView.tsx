@@ -23,6 +23,9 @@ import {
   BestPracticesBlock,
   PracticalScenarioBlock,
   RelatedConceptsBlock,
+  DeepDiveBlock,
+  SelfReviewBlock,
+  ChapterSummaryBlock,
 } from './EditorialPrimitives';
 import {
   ArrowLeft,
@@ -745,6 +748,15 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                       />
                     )}
 
+                    {/* TECHNICAL DEEP DIVE */}
+                    {section.deepDive && (
+                      <DeepDiveBlock
+                        deepDive={section.deepDive}
+                        language={language}
+                        theme={settings.paperTheme}
+                      />
+                    )}
+
                     {/* COMMON MISTAKES & ANTI-PATTERNS */}
                     {section.commonMistakes && (
                       <CommonMistakesBlock
@@ -872,6 +884,24 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                   </section>
                 ))}
               </div>
+
+              {/* CHAPTER SUMMARY SYNTHESIS */}
+              {chapter.chapterSummary && (
+                <ChapterSummaryBlock
+                  summary={chapter.chapterSummary}
+                  language={language}
+                  theme={settings.paperTheme}
+                />
+              )}
+
+              {/* CHAPTER SELF-REVIEW DIAGNOSTIC */}
+              {chapter.selfReview && chapter.selfReview.length > 0 && (
+                <SelfReviewBlock
+                  questions={chapter.selfReview}
+                  language={language}
+                  theme={settings.paperTheme}
+                />
+              )}
 
               {/* CHAPTER END SPREAD */}
               <ChapterEnd

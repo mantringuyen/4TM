@@ -98,6 +98,39 @@ export interface ProcessDiagram {
   }[];
 }
 
+export interface DeepDiveItem {
+  title: { en: string; vi: string };
+  badge?: { en: string; vi: string };
+  content: { en: string; vi: string };
+  codeBlock?: CodeBlock;
+}
+
+export interface SelfReviewItem {
+  question: { en: string; vi: string };
+  hint?: { en: string; vi: string };
+  answer: { en: string; vi: string };
+}
+
+export interface ChapterSummary {
+  mentalModels: { en: string[]; vi: string[] };
+  rules: { en: string[]; vi: string[] };
+  commonTraps: { en: string[]; vi: string[] };
+  takeaway: { en: string; vi: string };
+}
+
+export interface ChapterPart {
+  number: number;
+  romanNumeral: string;
+  title: {
+    en: string;
+    vi: string;
+  };
+  description?: {
+    en: string;
+    vi: string;
+  };
+}
+
 export interface ChapterSection {
   id: string;
   title: {
@@ -120,6 +153,7 @@ export interface ChapterSection {
   commonMistakes?: CommonMistakeItem[];
   comparisonTable?: ComparisonMatrix;
   diagram?: ProcessDiagram;
+  deepDive?: DeepDiveItem;
   bestPractices?: {
     en: string[];
     vi: string[];
@@ -145,6 +179,11 @@ export interface ChapterSection {
 export interface Chapter {
   id: string;
   number: number;
+  partNumber?: number;
+  partTitle?: {
+    en: string;
+    vi: string;
+  };
   slug: string;
   title: {
     en: string;
@@ -156,6 +195,30 @@ export interface Chapter {
   };
   readTimeMinutes: number;
   sections: ChapterSection[];
+  chapterSummary?: ChapterSummary;
+  selfReview?: SelfReviewItem[];
+}
+
+export interface GlossaryEntry {
+  term: string;
+  vietnameseTerm?: string;
+  category?: string;
+  definition: {
+    en: string;
+    vi: string;
+  };
+  relatedChapter?: number;
+}
+
+export interface ReferenceItem {
+  title: string;
+  authorOrSource: string;
+  year?: string;
+  url?: string;
+  description: {
+    en: string;
+    vi: string;
+  };
 }
 
 export interface Book {
@@ -192,6 +255,10 @@ export interface Book {
     en: string[];
     vi: string[];
   };
+  parts?: ChapterPart[];
+  glossary?: GlossaryEntry[];
+  furtherReading?: ReferenceItem[];
+  references?: ReferenceItem[];
   chapters: Chapter[];
 }
 

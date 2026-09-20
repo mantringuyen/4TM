@@ -1,7 +1,8 @@
 import { Book } from '../types';
+import { PYTHON_HANDBOOK } from './pythonHandbook';
 
-export const PYTHON_EBOOKS: Book[] = [
-  // 1. Python Handbook
+const RAW_PYTHON_EBOOKS: Book[] = [
+  // 1. Python Handbook (Overridden below with Phase 2 flagship edition)
   {
     id: 'python-handbook',
     slug: 'python-handbook',
@@ -2968,4 +2969,9 @@ print("Registered:", created)`,
       },
     ],
   },
+];
+
+export const PYTHON_EBOOKS: Book[] = [
+  PYTHON_HANDBOOK,
+  ...RAW_PYTHON_EBOOKS.slice(1),
 ];

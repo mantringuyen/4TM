@@ -102,6 +102,17 @@ export const ChapterOpener: React.FC<ChapterOpenerProps> = ({
           {chapterNumberFormatted}
         </div>
 
+        {/* Part Identifier if present */}
+        {chapter.partTitle && (
+          <div className="relative z-10 mb-2.5 flex items-center gap-2 text-[11px] font-mono font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+            <span className="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
+              {language === 'vi' ? 'PHẦN' : 'PART'} {chapter.partNumber || 1}
+            </span>
+            <span className="opacity-40">•</span>
+            <span className="opacity-80">{chapter.partTitle[language]}</span>
+          </div>
+        )}
+
         {/* Chapter Super-heading */}
         <div className="relative z-10 flex items-center gap-3 mb-3 sm:mb-4">
           <span
