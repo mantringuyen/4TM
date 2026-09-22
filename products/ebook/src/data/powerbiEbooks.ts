@@ -1,4 +1,8 @@
 import { Book } from '../types';
+import {
+  BUILDING_AN_EXECUTIVE_POWER_BI_REPORT_BOOK,
+  POWER_BI_AND_DAX_PATTERNS_RECIPES_BOOK,
+} from './migrated';
 
 export const POWERBI_EBOOKS: Book[] = [
   // 1. Power BI Handbook
