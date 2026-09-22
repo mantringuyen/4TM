@@ -28,3 +28,12 @@ export { POWERBI_BEST_PRACTICES_BOOK } from './powerBiBestPractices';
 export { EXCEL_HANDBOOK_BOOK } from './excelHandbook';
 export { EXCEL_DEFINITIONS_BOOK } from './excelDefinitions';
 
+// Batch 5 Migrated Books
+export { HTML_HANDBOOK_BOOK } from './htmlHandbook';
+export { HTML_DEFINITIONS_BOOK } from './htmlDefinitions';
+export { HTML_PRACTICAL_GUIDE_BOOK } from './htmlPracticalGuide';
+export { HTML_COMMON_ERRORS_BOOK } from './htmlCommonErrors';
+export { CSS_HANDBOOK_BOOK } from './cssHandbook';
+export { CSS_DEFINITIONS_BOOK } from './cssDefinitions';
+
+

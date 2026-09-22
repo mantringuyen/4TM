@@ -1,223 +1,17 @@
 import { Book } from '../types';
+import {
+  CSS_HANDBOOK_BOOK,
+  CSS_DEFINITIONS_BOOK,
+} from './migrated';
 
 export const CSS_EBOOKS: Book[] = [
-  // 1. CSS Handbook
-  {
-    id: 'css-handbook',
-    slug: 'css-handbook',
-    title: 'CSS Handbook',
-    subtitle: {
-      en: 'Cascade Rules, Specificity, Box Model & Modern Layout Systems',
-      vi: 'Quy Tắc Cascade, Độ Ưu Tiên Specificity, Box Model & Bố Cục Modern',
-    },
-    bookType: 'Handbook',
-    categoryId: 'css',
-    subjectId: 'web',
-    author: '4TM Technical Board',
-    role: 'Core Engineering Group',
-    level: 'Foundational',
-    estimatedReadTime: '35 mins',
-    chaptersCount: 3,
-    publishedDate: '2025-02-10',
-    accentColor: 'from-blue-500 to-sky-700',
-    tags: ['CSS3', 'Flexbox', 'Grid', 'Cascade', 'Box Model'],
-    description: {
-      en: 'Comprehensive reference manual for CSS styling: the Cascade mechanism, inheritance, specificity calculation, Flexbox, CSS Grid, and custom properties.',
-      vi: 'Cẩm nang tra cứu CSS toàn diện: cơ chế Cascade, kế thừa, tính toán độ ưu tiên Specificity, Flexbox, CSS Grid và biến CSS custom properties.',
-    },
-    prerequisites: {
-      en: ['Basic HTML layout concepts'],
-      vi: ['Khái niệm bố cục HTML cơ bản'],
-    },
-    outcomes: {
-      en: ['Calculate CSS specificity values accurately', 'Master Flexbox alignment and CSS Grid track layouts'],
-      vi: ['Tính toán chính xác điểm ưu tiên Specificity trong CSS', 'Làm chủ căn chỉnh Flexbox và bố cục lưới CSS Grid'],
-    },
-    chapters: [
-      {
-        id: 'css-hb-ch-1',
-        number: 1,
-        slug: 'cascade-and-specificity',
-        title: {
-          en: 'The Cascade, Specificity & Inheritance',
-          vi: 'Cơ Chế Cascade, Specificity & Kế Thừa',
-        },
-        summary: {
-          en: 'Understanding specificity points (Inline, ID, Class, Type) and origin importance.',
-          vi: 'Hiểu điểm ưu tiên specificity (Inline, ID, Class, Type) và thứ tự ưu tiên.',
-        },
-        readTimeMinutes: 12,
-        sections: [
-          {
-            id: 'css-hb-1-1',
-            title: {
-              en: 'Calculating Specificity Score (0,0,0,0)',
-              vi: 'Cách Tính Điểm Specificity (Inline, ID, Class, Element)',
-            },
-            content: {
-              en: 'Specificity is represented as a 4-tuple: (Inline styles, ID selectors, Class/Attribute/Pseudo-class selectors, Element/Pseudo-element selectors).',
-              vi: 'Specificity được biểu diễn dưới dạng bộ 4 số: (Thẻ inline, ID selector, Class/Attribute/Pseudo-class, Element/Pseudo-element).',
-            },
-            codeBlock: {
-              language: 'css',
-              filename: 'specificity.css',
-              code: `/* Score: (0, 1, 0, 0) */
-#main-nav { color: blue; }
+  // 1. CSS Handbook (Migrated - Batch 5)
+  CSS_HANDBOOK_BOOK,
 
-/* Score: (0, 0, 2, 1) - Wins if no ID matches! */
-nav.primary-menu ul.active { color: green; }`,
-            },
-          },
-        ],
-      },
-      {
-        id: 'css-hb-ch-2',
-        number: 2,
-        slug: 'box-model-and-positioning',
-        title: {
-          en: 'The Box Model & Positioning Schemes',
-          vi: 'Mô Hình Box Model & Các Cơ Chế Positioning',
-        },
-        summary: {
-          en: 'box-sizing: border-box, margin collapsing, static, relative, absolute, fixed, sticky.',
-          vi: 'box-sizing: border-box, gộp margin, static, relative, absolute, fixed, sticky.',
-        },
-        readTimeMinutes: 12,
-        sections: [
-          {
-            id: 'css-hb-2-1',
-            title: {
-              en: 'Universal box-sizing: border-box Reset',
-              vi: 'Reset Box Model Toàn Cục Với box-sizing: border-box',
-            },
-            content: {
-              en: 'Using `box-sizing: border-box` forces padding and borders to be included inside the element’s total declared width and height, eliminating layout sizing bugs.',
-              vi: 'Sử dụng `box-sizing: border-box` ép padding và border tính vào bên trong chiều rộng tổng thể, loại bỏ lỗi tính toán kích thước.',
-            },
-          },
-        ],
-      },
-      {
-        id: 'css-hb-ch-3',
-        number: 3,
-        slug: 'flexbox-and-grid-layouts',
-        title: {
-          en: 'Flexbox vs CSS Grid Layout Systems',
-          vi: 'Hệ Bố Cục Flexbox vs CSS Grid',
-        },
-        summary: {
-          en: '1D axis layout with Flexbox vs 2D matrix layout with CSS Grid.',
-          vi: 'Bố cục 1 chiều với Flexbox vs Bố cục ma trận 2 chiều với CSS Grid.',
-        },
-        readTimeMinutes: 11,
-        sections: [
-          {
-            id: 'css-hb-3-1',
-            title: {
-              en: 'When to Use Flexbox vs CSS Grid',
-              vi: 'Khi Nào Dùng Flexbox vs CSS Grid',
-            },
-            content: {
-              en: 'Use Flexbox for 1-dimensional component alignment (navbars, button groups). Use CSS Grid for 2-dimensional page layouts and matrix card grids.',
-              vi: 'Dùng Flexbox cho dàn trang 1 chiều (navbar, nhóm button). Dùng CSS Grid cho bố cục 2 chiều toàn trang và lưới card.',
-            },
-          },
-        ],
-      },
-    ],
-  },
+  // 2. CSS Definitions (Migrated - Batch 5)
+  CSS_DEFINITIONS_BOOK,
 
-  // 2. CSS Definitions
-  {
-    id: 'css-definitions',
-    slug: 'css-definitions',
-    title: 'CSS Definitions & Box Model Glossary',
-    subtitle: {
-      en: 'Styling Terminology, Stacking Contexts & Formatting Model Glossary',
-      vi: 'Thuật Ngữ CSS, Stacking Context & Tra Cứu Khái Niệm Bố Cục',
-    },
-    bookType: 'Definitions',
-    categoryId: 'css',
-    subjectId: 'web',
-    author: '4TM Technical Board',
-    role: 'Core Engineering Group',
-    level: 'Foundational',
-    estimatedReadTime: '20 mins',
-    chaptersCount: 2,
-    publishedDate: '2025-02-12',
-    accentColor: 'from-sky-500 to-indigo-700',
-    tags: ['Definitions', 'BFC', 'Stacking Context', 'Glossary'],
-    description: {
-      en: 'Definitions for CSS layout concepts: Block Formatting Context (BFC), Stacking Context, z-index hierarchy, Reflow vs Repaint, and CSS Variables.',
-      vi: 'Từ điển định nghĩa khái niệm CSS: Block Formatting Context (BFC), Stacking Context, thứ tự z-index, Reflow vs Repaint và Biến CSS.',
-    },
-    prerequisites: {
-      en: ['Basic CSS styling knowledge'],
-      vi: ['Hiểu biết định dạng CSS cơ bản'],
-    },
-    outcomes: {
-      en: ['Understand BFC margin collapse prevention and z-index stacking triggers'],
-      vi: ['Hiểu nguyên lý chống gộp margin của BFC và kích hoạt Stacking Context'],
-    },
-    chapters: [
-      {
-        id: 'css-def-ch-1',
-        number: 1,
-        slug: 'formatting-contexts-bfc',
-        title: {
-          en: 'Block Formatting Context (BFC) Definitions',
-          vi: 'Định Nghĩa Block Formatting Context (BFC)',
-        },
-        summary: {
-          en: 'BFC triggers, float containment, and margin collapse elimination.',
-          vi: 'Tác nhân kích hoạt BFC, bao bọc phần tử float và chống gộp lề margin.',
-        },
-        readTimeMinutes: 10,
-        sections: [
-          {
-            id: 'css-def-1-1',
-            title: {
-              en: 'What Triggers a Block Formatting Context?',
-              vi: 'Điều Kiện Kích Hoạt Một Block Formatting Context (BFC)',
-            },
-            content: {
-              en: 'A BFC is created by elements with `display: flow-root`, `display: flex`, `position: absolute/fixed`, or `overflow: hidden/auto`.',
-              vi: 'Một BFC được tạo ra bởi các element có `display: flow-root`, `display: flex`, `position: absolute/fixed`, hoặc `overflow: hidden/auto`.',
-            },
-          },
-        ],
-      },
-      {
-        id: 'css-def-ch-2',
-        number: 2,
-        slug: 'stacking-context-z-index',
-        title: {
-          en: 'Stacking Context & Rendering Pipeline Glossary',
-          vi: 'Stacking Context & Quy Trình Dựng Hình (Rendering)',
-        },
-        summary: {
-          en: 'Stacking context rules, z-index isolation, Reflow vs Repaint vs Composite.',
-          vi: 'Quy tắc stacking context, cô lập z-index, Reflow vs Repaint vs Composite.',
-        },
-        readTimeMinutes: 10,
-        sections: [
-          {
-            id: 'css-def-2-1',
-            title: {
-              en: 'Reflow vs Repaint Performance',
-              vi: 'Khái Niệm Reflow vs Repaint Trong Rendering Browser',
-            },
-            content: {
-              en: 'Reflow recomputes element geometry and layout positions (expensive). Repaint updates visual pixels (color, background). Compositing uses GPU acceleration (transform, opacity).',
-              vi: 'Reflow tính toán lại vị trí bố cục (rất tốn kém). Repaint vẽ lại điểm ảnh (màu sắc). Compositing dùng GPU để biến đổi (transform, opacity).',
-            },
-          },
-        ],
-      },
-    ],
-  },
-
-  // 3. CSS Practical Guide
+  // 3. CSS Practical Guide (Legacy)
   {
     id: 'css-practical-guide',
     slug: 'css-practical-guide',
@@ -316,7 +110,7 @@ nav.primary-menu ul.active { color: green; }`,
     ],
   },
 
-  // 4. CSS Common Errors
+  // 4. CSS Common Errors (Legacy)
   {
     id: 'css-common-errors',
     slug: 'css-common-errors',
@@ -406,7 +200,7 @@ nav.primary-menu ul.active { color: green; }`,
     ],
   },
 
-  // 5. CSS Best Practices
+  // 5. CSS Best Practices (Legacy)
   {
     id: 'css-best-practices',
     slug: 'css-best-practices',
