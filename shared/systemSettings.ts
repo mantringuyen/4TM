@@ -15,7 +15,7 @@ export interface AdsProductConfig {
 }
 
 export interface AdProviderConfig {
-  type: 'partner_banner' | 'house' | 'custom' | 'none';
+  type: 'partner_banner' | 'house' | 'adsense' | 'custom' | 'none';
   network?: string;
   slotId?: string;
 }

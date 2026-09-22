@@ -4,6 +4,7 @@ export * from './theme';
 export * from './components';
 export * from './sso';
 export * from './tokens';
+export * from './ads';
 export * from './AdSlot';
 export * from './systemSettings';
 export * from './Header';

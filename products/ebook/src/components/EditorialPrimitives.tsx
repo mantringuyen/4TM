@@ -791,7 +791,7 @@ export const EditorialChecklistBlock: React.FC<{
   const tokens = getReaderThemeTokens(theme);
 
   const toggleItem = (index: number) => {
-    setCheckedState((prev) => ({ ...prev, [index]: !prev[idx] }));
+    setCheckedState((prev) => ({ ...prev, [index]: !prev[index] }));
   };
 
   const defaultTitle = language === 'en' ? 'Production Verification Checklist' : 'Danh Sách Kiểm Tra & Nghiệm Thu';

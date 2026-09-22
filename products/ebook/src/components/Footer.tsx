@@ -103,9 +103,9 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
 
         {/* Bottom copyright & switcher */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
-          <p>© {currentYear} 4TM Ecosystem. {dict.footer.allRightsReserved}</p>
+          <p>© {currentYear} 4TM Ecosystem. {dict.footer.rights}</p>
           <div className="flex items-center gap-4">
-            <ProductSwitcher currentProduct="ebook" />
+            <ProductSwitcher currentProductId="ebook" />
           </div>
         </div>
       </div>
