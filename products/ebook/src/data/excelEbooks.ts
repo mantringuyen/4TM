@@ -2,6 +2,7 @@ import { Book } from '../types';
 import {
   EXCEL_HANDBOOK_BOOK,
   EXCEL_DEFINITIONS_BOOK,
+  EXCEL_FORMULAS_RECIPES_BOOK,
 } from './migrated';
 
 export const EXCEL_EBOOKS: Book[] = [
@@ -11,104 +12,8 @@ export const EXCEL_EBOOKS: Book[] = [
   // 2. Excel Definitions (Migrated)
   EXCEL_DEFINITIONS_BOOK,
 
-  // 3. Excel Formulas Recipes (Legacy)
-  {
-    id: 'excel-formulas-recipes',
-    slug: 'excel-formulas-recipes',
-    title: 'Excel Advanced Formulas & Recipes',
-    subtitle: {
-      en: 'Multi-Condition Lookups, Dynamic Arrays & Report Formulas',
-      vi: 'Công Thức Tra Cứu Nâng Cao, Mảng Động & Công Thức Báo Cáo Tự Động',
-    },
-    bookType: 'Patterns / Recipes',
-    categoryId: 'excel',
-    subjectId: 'analytics',
-    author: '4TM Technical Board',
-    role: 'Core Engineering Group',
-    level: 'Intermediate',
-    estimatedReadTime: '30 mins',
-    chaptersCount: 2,
-    publishedDate: '2025-02-15',
-    accentColor: 'from-emerald-600 to-green-900',
-    tags: ['Formulas', 'Recipes', 'XLOOKUP', 'SUMIFS', 'Dynamic Array'],
-    description: {
-      en: 'Reusable Excel formula blueprints: multi-criteria XLOOKUP, dynamic cascading dropdowns, SUMIFS with wildcards, and LET function optimization.',
-      vi: 'Bộ công thức Excel tái sử dụng: XLOOKUP nhiều điều kiện, menu thả xuống phân cấp động, SUMIFS dùng ký tự đại diện và tối ưu bằng hàm LET.',
-    },
-    prerequisites: {
-      en: ['Understanding of basic IF, SUM, and VLOOKUP functions'],
-      vi: ['Hiểu biết các hàm IF, SUM và VLOOKUP cơ bản'],
-    },
-    outcomes: {
-      en: ['Streamline complex formulas using LET() variable assignments', 'Perform multi-criteria lookups with Boolean array math'],
-      vi: ['Tối ưu công thức phức tạp bằng khai báo biến với LET()', 'Tra cứu dữ liệu nhiều điều kiện bằng phép toán mảng Boolean'],
-    },
-    chapters: [
-      {
-        id: 'xfr-ch-1',
-        number: 1,
-        slug: 'multi-criteria-lookups-let-function',
-        title: {
-          en: 'Multi-Criteria Lookups & The LET() Function',
-          vi: 'Tra Cứu Nhiều Điều Kiện & Tối Ưu Với Hàm LET()',
-        },
-        summary: {
-          en: 'Combining boolean array conditions inside XLOOKUP and assigning variables with LET().',
-          vi: 'Kết hợp mảng điều kiện Boolean trong XLOOKUP và gán biến với LET().',
-        },
-        readTimeMinutes: 15,
-        sections: [
-          {
-            id: 'xfr-1-1',
-            title: {
-              en: 'Variable Assignment with LET()',
-              vi: 'Khai Báo Biến Tinh Gọn Với Hàm LET()',
-            },
-            content: {
-              en: '`LET()` assigns names to calculation results, preventing repetitive nested calculations and speeding up workbook calculation execution.',
-              vi: 'Hàm `LET()` cho phép gán tên cho kết quả trung gian, tránh phải tính đi tính lại một biểu thức phức tạp, giúp file chạy mượt hơn.',
-            },
-            codeBlock: {
-              language: 'excel',
-              filename: 'let_formula.txt',
-              code: `=LET(
-    subtotal, SUM(Sales[Amount]),
-    tax, subtotal * 0.1,
-    subtotal + tax
-)`,
-            },
-          },
-        ],
-      },
-      {
-        id: 'xfr-ch-2',
-        number: 2,
-        slug: 'dynamic-array-reporting-recipes',
-        title: {
-          en: 'Dynamic Array Reporting Recipes',
-          vi: 'Công Thức Báo Cáo Động Với Hàm Mảng',
-        },
-        summary: {
-          en: 'Combining FILTER, SORT, and UNIQUE to auto-generate dashboard tables.',
-          vi: 'Kết hợp FILTER, SORT và UNIQUE để tự động tạo bảng dữ liệu dashboard.',
-        },
-        readTimeMinutes: 15,
-        sections: [
-          {
-            id: 'xfr-2-1',
-            title: {
-              en: 'Nested FILTER + SORT + UNIQUE Recipe',
-              vi: 'Công Thức Lồng FILTER + SORT + UNIQUE',
-            },
-            content: {
-              en: 'Extract unique items, filter by active region, and sort alphabetically in a single self-updating formula spill.',
-              vi: 'Trích xuất danh sách duy nhất, lọc theo khu vực và sắp xếp theo bảng chữ cái chỉ bằng một công thức tự động tràn vùng.',
-            },
-          },
-        ],
-      },
-    ],
-  },
+  // 3. Excel Formulas Recipes (Migrated - Batch 6)
+  EXCEL_FORMULAS_RECIPES_BOOK,
 
   // 4. Excel Common Errors (Legacy)
   {

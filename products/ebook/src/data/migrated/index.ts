@@ -36,4 +36,12 @@ export { HTML_COMMON_ERRORS_BOOK } from './htmlCommonErrors';
 export { CSS_HANDBOOK_BOOK } from './cssHandbook';
 export { CSS_DEFINITIONS_BOOK } from './cssDefinitions';
 
+// Batch 6 Migrated Books
+export { CSS_PRACTICAL_GUIDE_BOOK } from './cssPracticalGuide';
+export { CSS_COMMON_ERRORS_BOOK } from './cssCommonErrors';
+export { CSS_BEST_PRACTICES_BOOK } from './cssBestPractices';
+export { JAVASCRIPT_BEST_PRACTICES_BOOK } from './javascriptBestPractices';
+export { JAVASCRIPT_PATTERNS_BOOK } from './javascriptPatterns';
+export { EXCEL_FORMULAS_RECIPES_BOOK } from './excelFormulasRecipes';
+
 
