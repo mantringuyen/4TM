@@ -1,219 +1,17 @@
 import { Book } from '../types';
+import {
+  EXCEL_HANDBOOK_BOOK,
+  EXCEL_DEFINITIONS_BOOK,
+} from './migrated';
 
 export const EXCEL_EBOOKS: Book[] = [
-  // 1. Excel Handbook
-  {
-    id: 'excel-handbook',
-    slug: 'excel-handbook',
-    title: 'Excel Handbook',
-    subtitle: {
-      en: 'Grid Architecture, Dynamic Arrays & Modern Calculation Engine',
-      vi: 'Kiến Trúc Grid, Mảng Động & Engine Tính Toán Trong Excel Hiện Đại',
-    },
-    bookType: 'Handbook',
-    categoryId: 'excel',
-    subjectId: 'analytics',
-    author: '4TM Technical Board',
-    role: 'Core Engineering Group',
-    level: 'Foundational',
-    estimatedReadTime: '35 mins',
-    chaptersCount: 3,
-    publishedDate: '2025-02-10',
-    accentColor: 'from-emerald-600 to-green-800',
-    tags: ['Excel', 'Spreadsheet', 'Dynamic Arrays', 'Data Analysis'],
-    description: {
-      en: 'Comprehensive reference manual for Microsoft Excel: workbook structure, calculation grid, absolute vs relative references, Dynamic Array engine, and Pivot Tables.',
-      vi: 'Cẩm nang tra cứu Microsoft Excel toàn diện: cấu trúc workbook, lưới tính toán, tham chiếu tuyệt đối vs tương đối, engine mảng động và Bảng Pivot Table.',
-    },
-    prerequisites: {
-      en: ['Basic computer operational skills'],
-      vi: ['Kỹ năng tin học văn phòng cơ bản'],
-    },
-    outcomes: {
-      en: ['Master relative ($A1), absolute ($A$1), and mixed reference locks', 'Leverage modern Dynamic Array formulas (XLOOKUP, FILTER, UNIQUE)'],
-      vi: ['Làm chủ khóa ô tham chiếu tuyệt đối ($A$1) và hỗn hợp', 'Sử dụng thành thạo các hàm mảng động hiện đại (XLOOKUP, FILTER, UNIQUE)'],
-    },
-    chapters: [
-      {
-        id: 'xl-hb-ch-1',
-        number: 1,
-        slug: 'cell-references-and-calculation-grid',
-        title: {
-          en: 'Cell References & Calculation Grid Mechanics',
-          vi: 'Tham Chiếu Ô & Cơ Chế Lưới Tính Toán trong Excel',
-        },
-        summary: {
-          en: 'Relative vs Absolute ($) vs Mixed locks; dependency tree evaluation.',
-          vi: 'Tham chiếu tương đối vs Tuyệt đối ($) vs Hỗn hợp; cây phụ thuộc công thức.',
-        },
-        readTimeMinutes: 11,
-        sections: [
-          {
-            id: 'xl-hb-1-1',
-            title: {
-              en: 'Locking Dimensions with Dollar ($) Sign',
-              vi: 'Khóa Tọa Độ Ô Bằng Dấu Đô-la ($)',
-            },
-            content: {
-              en: 'Locking column `$A1` preserves column A when dragging across rows. Locking row `A$1` preserves row 1 when dragging down. Locking `$A$1` freezes both.',
-              vi: 'Khóa cột `$A1` giữ cố định cột A khi kéo công thức ngang. Khóa dòng `A$1` giữ cố định dòng 1 khi kéo xuống. Khóa `$A$1` cố định hoàn toàn vị trí ô.',
-            },
-          },
-        ],
-      },
-      {
-        id: 'xl-hb-ch-2',
-        number: 2,
-        slug: 'dynamic-array-engine-spilling',
-        title: {
-          en: 'The Dynamic Array Calculation Engine',
-          vi: 'Engine Tính Toán Mảng Động & Hiệu Ứng Tràn Spill (#SPILL!)',
-        },
-        summary: {
-          en: 'Spill ranges, hash (#) syntax operator, FILTER, UNIQUE, SORT, and SEQUENCE.',
-          vi: 'Vùng spilled range, toán tử băm (#), hàm FILTER, UNIQUE, SORT và SEQUENCE.',
-        },
-        readTimeMinutes: 12,
-        sections: [
-          {
-            id: 'xl-hb-2-1',
-            title: {
-              en: 'Modern XLOOKUP vs Legacy VLOOKUP',
-              vi: 'Ưu Thế Của XLOOKUP So Với VLOOKUP Cổ Điển',
-            },
-            content: {
-              en: '`XLOOKUP` performs exact matches by default, searches left or right, and handles missing values natively without requiring `IFERROR`.',
-              vi: 'Hàm `XLOOKUP` mặc định tìm chính xác, hỗ trợ dò tìm sang trái/phải và tự xử lý khi không tìm thấy mà không cần bọc `IFERROR`.',
-            },
-            codeBlock: {
-              language: 'excel',
-              filename: 'formulas.txt',
-              code: `=XLOOKUP(A2, Employees[ID], Employees[Salary], "Not Found")`,
-            },
-          },
-        ],
-      },
-      {
-        id: 'xl-hb-ch-3',
-        number: 3,
-        slug: 'pivot-tables-data-summarization',
-        title: {
-          en: 'Pivot Tables & Dynamic Summarization',
-          vi: 'Bảng Pivot Table & Tổng Hợp Dữ Liệu Động',
-        },
-        summary: {
-          en: 'PivotCache memory, slicers, calculated fields, and group aggregations.',
-          vi: 'Bộ nhớ PivotCache, thanh lọc Slicer, trường tính toán Calculated Field.',
-        },
-        readTimeMinutes: 12,
-        sections: [
-          {
-            id: 'xl-hb-3-1',
-            title: {
-              en: 'PivotCache Memory Execution',
-              vi: 'Cơ Chế Bộ Nhớ PivotCache Trong Excel',
-            },
-            content: {
-              en: 'Pivot Tables operate on an in-memory snapshot called a PivotCache. Remember to click "Refresh Data" when source table rows change.',
-              vi: 'Bảng Pivot Table vận hành trên bản chụp bộ nhớ gọi là PivotCache. Cần nhấn "Refresh" khi nguồn dữ liệu có sự thay đổi.',
-            },
-          },
-        ],
-      },
-    ],
-  },
+  // 1. Excel Handbook (Migrated)
+  EXCEL_HANDBOOK_BOOK,
 
-  // 2. Excel Definitions
-  {
-    id: 'excel-definitions',
-    slug: 'excel-definitions',
-    title: 'Excel Terminology & Formula Glossary',
-    subtitle: {
-      en: 'Spreadsheet Terminology, Data Types & Functions Glossary',
-      vi: 'Thuật Ngữ Bảng Tính, Kiểu Dữ Liệu & Tra Cứu Khái Niệm Excel',
-    },
-    bookType: 'Definitions',
-    categoryId: 'excel',
-    subjectId: 'analytics',
-    author: '4TM Technical Board',
-    role: 'Core Engineering Group',
-    level: 'Foundational',
-    estimatedReadTime: '20 mins',
-    chaptersCount: 2,
-    publishedDate: '2025-02-12',
-    accentColor: 'from-emerald-500 to-green-700',
-    tags: ['Definitions', 'Glossary', 'Excel Engine', 'Functions'],
-    description: {
-      en: 'Definitions for core Excel concepts: Spilled Ranges, Volatile Functions, Structured References, Power Query M Code, and Data Models.',
-      vi: 'Từ điển định nghĩa các khái niệm Excel: Vùng tràn (Spilled Range), Hàm biến đổi (Volatile Function), Structured Reference và Power Query.',
-    },
-    prerequisites: {
-      en: ['Basic Excel grid familiarity'],
-      vi: ['Làm quen bảng tính Excel cơ bản'],
-    },
-    outcomes: {
-      en: ['Identify volatile functions (NOW, TODAY, OFFSET, INDIRECT) and their impact'],
-      vi: ['Nhận biết các hàm volatile (NOW, TODAY, OFFSET, INDIRECT) và tác động của chúng'],
-    },
-    chapters: [
-      {
-        id: 'xl-def-ch-1',
-        number: 1,
-        slug: 'volatile-functions-and-spill-terms',
-        title: {
-          en: 'Volatile Functions & Spilled Range Terms',
-          vi: 'Hàm Volatile & Khái Niệm Spilled Range',
-        },
-        summary: {
-          en: 'Volatile calculation engine triggers, #SPILL! errors, and spilled operator (#).',
-          vi: 'Cơ chế tính lại của hàm Volatile, lỗi #SPILL! và toán tử vùng tràn (#).',
-        },
-        readTimeMinutes: 10,
-        sections: [
-          {
-            id: 'xl-def-1-1',
-            title: {
-              en: 'Volatile Function Definition',
-              vi: 'Định Nghĩa Hàm Volatile Trong Excel',
-            },
-            content: {
-              en: 'Volatile functions (e.g. `NOW()`, `TODAY()`, `OFFSET()`, `INDIRECT()`) force Excel to recalculate their formula on EVERY user action anywhere in the workbook.',
-              vi: 'Các hàm volatile (như `NOW()`, `TODAY()`, `OFFSET()`, `INDIRECT()`) ép Excel phải tính toán lại công thức sau BẤT KỲ thao tác nào trên file.',
-            },
-          },
-        ],
-      },
-      {
-        id: 'xl-def-ch-2',
-        number: 2,
-        slug: 'excel-tables-structured-references',
-        title: {
-          en: 'Excel Tables & Structured References',
-          vi: 'Thẻ Bảng Excel Table & Tham Chiếu Có Cấu Trúc',
-        },
-        summary: {
-          en: 'ListObjects, Table syntax Table1[ColumnName], and automatic formula propagation.',
-          vi: 'ListObjects, cú pháp Bảng Table1[TênCột] và tự động nối dài công thức.',
-        },
-        readTimeMinutes: 10,
-        sections: [
-          {
-            id: 'xl-def-2-1',
-            title: {
-              en: 'Structured Reference Syntax',
-              vi: 'Cú Pháp Tham Chiếu Cột Theo Tên Trong Excel Table',
-            },
-            content: {
-              en: 'Converting raw ranges to Excel Tables (Ctrl+T) allows using clear header names like `Sales[Revenue]` instead of cryptic cell ranges like `C2:C500`.',
-              vi: 'Chuyển vùng ô thô sang Excel Table (Ctrl+T) cho phép dùng tên cột như `Sales[Revenue]` thay vì tọa độ mờ mịt như `C2:C500`.',
-            },
-          },
-        ],
-      },
-    ],
-  },
+  // 2. Excel Definitions (Migrated)
+  EXCEL_DEFINITIONS_BOOK,
 
-  // 3. Excel Formulas Recipes
+  // 3. Excel Formulas Recipes (Legacy)
   {
     id: 'excel-formulas-recipes',
     slug: 'excel-formulas-recipes',
@@ -312,7 +110,7 @@ export const EXCEL_EBOOKS: Book[] = [
     ],
   },
 
-  // 4. Excel Common Errors
+  // 4. Excel Common Errors (Legacy)
   {
     id: 'excel-common-errors',
     slug: 'excel-common-errors',
@@ -402,7 +200,7 @@ export const EXCEL_EBOOKS: Book[] = [
     ],
   },
 
-  // 5. Excel Best Practices
+  // 5. Excel Best Practices (Legacy)
   {
     id: 'excel-best-practices',
     slug: 'excel-best-practices',
@@ -492,7 +290,7 @@ export const EXCEL_EBOOKS: Book[] = [
     ],
   },
 
-  // 6. Excel Practical Guide
+  // 6. Excel Practical Guide (Legacy)
   {
     id: 'excel-practical-guide',
     slug: 'excel-practical-guide',

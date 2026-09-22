@@ -109,6 +109,7 @@ export interface ChapterPart {
   romanNumeral?: string;
   title: LocalizedString;
   description?: LocalizedString;
+  chapterIds?: string[];
   chapters?: Chapter[];
 }
 
@@ -271,7 +272,7 @@ export interface Chapter {
 }
 
 export interface GlossaryEntry {
-  term: string;
+  term: string | LocalizedString;
   vietnameseTerm?: string;
   category?: string;
   definition: LocalizedString;
@@ -280,8 +281,9 @@ export interface GlossaryEntry {
 
 export interface ReferenceItem {
   title: string;
+  author?: string;
   authorOrSource?: string;
-  year?: string;
+  year?: string | number;
   url?: string;
   description?: LocalizedString;
   annotation?: LocalizedString;

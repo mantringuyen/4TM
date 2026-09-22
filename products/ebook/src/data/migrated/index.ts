@@ -20,3 +20,11 @@ export { JAVASCRIPT_DEFINITIONS_BOOK } from './javascriptDefinitions';
 export { JAVASCRIPT_PRACTICAL_GUIDE_BOOK } from './javascriptPracticalGuide';
 export { JAVASCRIPT_COMMON_ERRORS_BOOK } from './javascriptCommonErrors';
 
+// Batch 4 Migrated Books
+export { POWERBI_HANDBOOK_BOOK } from './powerBiHandbook';
+export { POWERBI_DEFINITIONS_BOOK } from './powerBiDefinitions';
+export { POWERBI_COMMON_ERRORS_BOOK } from './powerBiCommonErrors';
+export { POWERBI_BEST_PRACTICES_BOOK } from './powerBiBestPractices';
+export { EXCEL_HANDBOOK_BOOK } from './excelHandbook';
+export { EXCEL_DEFINITIONS_BOOK } from './excelDefinitions';
+
