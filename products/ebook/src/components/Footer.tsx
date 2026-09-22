@@ -45,7 +45,7 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
               <li>
                 <a
                   href="https://4tm.io.vn"
-                  className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1"
+                  className="text-slate-600 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors inline-flex items-center gap-1"
                 >
                   <span>4TM Portal</span>
                   <ExternalLink className="w-3 h-3 opacity-60" />
@@ -54,7 +54,7 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
               <li>
                 <a
                   href="https://study.4tm.io.vn"
-                  className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1"
+                  className="text-slate-600 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors inline-flex items-center gap-1"
                 >
                   <span>Study — 4TM</span>
                   <ExternalLink className="w-3 h-3 opacity-60" />
@@ -63,7 +63,7 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
               <li>
                 <a
                   href="https://games.4tm.io.vn"
-                  className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1"
+                  className="text-slate-600 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors inline-flex items-center gap-1"
                 >
                   <span>Games — 4TM</span>
                   <ExternalLink className="w-3 h-3 opacity-60" />
@@ -72,7 +72,7 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
               <li>
                 <a
                   href="https://apps.4tm.io.vn"
-                  className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1"
+                  className="text-slate-600 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors inline-flex items-center gap-1"
                 >
                   <span>Apps — 4TM</span>
                   <ExternalLink className="w-3 h-3 opacity-60" />
@@ -81,7 +81,7 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
               <li>
                 <a
                   href="https://tools.4tm.io.vn"
-                  className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1"
+                  className="text-slate-600 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors inline-flex items-center gap-1"
                 >
                   <span>Tools — 4TM</span>
                   <ExternalLink className="w-3 h-3 opacity-60" />
@@ -101,13 +101,11 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
           </div>
         </div>
 
-        {/* Bottom copyright */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
-          <div>
-            &copy; {currentYear} 4TM Ecosystem. {dict.footer.rights}
-          </div>
-          <div className="font-mono text-[11px] text-slate-400">
-            ebook.4tm.io.vn
+        {/* Bottom copyright & switcher */}
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
+          <p>© {currentYear} 4TM Ecosystem. {dict.footer.allRightsReserved}</p>
+          <div className="flex items-center gap-4">
+            <ProductSwitcher currentProduct="ebook" />
           </div>
         </div>
       </div>

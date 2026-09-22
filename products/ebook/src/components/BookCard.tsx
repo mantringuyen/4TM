@@ -21,7 +21,7 @@ export const BookCard: React.FC<BookCardProps> = ({
     <article
       id={`book-card-${book.id}`}
       onClick={() => onSelectBook(book)}
-      className="group flex flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-4 sm:p-5 hover:border-blue-500/60 dark:hover:border-blue-500/50 hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+      className="group flex flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-4 sm:p-5 hover:border-teal-500/60 dark:hover:border-teal-500/50 hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
     >
       <div>
         {/* Dominant Visual Book Cover */}
@@ -35,13 +35,13 @@ export const BookCard: React.FC<BookCardProps> = ({
 
         {/* Book Type Badge */}
         <div className="mb-2">
-          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded border border-blue-200/50 dark:border-blue-800/50">
+          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/50 px-2 py-0.5 rounded border border-teal-200/50 dark:border-teal-800/50">
             {dict.filter.bookTypes?.[book.bookType] || book.bookType}
           </span>
         </div>
 
         {/* Book Title */}
-        <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug mb-1.5 line-clamp-2">
+        <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors leading-snug mb-1.5 line-clamp-2">
           {book.title}
         </h2>
 
@@ -59,7 +59,7 @@ export const BookCard: React.FC<BookCardProps> = ({
           <span>{book.estimatedReadTime}</span>
         </span>
 
-        <span className="inline-flex items-center gap-1 font-bold text-xs text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform">
+        <span className="inline-flex items-center gap-1 font-bold text-xs text-teal-600 dark:text-teal-400 group-hover:translate-x-1 transition-transform">
           <span>{dict.card.startReading}</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </span>

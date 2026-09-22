@@ -140,7 +140,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={dict.nav.searchPlaceholder}
-            className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs transition-all"
+            className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-xs transition-all"
           />
           {searchQuery && (
             <button
@@ -161,9 +161,9 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               id="filter-dropdown-topic"
               value={selectedTopic}
               onChange={(e) => setSelectedTopic(e.target.value)}
-              className={`w-full appearance-none pl-3 pr-8 py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 truncate ${
+              className={`w-full appearance-none pl-3 pr-8 py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 truncate ${
                 selectedTopic !== 'all'
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold'
+                  ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 font-bold'
                   : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
               }`}
             >
@@ -183,9 +183,9 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               id="filter-dropdown-booktype"
               value={selectedBookType}
               onChange={(e) => setSelectedBookType(e.target.value)}
-              className={`w-full appearance-none pl-3 pr-8 py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 truncate ${
+              className={`w-full appearance-none pl-3 pr-8 py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 truncate ${
                 selectedBookType !== 'all'
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold'
+                  ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 font-bold'
                   : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
               }`}
             >
@@ -205,9 +205,9 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               id="filter-dropdown-level"
               value={selectedLevel}
               onChange={(e) => setSelectedLevel(e.target.value)}
-              className={`w-full appearance-none pl-3 pr-8 py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 truncate ${
+              className={`w-full appearance-none pl-3 pr-8 py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 truncate ${
                 selectedLevel !== 'all'
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold'
+                  ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 font-bold'
                   : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
               }`}
             >
@@ -227,9 +227,9 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               id="filter-dropdown-domain"
               value={selectedDomain}
               onChange={(e) => setSelectedDomain(e.target.value)}
-              className={`w-full appearance-none pl-3 pr-8 py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 truncate ${
+              className={`w-full appearance-none pl-3 pr-8 py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 truncate ${
                 selectedDomain !== 'all'
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold'
+                  ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 font-bold'
                   : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
               }`}
             >
@@ -249,10 +249,10 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs text-slate-500 dark:text-slate-400">
             <div className="flex flex-wrap items-center gap-1.5">
               {selectedTopic !== 'all' && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono text-[11px] font-bold border border-blue-500/20">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 font-mono text-[11px] font-bold border border-teal-500/20">
                   <span>Topic: {TOPICS.find((t) => t.id === selectedTopic)?.name[language]}</span>
                   <X
-                    className="w-3 h-3 cursor-pointer hover:text-blue-800"
+                    className="w-3 h-3 cursor-pointer hover:text-teal-800"
                     onClick={() => setSelectedTopic('all')}
                   />
                 </span>
@@ -303,7 +303,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               type="button"
               id="reset-all-filters-btn"
               onClick={handleResetFilters}
-              className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline cursor-pointer font-bold text-[11px]"
+              className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400 hover:underline cursor-pointer font-bold text-[11px]"
             >
               <RotateCcw className="w-3 h-3" />
               <span>{dict.filter.clearFilters}</span>
@@ -338,7 +338,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             type="button"
             id="empty-state-reset-btn"
             onClick={handleResetFilters}
-            className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white cursor-pointer hover:bg-blue-500 shadow-md shadow-blue-600/20"
+            className="px-4 py-2 rounded-xl text-xs font-bold bg-teal-600 text-white cursor-pointer hover:bg-teal-500 shadow-md shadow-teal-600/20"
           >
             {dict.filter.clearFilters}
           </button>

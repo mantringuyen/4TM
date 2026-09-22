@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Book,
+  BookMetadata,
   Chapter,
   Language,
   ReaderSettings,
@@ -15,6 +16,7 @@ import { ChapterOpener } from './ChapterOpener';
 import { ChapterEnd } from './ChapterEnd';
 import { PublicationFrontMatter } from './PublicationFrontMatter';
 import {
+  renderInlineText,
   KeyIdeaBlock,
   WhenToUseBlock,
   CommonMistakesBlock,
@@ -36,6 +38,7 @@ import {
   EditorialChecklistBlock,
 } from './EditorialPrimitives';
 import { getPublicationTemplate } from '../data/publicationRegistry';
+import { getReaderThemeTokens } from '../theme/readerTheme';
 import {
   ArrowLeft,
   Bookmark,
@@ -54,6 +57,7 @@ import {
   BookMarked,
   FileText,
   ChevronRight,
+  AlertTriangle,
 } from 'lucide-react';
 
 export interface ReaderViewProps {
@@ -69,27 +73,6 @@ export interface ReaderViewProps {
   onRetry?: () => void;
 }
 
-// Helper: Format inline text with backticks into styled <code> elements
-function renderFormattedText(text: string) {
-  if (!text.includes('`')) return text;
-
-  const parts = text.split(/(`[^`]+`)/g);
-  return parts.map((part, index) => {
-    if (part.startsWith('`') && part.endsWith('`')) {
-      const codeContent = part.slice(1, -1);
-      return (
-        <code
-          key={index}
-          className="px-1.5 py-0.5 rounded text-[0.88em] font-mono font-semibold bg-black/5 dark:bg-white/10 text-slate-800 dark:text-slate-200 border border-black/5 dark:border-white/5 mx-0.5 break-words [overflow-wrap:anywhere]"
-        >
-          {codeContent}
-        </code>
-      );
-    }
-    return part;
-  });
-}
-
 // Helper: Syntax highlight code lines cleanly according to active theme
 function renderHighlightedCodeLines(code: string, theme: ReaderPaperTheme) {
   const lines = code.split('\n');
@@ -102,7 +85,7 @@ function renderHighlightedCodeLines(code: string, theme: ReaderPaperTheme) {
   const commentClass = isSepia
     ? 'text-[#7C6C58] italic'
     : isDarkTheme
-    ? 'text-zinc-500 dark:text-zinc-400 italic'
+    ? 'text-zinc-500 italic'
     : 'text-slate-500 italic';
 
   return lines.map((line, idx) => {
@@ -165,6 +148,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
   });
 
   const [scrollProgress, setScrollProgress] = useState(0);
+  const tokens = getReaderThemeTokens(settings.paperTheme);
 
   useEffect(() => {
     localStorage.setItem('4tm_ebook_reader_settings', JSON.stringify(settings));
@@ -207,89 +191,6 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
     wide: 'max-w-[78ch]',
   };
 
-  // Authentic paper themes
-  const themeClasses: Record<
-    ReaderPaperTheme,
-    {
-      bg: string;
-      text: string;
-      cardBg: string;
-      border: string;
-      codeBg: string;
-      codeBorder: string;
-      codeHeaderBg: string;
-      codeHeaderText: string;
-      codePreBg: string;
-      codePreText: string;
-      codeExplanationBg: string;
-      calloutBg: string;
-      calloutBorder: string;
-    }
-  > = {
-    default: {
-      bg: 'bg-[#FFFFFF] dark:bg-[#0B0F17]',
-      text: 'text-slate-900 dark:text-slate-100',
-      cardBg: 'bg-[#F8FAFC] dark:bg-[#111827]',
-      border: 'border-slate-200 dark:border-slate-800',
-      codeBg: 'bg-[#F8FAFC] dark:bg-[#0F172A]',
-      codeBorder: 'border-slate-200 dark:border-slate-800',
-      codeHeaderBg: 'bg-[#F1F5F9] dark:bg-[#1E293B]',
-      codeHeaderText: 'text-slate-700 dark:text-slate-300',
-      codePreBg: 'bg-[#FFFFFF] dark:bg-[#090D16]',
-      codePreText: 'text-slate-900 dark:text-slate-100',
-      codeExplanationBg: 'bg-[#F8FAFC] dark:bg-[#111827]',
-      calloutBg: 'bg-blue-50/60 dark:bg-blue-950/20',
-      calloutBorder: 'border-blue-200 dark:border-blue-900/40',
-    },
-    sepia: {
-      bg: 'bg-[#F8F3E6] dark:bg-[#282218]',
-      text: 'text-[#2C2216] dark:text-[#EADBC8]',
-      cardBg: 'bg-[#F0E8D5] dark:bg-[#342C20]',
-      border: 'border-[#E2D6BC] dark:border-[#4B3F2E]',
-      codeBg: 'bg-[#EDE4CD] dark:bg-[#2F271D]',
-      codeBorder: 'border-[#DECDB1] dark:border-[#4B3F2E]',
-      codeHeaderBg: 'bg-[#E4D7BD] dark:bg-[#272017]',
-      codeHeaderText: 'text-[#4A3B29] dark:text-[#CBB8A2]',
-      codePreBg: 'bg-[#FDFBF7] dark:bg-[#1F1912]',
-      codePreText: 'text-[#22190F] dark:text-[#EFE5D6]',
-      codeExplanationBg: 'bg-[#EDE4CD] dark:bg-[#2F271D]',
-      calloutBg: 'bg-[#ECE1C8] dark:bg-[#332A1D]',
-      calloutBorder: 'border-[#DAC8A8] dark:border-[#4A3D2C]',
-    },
-    dark: {
-      bg: 'bg-[#18181B]',
-      text: 'text-zinc-100',
-      cardBg: 'bg-zinc-900',
-      border: 'border-zinc-800',
-      codeBg: 'bg-zinc-900',
-      codeBorder: 'border-zinc-800',
-      codeHeaderBg: 'bg-zinc-800/90',
-      codeHeaderText: 'text-zinc-300',
-      codePreBg: 'bg-zinc-950',
-      codePreText: 'text-zinc-100',
-      codeExplanationBg: 'bg-zinc-900',
-      calloutBg: 'bg-zinc-900/90',
-      calloutBorder: 'border-zinc-700/60',
-    },
-    midnight: {
-      bg: 'bg-[#0B0F19]',
-      text: 'text-slate-100',
-      cardBg: 'bg-[#111827]',
-      border: 'border-slate-800',
-      codeBg: 'bg-[#111827]',
-      codeBorder: 'border-slate-800',
-      codeHeaderBg: 'bg-[#172239]',
-      codeHeaderText: 'text-slate-300',
-      codePreBg: 'bg-[#060A12]',
-      codePreText: 'text-slate-100',
-      codeExplanationBg: 'bg-[#111827]',
-      calloutBg: 'bg-[#131D33]',
-      calloutBorder: 'border-slate-800',
-    },
-  };
-
-  const currentTheme = themeClasses[settings.paperTheme];
-
   const scrollToSection = (sectionId: string) => {
     const el = document.getElementById(sectionId);
     if (el) {
@@ -301,21 +202,17 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-200 w-full max-w-full ${currentTheme.bg} ${currentTheme.text}`}
+      className={`min-h-screen transition-colors duration-200 w-full max-w-full ${tokens.pageBg} ${tokens.textPrimary}`}
     >
       {/* Scroll Progress Indicator */}
       <div
-        className="fixed top-0 left-0 h-1 bg-blue-600 dark:bg-blue-400 z-50 transition-all duration-75"
+        className="fixed top-0 left-0 h-1 bg-teal-600 z-50 transition-all duration-75"
         style={{ width: `${scrollProgress}%` }}
       />
 
       {/* Minimal Publication Running Header */}
       <header
-        className={`sticky top-0 z-30 w-full border-b backdrop-blur-md transition-colors ${
-          settings.paperTheme === 'default'
-            ? 'bg-white/95 dark:bg-slate-950/95 border-slate-200 dark:border-slate-800'
-            : `${currentTheme.bg}/95 ${currentTheme.border}`
-        }`}
+        className={`sticky top-0 z-30 w-full border-b backdrop-blur-md transition-colors ${tokens.pageBg}/95 ${tokens.borderSubtle}`}
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between gap-2 sm:gap-3 w-full min-w-0 box-border">
           {/* Left: Back to Book Overview & Sidebar Toggle */}
@@ -324,7 +221,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
               type="button"
               id="reader-back-to-book-btn"
               onClick={onBackToBook}
-              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold ${tokens.textMuted} hover:${tokens.accentText} hover:${tokens.highlightSurface} transition-colors cursor-pointer`}
               title={dict.reader.backToBook}
             >
               <ArrowLeft className="w-4 h-4" />
@@ -336,7 +233,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
               type="button"
               id="mobile-toc-toggle-btn"
               onClick={() => setMobileDrawerOpen(true)}
-              className="lg:hidden inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              className={`lg:hidden inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold ${tokens.textSecondary} hover:${tokens.highlightSurface} transition-colors cursor-pointer`}
             >
               <Menu className="w-4 h-4" />
               <span>{dict.reader.toc}</span>
@@ -347,17 +244,17 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
               type="button"
               id="desktop-sidebar-toggle-btn"
               onClick={() => setDesktopSidebarOpen(!desktopSidebarOpen)}
-              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              className={`hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold ${tokens.textSecondary} hover:${tokens.highlightSurface} transition-colors cursor-pointer`}
               title={desktopSidebarOpen ? 'Hide Table of Contents (Zen Mode)' : 'Show Table of Contents'}
             >
               {desktopSidebarOpen ? (
                 <>
-                  <PanelLeftClose className="w-4 h-4 text-slate-400" />
+                  <PanelLeftClose className={`w-4 h-4 ${tokens.textMuted}`} />
                   <span>Zen Mode</span>
                 </>
               ) : (
                 <>
-                  <PanelLeftOpen className="w-4 h-4 text-blue-500" />
+                  <PanelLeftOpen className={`w-4 h-4 ${tokens.accentText}`} />
                   <span>{dict.reader.toc}</span>
                 </>
               )}
@@ -366,9 +263,9 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
           {/* Center: Running Book Title & Folio */}
           <div className="hidden md:flex items-center gap-2 text-xs font-mono truncate max-w-sm min-w-0">
-            <span className="text-slate-400 truncate">{book.title}</span>
-            <span className="text-slate-300 dark:text-slate-700">&bull;</span>
-            <span className="font-bold text-blue-600 dark:text-blue-400 truncate">
+            <span className={`${tokens.textMuted} truncate`}>{book.title}</span>
+            <span className="opacity-40">&bull;</span>
+            <span className={`font-bold ${tokens.accentText} truncate`}>
               {viewingFrontMatter
                 ? language === 'vi'
                   ? 'Đầu sách & Mục lục'
@@ -380,15 +277,15 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
           {/* Right: Customization Controls (Type size, Paper theme, Bookmark) */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* Real Typography Font Size Selector */}
-            <div className="flex items-center p-0.5 rounded-xl border border-black/10 dark:border-white/10 text-xs gap-0.5">
+            <div className={`flex items-center p-0.5 rounded-xl border ${tokens.borderSubtle} text-xs gap-0.5 ${tokens.innerSurface}`}>
               <button
                 type="button"
                 id="fontsize-btn-sm"
                 onClick={() => setSettings((s) => ({ ...s, fontSize: 'sm' }))}
                 className={`px-2 py-0.5 rounded-md font-sans text-xs font-bold cursor-pointer transition-colors ${
                   settings.fontSize === 'sm'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-teal-600 text-white'
+                    : `${tokens.textMuted} hover:${tokens.textPrimary}`
                 }`}
                 title="Font Size: Small (A-)"
               >
@@ -400,8 +297,8 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                 onClick={() => setSettings((s) => ({ ...s, fontSize: 'md' }))}
                 className={`px-2 py-0.5 rounded-md font-sans text-xs font-bold cursor-pointer transition-colors ${
                   settings.fontSize === 'md'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-teal-600 text-white'
+                    : `${tokens.textMuted} hover:${tokens.textPrimary}`
                 }`}
                 title="Font Size: Regular (A)"
               >
@@ -413,8 +310,8 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                 onClick={() => setSettings((s) => ({ ...s, fontSize: 'lg' }))}
                 className={`px-2 py-0.5 rounded-md font-sans text-xs font-bold cursor-pointer transition-colors ${
                   settings.fontSize === 'lg'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-teal-600 text-white'
+                    : `${tokens.textMuted} hover:${tokens.textPrimary}`
                 }`}
                 title="Font Size: Large (A+)"
               >
@@ -431,7 +328,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                 const nextIdx = (themes.indexOf(settings.paperTheme) + 1) % themes.length;
                 setSettings((s) => ({ ...s, paperTheme: themes[nextIdx] }));
               }}
-              className="p-1.5 rounded-xl border border-black/10 dark:border-white/10 text-slate-500 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+              className={`p-1.5 rounded-xl border ${tokens.borderSubtle} ${tokens.textMuted} hover:${tokens.textPrimary} hover:${tokens.highlightSurface} cursor-pointer transition-colors`}
               title={`${dict.reader.theme}: ${dict.themes[settings.paperTheme]}`}
             >
               <Palette className="w-3.5 h-3.5" />
@@ -443,10 +340,10 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                 type="button"
                 id="bookmark-chapter-btn"
                 onClick={() => onToggleBookmark(chapter.id)}
-                className={`p-1.5 rounded-xl border border-black/10 dark:border-white/10 transition-colors cursor-pointer ${
+                className={`p-1.5 rounded-xl border ${tokens.borderSubtle} transition-colors cursor-pointer ${
                   isBookmarked
                     ? 'text-amber-500 bg-amber-500/10 border-amber-500/20'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    : `${tokens.textMuted} hover:${tokens.textPrimary} hover:${tokens.highlightSurface}`
                 }`}
                 title={isBookmarked ? dict.reader.chapterBookmarked : dict.reader.bookmarkChapter}
               >
@@ -467,39 +364,39 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
         {desktopSidebarOpen && (
           <aside
             aria-label="Publication Table of Contents"
-            className={`hidden lg:block w-80 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto p-5 border-r transition-all ${currentTheme.border}`}
+            className={`hidden lg:block w-80 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto p-5 border-r transition-all ${tokens.borderSubtle} ${tokens.cardSurface}`}
           >
             {/* Publication Miniature Header in Sidebar */}
             <div
-              className={`p-3.5 rounded-2xl border mb-5 ${currentTheme.cardBg} ${currentTheme.border}`}
+              className={`p-3.5 rounded-2xl border mb-5 ${tokens.innerSurface} ${tokens.borderSubtle}`}
             >
               <div className="flex items-center gap-2 mb-1.5">
-                <span className="text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                <span className={`text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded ${tokens.accentBg} ${tokens.accentText} border ${tokens.accentBorder}`}>
                   {book.bookType}
                 </span>
-                <span className="text-[9px] font-mono text-slate-400">
+                <span className={`text-[9px] font-mono ${tokens.textMuted}`}>
                   {book.chaptersCount} Chs
                 </span>
               </div>
-              <h2 className="text-xs font-bold leading-tight mb-1 line-clamp-2">{book.title}</h2>
-              <div className="text-[10px] opacity-70 font-mono mb-2">{book.author}</div>
+              <h2 className={`text-xs font-bold leading-tight mb-1 line-clamp-2 ${tokens.textPrimary}`}>{book.title}</h2>
+              <div className={`text-[10px] ${tokens.textMuted} font-mono mb-2`}>{book.author}</div>
 
               {/* Progress bar */}
               <div className="space-y-1">
-                <div className="flex justify-between text-[9px] font-mono opacity-75">
+                <div className={`flex justify-between text-[9px] font-mono ${tokens.textMuted}`}>
                   <span>Reading Folio</span>
                   <span>{completionPct}%</span>
                 </div>
-                <div className="h-1 w-full rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
+                <div className={`h-1 w-full rounded-full ${tokens.highlightSurface} overflow-hidden`}>
                   <div
-                    className="h-full bg-blue-600 dark:bg-blue-400 rounded-full transition-all"
+                    className="h-full bg-teal-600 rounded-full transition-all"
                     style={{ width: `${completionPct}%` }}
                   />
                 </div>
               </div>
             </div>
 
-            <div className="text-[10px] font-mono font-bold uppercase tracking-widest opacity-60 mb-2 px-1">
+            <div className={`text-[10px] font-mono font-bold uppercase tracking-widest ${tokens.textMuted} mb-2 px-1`}>
               {dict.reader.toc}
             </div>
 
@@ -515,8 +412,8 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                 }}
                 className={`w-full text-left p-2.5 rounded-xl text-xs transition-all cursor-pointer flex items-center justify-between gap-2 ${
                   viewingFrontMatter
-                    ? 'bg-blue-600 text-white font-bold shadow-xs'
-                    : 'hover:bg-black/5 dark:hover:bg-white/5 opacity-80 hover:opacity-100'
+                    ? 'bg-teal-600 text-white font-bold shadow-xs'
+                    : `hover:${tokens.highlightSurface} ${tokens.textSecondary}`
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -527,7 +424,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                 </div>
               </button>
 
-              <div className="h-px bg-black/10 dark:bg-white/10 my-2" />
+              <div className={`h-px ${tokens.borderSubtle} border-t my-2`} />
 
               {/* Chapter Items */}
               {book.chapters.map((ch, idx) => {
@@ -546,15 +443,15 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                     }}
                     className={`w-full text-left p-2.5 rounded-xl text-xs transition-all cursor-pointer flex items-start justify-between gap-2 ${
                       isActive
-                        ? 'bg-blue-600 text-white font-bold shadow-xs'
-                        : 'hover:bg-black/5 dark:hover:bg-white/5 opacity-80 hover:opacity-100'
+                        ? 'bg-teal-600 text-white font-bold shadow-xs'
+                        : `hover:${tokens.highlightSurface} ${tokens.textSecondary}`
                     }`}
                   >
                     <div>
-                      <div className="font-mono text-[9px] mb-0.5 opacity-75">
+                      <div className={`font-mono text-[9px] mb-0.5 ${isActive ? 'text-teal-100' : tokens.textMuted}`}>
                         Ch {ch.number} &bull; {ch.readTimeMinutes} min
                       </div>
-                      <div className="line-clamp-2 leading-snug">{ch.title[language]}</div>
+                      <div className={`line-clamp-2 leading-snug ${isActive ? 'text-white' : tokens.textPrimary}`}>{ch.title[language]}</div>
                     </div>
 
                     {isChBookmarked && (
@@ -582,18 +479,14 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
             {/* Drawer */}
             <aside
-              className={`relative w-80 max-w-[85vw] h-full shadow-2xl p-5 overflow-y-auto border-r transition-all z-10 box-border ${
-                settings.paperTheme === 'default'
-                  ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
-                  : `${currentTheme.bg} ${currentTheme.border}`
-              }`}
+              className={`relative w-80 max-w-[85vw] h-full shadow-2xl p-5 overflow-y-auto border-r transition-all z-10 box-border ${tokens.cardSurface} ${tokens.borderSubtle}`}
             >
-              <div className="flex items-center justify-between pb-3 mb-3 border-b border-black/10 dark:border-white/10">
+              <div className={`flex items-center justify-between pb-3 mb-3 border-b ${tokens.borderSubtle}`}>
                 <div>
-                  <div className="text-[10px] font-mono uppercase tracking-wider text-blue-500 font-bold">
+                  <div className={`text-[10px] font-mono uppercase tracking-wider ${tokens.accentText} font-bold`}>
                     {book.bookType}
                   </div>
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider">
+                  <span className={`text-xs font-mono font-bold uppercase tracking-wider ${tokens.textPrimary}`}>
                     {dict.reader.toc}
                   </span>
                 </div>
@@ -601,7 +494,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                   type="button"
                   id="close-mobile-toc-btn"
                   onClick={() => setMobileDrawerOpen(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
+                  className={`p-1 rounded-lg ${tokens.textMuted} hover:${tokens.textPrimary} cursor-pointer`}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -618,8 +511,8 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                   }}
                   className={`w-full text-left p-2.5 rounded-xl text-xs transition-all cursor-pointer flex items-center gap-2 ${
                     viewingFrontMatter
-                      ? 'bg-blue-600 text-white font-bold shadow-xs'
-                      : 'hover:bg-black/5 dark:hover:bg-white/5 opacity-80 hover:opacity-100'
+                      ? 'bg-teal-600 text-white font-bold shadow-xs'
+                      : `hover:${tokens.highlightSurface} ${tokens.textSecondary}`
                   }`}
                 >
                   <BookMarked className="w-3.5 h-3.5 shrink-0 opacity-75" />
@@ -628,7 +521,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                   </span>
                 </button>
 
-                <div className="h-px bg-black/10 dark:bg-white/10 my-2" />
+                <div className={`h-px ${tokens.borderSubtle} border-t my-2`} />
 
                 {book.chapters.map((ch, idx) => {
                   const isActive = !viewingFrontMatter && idx === currentChapterIndex;
@@ -644,14 +537,14 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                       }}
                       className={`w-full text-left p-2.5 rounded-xl text-xs transition-all cursor-pointer ${
                         isActive
-                          ? 'bg-blue-600 text-white font-bold shadow-xs'
-                          : 'hover:bg-black/5 dark:hover:bg-white/5 opacity-80 hover:opacity-100'
+                          ? 'bg-teal-600 text-white font-bold shadow-xs'
+                          : `hover:${tokens.highlightSurface} ${tokens.textSecondary}`
                       }`}
                     >
-                      <div className="font-mono text-[9px] mb-0.5 opacity-75">
+                      <div className={`font-mono text-[9px] mb-0.5 ${isActive ? 'text-teal-100' : tokens.textMuted}`}>
                         Chapter {ch.number} &bull; {ch.readTimeMinutes} min
                       </div>
-                      <div className="break-words [overflow-wrap:anywhere]">{ch.title[language]}</div>
+                      <div className={`break-words [overflow-wrap:anywhere] ${isActive ? 'text-white' : tokens.textPrimary}`}>{ch.title[language]}</div>
                     </button>
                   );
                 })}
@@ -668,12 +561,12 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
         >
           {loadError ? (
             <div className="py-16 text-center space-y-6 max-w-md mx-auto">
-              <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-600 flex items-center justify-center mx-auto">
                 <AlertTriangle className="w-6 h-6" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-lg font-bold font-reader">{dict.reader.loadError}</h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                <h2 className={`text-lg font-bold font-reader ${tokens.textPrimary}`}>{dict.reader.loadError}</h2>
+                <p className={`text-xs ${tokens.textMuted} leading-relaxed`}>
                   {dict.reader.loadErrorDesc}
                 </p>
               </div>
@@ -683,7 +576,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                     type="button"
                     id="reader-retry-btn"
                     onClick={onRetry}
-                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition-all cursor-pointer"
+                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-500 text-white shadow-sm transition-all cursor-pointer"
                   >
                     {dict.reader.retry}
                   </button>
@@ -692,7 +585,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                   type="button"
                   id="reader-error-back-btn"
                   onClick={onBackToBook}
-                  className="px-4 py-2.5 rounded-xl text-xs font-medium border border-slate-200 dark:border-slate-800 hover:bg-black/5 dark:hover:bg-white/5 transition-all cursor-pointer"
+                  className={`px-4 py-2.5 rounded-xl text-xs font-medium border ${tokens.borderSubtle} hover:${tokens.highlightSurface} transition-all cursor-pointer`}
                 >
                   {dict.reader.backToBook}
                 </button>
@@ -701,29 +594,29 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
           ) : isLoading || !('sections' in chapter) ? (
             <div className="py-12 space-y-8 animate-pulse max-w-xl mx-auto">
               <div className="space-y-3">
-                <div className="h-3 w-24 bg-black/10 dark:bg-white/10 rounded font-mono" />
-                <div className="h-8 w-3/4 bg-black/15 dark:bg-white/15 rounded-lg" />
-                <div className="h-4 w-full bg-black/10 dark:bg-white/10 rounded" />
+                <div className={`h-3 w-24 ${tokens.highlightSurface} rounded font-mono`} />
+                <div className={`h-8 w-3/4 ${tokens.highlightSurface} rounded-lg`} />
+                <div className={`h-4 w-full ${tokens.highlightSurface} rounded`} />
               </div>
               <div className="space-y-4 pt-6">
-                <div className="h-4 w-full bg-black/10 dark:bg-white/10 rounded" />
-                <div className="h-4 w-5/6 bg-black/10 dark:bg-white/10 rounded" />
-                <div className="h-4 w-4/6 bg-black/10 dark:bg-white/10 rounded" />
+                <div className={`h-4 w-full ${tokens.highlightSurface} rounded`} />
+                <div className={`h-4 w-5/6 ${tokens.highlightSurface} rounded`} />
+                <div className={`h-4 w-4/6 ${tokens.highlightSurface} rounded`} />
               </div>
-              <div className="h-40 w-full bg-black/5 dark:bg-white/5 rounded-2xl border border-black/10 dark:border-white/10 p-6 space-y-3">
-                <div className="h-4 w-1/3 bg-black/10 dark:bg-white/10 rounded" />
-                <div className="h-3 w-full bg-black/5 dark:bg-white/5 rounded" />
-                <div className="h-3 w-4/5 bg-black/5 dark:bg-white/5 rounded" />
+              <div className={`h-40 w-full ${tokens.cardSurface} rounded-2xl border ${tokens.borderSubtle} p-6 space-y-3`}>
+                <div className={`h-4 w-1/3 ${tokens.highlightSurface} rounded`} />
+                <div className={`h-3 w-full ${tokens.highlightSurface} rounded`} />
+                <div className={`h-3 w-4/5 ${tokens.highlightSurface} rounded`} />
               </div>
-              <div className="flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-mono pt-4">
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
+              <div className={`flex items-center justify-center gap-2 text-xs ${tokens.textMuted} font-mono pt-4`}>
+                <span className="w-2 h-2 rounded-full bg-teal-600 animate-ping" />
                 <span>{dict.reader.loadingContent}</span>
               </div>
             </div>
           ) : viewingFrontMatter ? (
             /* FRONT MATTER DISPLAY SPREAD */
             <PublicationFrontMatter
-              book={book}
+              book={book as Book}
               language={language}
               paperTheme={settings.paperTheme}
               savedChapterIndex={currentChapterIndex}
@@ -739,7 +632,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
             <article className="w-full max-w-full min-w-0">
               {/* CHAPTER OPENER */}
               <ChapterOpener
-                book={book}
+                book={book as Book}
                 chapter={chapter}
                 chapterIndex={currentChapterIndex}
                 totalChapters={book.chapters.length}
@@ -760,10 +653,10 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                   >
                     {/* Section Editorial Heading */}
                     <div className="space-y-1">
-                      <div className="text-[10px] font-mono tracking-widest uppercase opacity-50">
+                      <div className={`text-[10px] font-mono tracking-widest uppercase ${tokens.textMuted}`}>
                         § {chapter.number}.{sIdx + 1}
                       </div>
-                      <h2 className="text-xl sm:text-2xl lg:text-3xl font-black font-reader tracking-tight leading-snug">
+                      <h2 className={`text-xl sm:text-2xl lg:text-3xl font-black font-reader tracking-tight leading-snug ${tokens.textPrimary}`}>
                         {section.title[language]}
                       </h2>
                     </div>
@@ -771,11 +664,11 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                     {/* Section Body Prose in Newsreader */}
                     {section.content && section.content[language] && (
                       <div
-                        className={`font-reader text-left break-words [overflow-wrap:anywhere] min-w-0 w-full max-w-full opacity-95 ${
+                        className={`font-reader text-left break-words [overflow-wrap:anywhere] min-w-0 w-full max-w-full ${tokens.textPrimary} opacity-95 ${
                           fontSizeClasses[settings.fontSize]
                         }`}
                       >
-                        {renderFormattedText(section.content[language])}
+                        {renderInlineText(section.content[language], settings.paperTheme)}
                       </div>
                     )}
 
@@ -913,14 +806,14 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                     {/* PUBLICATION CODE EXAMPLE (Example X.Y) */}
                     {section.codeBlock && (
                       <div
-                        className={`my-8 rounded-2xl overflow-hidden border shadow-xs w-full max-w-full min-w-0 box-border ${currentTheme.codeBorder} ${currentTheme.codeBg}`}
+                        className={`my-8 rounded-2xl overflow-hidden border shadow-xs w-full max-w-full min-w-0 box-border ${tokens.codeBorder} ${tokens.codeBg}`}
                       >
                         {/* Example Caption Header */}
                         <div
-                          className={`flex items-center justify-between px-3.5 sm:px-4 py-2.5 border-b ${currentTheme.codeBorder} ${currentTheme.codeHeaderBg} ${currentTheme.codeHeaderText} text-xs font-mono min-w-0`}
+                          className={`flex items-center justify-between px-3.5 sm:px-4 py-2.5 border-b ${tokens.codeBorder} ${tokens.codeHeaderBg} ${tokens.codeHeaderText} text-xs font-mono min-w-0`}
                         >
                           <div className="flex items-center gap-2 truncate mr-2 min-w-0">
-                            <span className="font-bold text-blue-600 dark:text-blue-400 shrink-0">
+                            <span className={`font-bold ${tokens.accentText} shrink-0`}>
                               Example {chapter.number}.{sIdx + 1}
                             </span>
                             <span className="opacity-40">&mdash;</span>
@@ -933,12 +826,12 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                             type="button"
                             id={`copy-code-btn-${section.id}`}
                             onClick={() => handleCopy(section.codeBlock!.code, section.id)}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition-colors cursor-pointer text-[11px] font-semibold shrink-0"
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${tokens.highlightSurface} hover:opacity-80 transition-colors cursor-pointer text-[11px] font-semibold shrink-0`}
                           >
                             {copiedCodeId === section.id ? (
                               <>
                                 <Check className="w-3.5 h-3.5 text-emerald-500" />
-                                <span className="text-emerald-600 dark:text-emerald-400">
+                                <span className="text-emerald-600">
                                   {dict.reader.copied}
                                 </span>
                               </>
@@ -953,7 +846,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
                         {/* Code Pre Area with Linenumbers */}
                         <pre
-                          className={`p-3.5 sm:p-5 overflow-x-auto text-xs sm:text-sm font-mono leading-relaxed select-text w-full max-w-full min-w-0 box-border ${currentTheme.codePreBg} ${currentTheme.codePreText}`}
+                          className={`p-3.5 sm:p-5 overflow-x-auto text-xs sm:text-sm font-mono leading-relaxed select-text w-full max-w-full min-w-0 box-border ${tokens.codePreBg} ${tokens.codePreText}`}
                         >
                           <code className="table min-w-full">
                             {renderHighlightedCodeLines(section.codeBlock.code, settings.paperTheme)}
@@ -963,9 +856,9 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                         {/* Code Explanation Footer */}
                         {section.codeBlock.explanation && (
                           <div
-                            className={`px-3.5 sm:px-4 py-3 border-t text-xs font-sans leading-relaxed ${currentTheme.codeBorder} ${currentTheme.codeExplanationBg} opacity-85 break-words [overflow-wrap:anywhere] min-w-0 w-full max-w-full`}
+                            className={`px-3.5 sm:px-4 py-3 border-t text-xs font-sans leading-relaxed ${tokens.codeBorder} ${tokens.codeExplanationBg} ${tokens.textSecondary} break-words [overflow-wrap:anywhere] min-w-0 w-full max-w-full`}
                           >
-                            <div className="font-mono font-bold text-[10px] uppercase tracking-wider opacity-60 mb-1">
+                            <div className={`font-mono font-bold text-[10px] uppercase tracking-wider ${tokens.textMuted} mb-1`}>
                               {language === 'vi' ? 'Giải thích mã nguồn:' : 'Code Explanation:'}
                             </div>
                             {section.codeBlock.explanation[language]}
@@ -1005,20 +898,20 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                     {/* KEY ENGINEERING TAKEAWAYS */}
                     {section.keyTakeaways && (
                       <div
-                        className={`p-4 sm:p-6 rounded-2xl border ${currentTheme.calloutBg} ${currentTheme.calloutBorder} space-y-3 shadow-xs min-w-0 w-full max-w-full overflow-hidden box-border`}
+                        className={`p-4 sm:p-6 rounded-2xl border ${tokens.calloutBg} ${tokens.calloutBorder} space-y-3 shadow-xs min-w-0 w-full max-w-full overflow-hidden box-border`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                          <span className="text-xs font-mono font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 truncate">
+                          <ShieldCheck className={`w-4 h-4 ${tokens.accentText} shrink-0`} />
+                          <span className={`text-xs font-mono font-bold uppercase tracking-wider ${tokens.accentText} truncate`}>
                             {language === 'vi' ? 'Điểm Kỹ Thuật Trọng Tâm' : 'Engineering Takeaways'}
                           </span>
                         </div>
-                        <ul className="space-y-2 text-xs sm:text-sm list-none p-0 m-0 leading-relaxed opacity-90 min-w-0 w-full">
+                        <ul className="space-y-2 text-xs sm:text-sm list-none p-0 m-0 leading-relaxed min-w-0 w-full">
                           {section.keyTakeaways[language].map((takeaway, idx) => (
                             <li key={idx} className="flex items-start gap-2.5 min-w-0 w-full">
-                              <CheckCircle2 className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                              <span className="min-w-0 break-words [overflow-wrap:anywhere] flex-1 font-reader">
-                                {renderFormattedText(takeaway)}
+                              <CheckCircle2 className={`w-4 h-4 ${tokens.accentText} shrink-0 mt-0.5`} />
+                              <span className={`min-w-0 break-words [overflow-wrap:anywhere] flex-1 font-reader ${tokens.textPrimary}`}>
+                                {renderInlineText(takeaway, settings.paperTheme)}
                               </span>
                             </li>
                           ))}
@@ -1049,7 +942,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
               {/* CHAPTER END SPREAD */}
               <ChapterEnd
-                book={book}
+                book={book as Book}
                 currentChapter={chapter}
                 currentChapterIndex={currentChapterIndex}
                 totalChapters={book.chapters.length}
