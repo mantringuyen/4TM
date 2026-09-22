@@ -44,4 +44,12 @@ export { JAVASCRIPT_BEST_PRACTICES_BOOK } from './javascriptBestPractices';
 export { JAVASCRIPT_PATTERNS_BOOK } from './javascriptPatterns';
 export { EXCEL_FORMULAS_RECIPES_BOOK } from './excelFormulasRecipes';
 
+// Batch 7 Migrated Books
+export { HTML_BEST_PRACTICES_BOOK } from './htmlBestPractices';
+export { EXCEL_COMMON_ERRORS_BOOK } from './excelCommonErrors';
+export { EXCEL_BEST_PRACTICES_BOOK } from './excelBestPractices';
+export { EXCEL_PRACTICAL_GUIDE_BOOK } from './excelPracticalGuide';
+export { AI_FUNDAMENTALS_HANDBOOK_BOOK } from './aiFundamentalsHandbook';
+export { AI_DEFINITIONS_BOOK } from './aiDefinitions';
+
 
