@@ -52,4 +52,12 @@ export { EXCEL_PRACTICAL_GUIDE_BOOK } from './excelPracticalGuide';
 export { AI_FUNDAMENTALS_HANDBOOK_BOOK } from './aiFundamentalsHandbook';
 export { AI_DEFINITIONS_BOOK } from './aiDefinitions';
 
+// Batch 8 Migrated Books
+export { AI_AGENT_PATTERNS_BOOK } from './aiAgentPatterns';
+export { VECTOR_EMBEDDINGS_GUIDE_BOOK } from './vectorEmbeddingsGuide';
+export { FINE_TUNING_HANDBOOK_BOOK } from './fineTuningHandbook';
+export { AI_SAFETY_ALIGNMENT_DEFINITIONS_BOOK } from './aiSafetyAlignmentDefinitions';
+export { LLM_EVAL_PRACTICAL_GUIDE_BOOK } from './llmEvalPracticalGuide';
+export { GEMINI_API_RECIPES_BOOK } from './geminiApiRecipes';
+
 
