@@ -172,6 +172,15 @@ export function App() {
     };
   }, [syncRouteFromHash]);
 
+  // Centralized Navigation Scroll Reset: Return to top of page on view, book, or chapter change
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant',
+    });
+  }, [activeView, selectedBook?.id, currentChapterIndex]);
+
   // Initialize Auth & Handle SSO Ticket
   useEffect(() => {
     if (!supabase) return;
