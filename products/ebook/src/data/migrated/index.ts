@@ -12,3 +12,11 @@ export { AI_BEST_PRACTICES_BOOK } from './aiBestPractices';
 export { RAG_ARCHITECTURE_HANDBOOK_BOOK } from './ragArchitectureHandbook';
 export { RAG_PATTERNS_RECIPES_BOOK } from './ragPatternsRecipes';
 export { LLM_COMMON_ERRORS_BOOK } from './llmCommonErrors';
+
+// Batch 3 Migrated Books
+export { SQL_HANDBOOK_BOOK } from './sqlHandbook';
+export { SQL_PRACTICAL_GUIDES_BOOK } from './sqlPracticalGuides';
+export { JAVASCRIPT_DEFINITIONS_BOOK } from './javascriptDefinitions';
+export { JAVASCRIPT_PRACTICAL_GUIDE_BOOK } from './javascriptPracticalGuide';
+export { JAVASCRIPT_COMMON_ERRORS_BOOK } from './javascriptCommonErrors';
+
