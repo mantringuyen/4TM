@@ -94,6 +94,10 @@ export const TRANSLATIONS = {
       chapterBookmarked: 'Chapter Bookmarked',
       readingProgress: 'Read Progress',
       estimatedRemaining: 'min remaining',
+      loadingContent: 'Loading publication content...',
+      loadError: 'Unable to load publication content',
+      loadErrorDesc: 'Please check your connection and try again.',
+      retry: 'Retry',
     },
     themes: {
       default: 'Clean Light',
@@ -200,6 +204,10 @@ export const TRANSLATIONS = {
       chapterBookmarked: 'Đã Lưu Dấu',
       readingProgress: 'Tiến Độ Đọc',
       estimatedRemaining: 'phút còn lại',
+      loadingContent: 'Đang tải nội dung ấn bản...',
+      loadError: 'Không thể tải nội dung ấn bản',
+      loadErrorDesc: 'Vui lòng kiểm tra kết nối mạng và thử lại.',
+      retry: 'Thử lại',
     },
     themes: {
       default: 'Sáng Thanh Thoát',

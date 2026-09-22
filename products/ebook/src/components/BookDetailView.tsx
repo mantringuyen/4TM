@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Book, Language } from '../types';
+import { Book, BookMetadata, Language } from '../types';
 import { TRANSLATIONS } from '../i18n/translations';
 import { DOMAINS, TOPICS, EBOOK_FIELD } from '../data/ebooks';
 import { getPublicationTemplate } from '../data/publicationRegistry';
@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export interface BookDetailViewProps {
-  book: Book;
+  book: Book | BookMetadata;
   language: Language;
   onBack: () => void;
   onStartReading: (chapterIndex: number) => void;

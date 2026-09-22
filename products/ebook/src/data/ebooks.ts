@@ -1,13 +1,5 @@
-import { EbookField, EbookDomain, EbookTopic, Category, Subject, Book } from '../types';
-import { PYTHON_EBOOKS } from './pythonEbooks';
-import { SQL_EBOOKS } from './sqlEbooks';
-import { HTML_EBOOKS } from './htmlEbooks';
-import { CSS_EBOOKS } from './cssEbooks';
-import { JAVASCRIPT_EBOOKS } from './javascriptEbooks';
-import { EXCEL_EBOOKS } from './excelEbooks';
-import { POWERBI_EBOOKS } from './powerbiEbooks';
-import { AI_EBOOKS } from './aiEbooks';
-import { PILOT_PUBLICATIONS } from './pilots';
+import { EbookField, EbookDomain, EbookTopic, Category, Subject, BookMetadata } from '../types';
+import { BOOK_METADATA_CATALOG } from './metadataCatalog';
 
 export const EBOOK_FIELD: EbookField = {
   id: 'computer-science',
@@ -254,34 +246,4 @@ export const SUBJECTS: Subject[] = [
   },
 ];
 
-const RAW_EBOOKS: Book[] = [
-  ...PYTHON_EBOOKS,
-  ...PILOT_PUBLICATIONS,
-  ...SQL_EBOOKS,
-  ...HTML_EBOOKS,
-  ...CSS_EBOOKS,
-  ...JAVASCRIPT_EBOOKS,
-  ...EXCEL_EBOOKS,
-  ...POWERBI_EBOOKS,
-  ...AI_EBOOKS,
-];
-
-export const EBOOKS: Book[] = RAW_EBOOKS.map((b) => {
-  const domainIds =
-    b.categoryId === 'javascript'
-      ? ['programming', 'web']
-      : b.categoryId === 'python'
-      ? ['programming']
-      : b.categoryId === 'html' || b.categoryId === 'css'
-      ? ['web']
-      : b.categoryId === 'sql' || b.categoryId === 'excel' || b.categoryId === 'powerbi'
-      ? ['data-analytics']
-      : ['ai'];
-
-  return {
-    ...b,
-    fieldId: 'computer-science',
-    domainIds,
-    topicId: b.categoryId,
-  };
-});
+export const EBOOKS: BookMetadata[] = BOOK_METADATA_CATALOG;

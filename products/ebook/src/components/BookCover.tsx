@@ -1,5 +1,5 @@
 import React from 'react';
-import { Book, BookType } from '../types';
+import { Book, BookMetadata, BookType } from '../types';
 import {
   Code2,
   Database,
@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 export interface BookCoverProps {
-  book: Book;
+  book: Book | BookMetadata;
   size?: 'sm' | 'md' | 'lg' | 'hero';
   className?: string;
   onClick?: () => void;

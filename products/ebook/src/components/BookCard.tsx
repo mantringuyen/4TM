@@ -1,13 +1,13 @@
 import React from 'react';
-import { Book, Language } from '../types';
+import { Book, BookMetadata, Language } from '../types';
 import { BookCover } from './BookCover';
 import { TRANSLATIONS } from '../i18n/translations';
 import { ArrowRight, BookOpen, Clock } from 'lucide-react';
 
 export interface BookCardProps {
-  book: Book;
+  book: Book | BookMetadata;
   language: Language;
-  onSelectBook: (book: Book) => void;
+  onSelectBook: (book: Book | BookMetadata) => void;
 }
 
 export const BookCard: React.FC<BookCardProps> = ({

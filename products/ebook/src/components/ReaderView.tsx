@@ -57,13 +57,16 @@ import {
 } from 'lucide-react';
 
 export interface ReaderViewProps {
-  book: Book;
+  book: Book | BookMetadata;
   currentChapterIndex: number;
   language: Language;
   onNavigateChapter: (idx: number) => void;
   onBackToBook: () => void;
   bookmarks: string[];
   onToggleBookmark: (chapterId: string) => void;
+  isLoading?: boolean;
+  loadError?: boolean;
+  onRetry?: () => void;
 }
 
 // Helper: Format inline text with backticks into styled <code> elements
@@ -129,6 +132,9 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
   onBackToBook,
   bookmarks,
   onToggleBookmark,
+  isLoading = false,
+  loadError = false,
+  onRetry,
 }) => {
   const dict = TRANSLATIONS[language];
   const chapter = book.chapters[currentChapterIndex] || book.chapters[0];
@@ -660,7 +666,61 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
             widthClasses[settings.width]
           }`}
         >
-          {viewingFrontMatter ? (
+          {loadError ? (
+            <div className="py-16 text-center space-y-6 max-w-md mx-auto">
+              <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-lg font-bold font-reader">{dict.reader.loadError}</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  {dict.reader.loadErrorDesc}
+                </p>
+              </div>
+              <div className="flex justify-center gap-3 pt-2">
+                {onRetry && (
+                  <button
+                    type="button"
+                    id="reader-retry-btn"
+                    onClick={onRetry}
+                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition-all cursor-pointer"
+                  >
+                    {dict.reader.retry}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  id="reader-error-back-btn"
+                  onClick={onBackToBook}
+                  className="px-4 py-2.5 rounded-xl text-xs font-medium border border-slate-200 dark:border-slate-800 hover:bg-black/5 dark:hover:bg-white/5 transition-all cursor-pointer"
+                >
+                  {dict.reader.backToBook}
+                </button>
+              </div>
+            </div>
+          ) : isLoading || !('sections' in chapter) ? (
+            <div className="py-12 space-y-8 animate-pulse max-w-xl mx-auto">
+              <div className="space-y-3">
+                <div className="h-3 w-24 bg-black/10 dark:bg-white/10 rounded font-mono" />
+                <div className="h-8 w-3/4 bg-black/15 dark:bg-white/15 rounded-lg" />
+                <div className="h-4 w-full bg-black/10 dark:bg-white/10 rounded" />
+              </div>
+              <div className="space-y-4 pt-6">
+                <div className="h-4 w-full bg-black/10 dark:bg-white/10 rounded" />
+                <div className="h-4 w-5/6 bg-black/10 dark:bg-white/10 rounded" />
+                <div className="h-4 w-4/6 bg-black/10 dark:bg-white/10 rounded" />
+              </div>
+              <div className="h-40 w-full bg-black/5 dark:bg-white/5 rounded-2xl border border-black/10 dark:border-white/10 p-6 space-y-3">
+                <div className="h-4 w-1/3 bg-black/10 dark:bg-white/10 rounded" />
+                <div className="h-3 w-full bg-black/5 dark:bg-white/5 rounded" />
+                <div className="h-3 w-4/5 bg-black/5 dark:bg-white/5 rounded" />
+              </div>
+              <div className="flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-mono pt-4">
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
+                <span>{dict.reader.loadingContent}</span>
+              </div>
+            </div>
+          ) : viewingFrontMatter ? (
             /* FRONT MATTER DISPLAY SPREAD */
             <PublicationFrontMatter
               book={book}

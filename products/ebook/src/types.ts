@@ -289,6 +289,63 @@ export interface ReferenceItem {
   annotation?: LocalizedString;
 }
 
+export interface ChapterMetadata {
+  id: string;
+  number: number;
+  partNumber?: number;
+  partTitle?: LocalizedString;
+  slug: string;
+  title: LocalizedString;
+  summary: LocalizedString;
+  readTimeMinutes: number;
+  sectionsCount?: number;
+}
+
+export interface BookMetadata {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: LocalizedString;
+  bookType: BookType;
+  fieldId?: string;
+  domainId?: string;
+  domainIds?: string[];
+  topicId?: string;
+  categoryId: string;
+  subjectId: string;
+  author: string;
+  role: string;
+  level: BookLevel;
+  estimatedReadTime: string;
+  chaptersCount: number;
+  edition?: string;
+  isbn?: string;
+  publishedDate: string;
+  publishedYear?: number;
+  accentColor: string;
+  tags: string[];
+  description: LocalizedString;
+  prerequisites: LocalizedArray;
+  outcomes: LocalizedArray;
+  learningOutcomes?: any;
+  recommendedReadingMode?: LocalizedString;
+  parts?: ChapterPart[];
+  chapters: ChapterMetadata[];
+  chaptersMeta?: ChapterMetadata[];
+  glossary?: GlossaryEntry[];
+  furtherReading?: ReferenceItem[];
+  references?: ReferenceItem[];
+}
+
+export interface BookContent {
+  bookId: string;
+  parts?: ChapterPart[];
+  glossary?: GlossaryEntry[];
+  furtherReading?: ReferenceItem[];
+  references?: ReferenceItem[];
+  chapters: Chapter[];
+}
+
 export interface Book {
   id: string;
   slug: string;
@@ -322,6 +379,7 @@ export interface Book {
   furtherReading?: ReferenceItem[];
   references?: ReferenceItem[];
   chapters: Chapter[];
+  chaptersMeta?: ChapterMetadata[];
 }
 
 // ---------------------------------------------------------------------------

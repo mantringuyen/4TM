@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Book, Category, Subject, Language } from '../types';
+import { Book, BookMetadata, Category, Subject, Language } from '../types';
 import { DOMAINS, TOPICS } from '../data/ebooks';
 import { TRANSLATIONS } from '../i18n/translations';
 import { BookCard } from './BookCard';
@@ -13,11 +13,11 @@ import {
 } from 'lucide-react';
 
 export interface CatalogViewProps {
-  books: Book[];
+  books: (Book | BookMetadata)[];
   categories: Category[];
   subjects: Subject[];
   language: Language;
-  onSelectBook: (book: Book) => void;
+  onSelectBook: (book: Book | BookMetadata) => void;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
 }

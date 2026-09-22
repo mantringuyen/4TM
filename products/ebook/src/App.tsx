@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Book, Language } from './types';
+import { Book, BookMetadata, Language } from './types';
 import { EBOOKS, CATEGORIES, SUBJECTS } from './data/ebooks';
+import { loadBookContent, getCachedBookContent } from './data/loaders';
 import { LANGUAGE_STORAGE_KEY } from './i18n/translations';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
@@ -15,6 +16,16 @@ import { ThemeProvider, AdSlot } from '@shared';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+
+// Approved Phase 4U legacy-to-canonical slug alias map
+const LEGACY_SLUG_ALIASES: Record<string, string> = {
+  'python-definitions': 'python-core-concepts-definitions',
+  'python-tips': 'python-engineering-tips',
+  'python-common-errors': 'python-common-errors-diagnosis',
+  'python-best-practices': 'python-engineering-best-practices',
+  'python-practical-guides': 'python-practical-guides-solutions',
+  'python-patterns': 'python-patterns-recipes',
+};
 
 // Helper: Parse URL hash to state
 function parseLocationHash(hash: string): {
@@ -71,7 +82,9 @@ export function App() {
   });
 
   const [activeView, setActiveView] = useState<'catalog' | 'detail' | 'reader'>('catalog');
-  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [selectedBook, setSelectedBook] = useState<Book | BookMetadata | null>(null);
+  const [isLoadingBookContent, setIsLoadingBookContent] = useState<boolean>(false);
+  const [bookContentLoadError, setBookContentLoadError] = useState<boolean>(false);
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
 
   // Bookmarks state
@@ -103,6 +116,37 @@ export function App() {
   const [user, setUser] = useState<User | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const fetchBookContent = useCallback(async (slugOrId: string) => {
+    const cached = getCachedBookContent(slugOrId);
+    if (cached) {
+      setSelectedBook(cached);
+      setIsLoadingBookContent(false);
+      setBookContentLoadError(false);
+      return cached;
+    }
+
+    setIsLoadingBookContent(true);
+    setBookContentLoadError(false);
+    try {
+      const loaded = await loadBookContent(slugOrId);
+      if (loaded) {
+        setSelectedBook(loaded);
+        setIsLoadingBookContent(false);
+        setBookContentLoadError(false);
+        return loaded;
+      } else {
+        setIsLoadingBookContent(false);
+        setBookContentLoadError(true);
+        return null;
+      }
+    } catch (err) {
+      console.error('Error loading book content:', err);
+      setIsLoadingBookContent(false);
+      setBookContentLoadError(true);
+      return null;
+    }
+  }, []);
+
   const handleSearchChange = (q: string) => {
     setSearchQuery(q);
     if (activeView !== 'catalog' && q) {
@@ -123,13 +167,23 @@ export function App() {
     if (parsed.view === 'catalog') {
       setActiveView('catalog');
       setSelectedBook(null);
+      setIsLoadingBookContent(false);
+      setBookContentLoadError(false);
     } else if (parsed.view === 'detail' && parsed.bookSlug) {
+      const rawSlug = parsed.bookSlug;
+      const canonicalSlug = LEGACY_SLUG_ALIASES[rawSlug] || rawSlug;
       const foundBook = EBOOKS.find(
-        (b) => b.slug === parsed.bookSlug || b.id === parsed.bookSlug
+        (b) => b.slug === canonicalSlug || b.id === canonicalSlug
       );
       if (foundBook) {
-        setSelectedBook(foundBook);
+        const cached = getCachedBookContent(canonicalSlug);
+        setSelectedBook(cached || foundBook);
         setActiveView('detail');
+        setIsLoadingBookContent(false);
+        setBookContentLoadError(false);
+        if (rawSlug !== canonicalSlug) {
+          setHashUrl(`#/book/${canonicalSlug}`, true);
+        }
       } else {
         // Fallback to catalog if book not found
         setActiveView('catalog');
@@ -137,15 +191,22 @@ export function App() {
         setHashUrl('#/catalog', true);
       }
     } else if (parsed.view === 'reader' && parsed.bookSlug) {
+      const rawSlug = parsed.bookSlug;
+      const canonicalSlug = LEGACY_SLUG_ALIASES[rawSlug] || rawSlug;
       const foundBook = EBOOKS.find(
-        (b) => b.slug === parsed.bookSlug || b.id === parsed.bookSlug
+        (b) => b.slug === canonicalSlug || b.id === canonicalSlug
       );
       if (foundBook) {
         const rawCh = typeof parsed.chapterIndex === 'number' && !isNaN(parsed.chapterIndex) ? parsed.chapterIndex : 0;
         const validCh = Math.max(0, Math.min(rawCh, foundBook.chapters.length - 1));
-        setSelectedBook(foundBook);
+        const cached = getCachedBookContent(canonicalSlug);
+        setSelectedBook(cached || foundBook);
         setCurrentChapterIndex(validCh);
         setActiveView('reader');
+        fetchBookContent(canonicalSlug);
+        if (rawSlug !== canonicalSlug) {
+          setHashUrl(`#/book/${canonicalSlug}/ch/${validCh}`, true);
+        }
       } else {
         // Fallback to catalog if book not found
         setActiveView('catalog');
@@ -153,7 +214,7 @@ export function App() {
         setHashUrl('#/catalog', true);
       }
     }
-  }, []);
+  }, [fetchBookContent]);
 
   // Handle URL hash changes & initial deep-link routing
   useEffect(() => {
@@ -223,7 +284,7 @@ export function App() {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
   };
 
-  const handleSelectBook = (book: Book) => {
+  const handleSelectBook = (book: Book | BookMetadata) => {
     setSelectedBook(book);
     setActiveView('detail');
     setHashUrl(`#/book/${book.slug}`);
@@ -237,6 +298,7 @@ export function App() {
       setLastRead(updated);
       localStorage.setItem('4tm_ebook_last_read', JSON.stringify(updated));
       setHashUrl(`#/book/${selectedBook.slug}/ch/${chapterIndex}`);
+      fetchBookContent(selectedBook.slug);
     }
     setActiveView('reader');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -347,6 +409,13 @@ export function App() {
               }}
               bookmarks={bookmarks}
               onToggleBookmark={handleToggleBookmark}
+              isLoading={isLoadingBookContent}
+              loadError={bookContentLoadError}
+              onRetry={() => {
+                if (selectedBook) {
+                  fetchBookContent(selectedBook.slug);
+                }
+              }}
             />
           )}
         </div>
