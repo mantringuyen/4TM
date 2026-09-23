@@ -32,6 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       label: dict.nav.directory,
       href: '#directory',
       icon: LayoutGrid,
+      active: true,
     },
   ];
 

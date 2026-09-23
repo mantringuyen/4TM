@@ -52,7 +52,7 @@ export const AppModal: React.FC<AppModalProps> = ({
         {/* Header Bar */}
         <div className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-2xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold">
               <Layers className="w-5 h-5" />
             </div>
             <div>
@@ -95,7 +95,7 @@ export const AppModal: React.FC<AppModalProps> = ({
           {/* Interactive Live Sandbox Section */}
           {app.hasInteractiveSandbox && (
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase text-indigo-600 dark:text-indigo-400">
+              <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase text-orange-600 dark:text-orange-400">
                 <Sparkles className="w-4 h-4" />
                 <span>{dict.modal.interactiveSandbox}</span>
               </div>
@@ -155,7 +155,7 @@ export const AppModal: React.FC<AppModalProps> = ({
               href={app.launchUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-orange-600 hover:bg-orange-500 text-white shadow-sm transition-colors"
             >
               <span>{dict.modal.launchFullApp}</span>
               <ExternalLink className="w-3.5 h-3.5" />

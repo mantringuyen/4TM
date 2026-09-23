@@ -45,7 +45,7 @@ export const ColorPaletteSandbox: React.FC<{ language: Language }> = ({ language
         <button
           type="button"
           onClick={handleCopyCss}
-          className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+          className="px-3.5 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
         >
           {copiedVar ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
           <span>{copiedVar ? 'Copied Variables' : 'Copy CSS Variables'}</span>
