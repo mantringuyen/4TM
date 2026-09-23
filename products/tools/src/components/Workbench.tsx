@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import { useSEO, SchemaGenerators } from '@shared';
 import { ToolItem, ToolCategory, ToolId, Language } from '../types';
 import { TRANSLATIONS } from '../i18n/translations';
 import { ToolHeader } from './common/ToolHeader';
@@ -224,24 +225,27 @@ export const Workbench: React.FC<WorkbenchProps> = ({
     return tools.find((t) => t.id === activeToolId) || tools[0];
   }, [tools, activeToolId]);
 
-  // Sync document title and meta description for SEO
-  useEffect(() => {
-    if (activeTool && typeof document !== 'undefined') {
-      document.title = `${activeTool.seoTitle[language]} | 4TM Tools`;
-      const metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc) {
-        metaDesc.setAttribute('content', activeTool.description[language]);
-      }
-      const ogTitle = document.querySelector('meta[property="og:title"]');
-      if (ogTitle) {
-        ogTitle.setAttribute('content', `${activeTool.seoTitle[language]} | 4TM Tools`);
-      }
-      const ogDesc = document.querySelector('meta[property="og:description"]');
-      if (ogDesc) {
-        ogDesc.setAttribute('content', activeTool.description[language]);
-      }
-    }
-  }, [activeTool, language]);
+  // Sync document title, meta description, canonical URL, and JSON-LD for SEO
+  useSEO({
+    title: activeTool ? `${activeTool.seoTitle[language]} | 4TM Tools` : '4TM Tools — Technical Utilities & Developer Tooling Suite',
+    description: activeTool ? activeTool.description[language] : 'Technical Utilities & Developer Tooling Suite — 36 in-browser developer tools.',
+    canonicalUrl: activeTool ? `https://tools.4tm.io.vn/${activeTool.slug}` : 'https://tools.4tm.io.vn/',
+    language,
+    jsonLd: activeTool
+      ? [
+          SchemaGenerators.softwareApplication({
+            id: activeTool.id,
+            name: activeTool.name[language],
+            description: activeTool.description[language],
+            category: 'DeveloperApplication',
+            url: `https://tools.4tm.io.vn/${activeTool.slug}`,
+          }),
+          SchemaGenerators.website('https://tools.4tm.io.vn', '4TM Tools', 'Technical Utilities & Developer Tooling Suite'),
+        ]
+      : [
+          SchemaGenerators.website('https://tools.4tm.io.vn', '4TM Tools', 'Technical Utilities & Developer Tooling Suite'),
+        ],
+  });
 
   const handleSelectTool = (id: ToolId) => {
     setActiveToolId(id);

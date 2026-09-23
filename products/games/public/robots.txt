@@ -3,4 +3,4 @@ Allow: /
 Disallow: /sso
 Disallow: /api/
 
-Sitemap: https://4tm.io.vn/sitemap.xml
+Sitemap: https://games.4tm.io.vn/sitemap.xml

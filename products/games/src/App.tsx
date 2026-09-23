@@ -8,7 +8,7 @@ import { GameCatalog } from './components/GameCatalog';
 import { PlayView } from './components/PlayView';
 import { createClient, User } from '@supabase/supabase-js';
 import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
-import { ThemeProvider, AdSlot } from '@shared';
+import { ThemeProvider, AdSlot, useSEO, SchemaGenerators } from '@shared';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -78,6 +78,44 @@ export function App() {
   };
 
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Dynamic SEO Synchronization
+  const pageTitle = activeGame
+    ? `${activeGame.title[language]} — Play Online | 4TM Games`
+    : language === 'vi'
+    ? '4TM Games — Trò chơi Tư duy & Thử thách Thuật toán'
+    : '4TM Games — Computer Science Puzzles & Algorithmic Arcade';
+
+  const pageDescription = activeGame
+    ? activeGame.description[language]
+    : language === 'vi'
+    ? 'Hệ thống mini game và thử thách tư duy lập trình: câu đố nhị phân, thuật toán sắp xếp, regular expression và đồ thị chạy trực tiếp trên web.'
+    : 'Interactive Game Ecosystem — browser-native computer science puzzles, logic riddles, algorithmic visualizers, binary search games, and interactive problem-solving challenges.';
+
+  const canonicalUrl = activeGame
+    ? `https://games.4tm.io.vn/#/${activeGame.id}`
+    : 'https://games.4tm.io.vn/';
+
+  useSEO({
+    title: pageTitle,
+    description: pageDescription,
+    canonicalUrl,
+    language,
+    jsonLd: activeGame
+      ? [
+          SchemaGenerators.videoGame({
+            id: activeGame.id,
+            name: activeGame.title[language],
+            description: activeGame.description[language],
+            genre: activeGame.category,
+            url: `https://games.4tm.io.vn/#/${activeGame.id}`,
+          }),
+          SchemaGenerators.website('https://games.4tm.io.vn', '4TM Games', pageDescription),
+        ]
+      : [
+          SchemaGenerators.website('https://games.4tm.io.vn', '4TM Games', pageDescription),
+        ],
+  });
 
   const handleSearchChange = (q: string) => {
     setSearchQuery(q);

@@ -3,15 +3,66 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Apps — 4TM</title>
-    <meta name="description" content="Application Ecosystem & Curated Web Software Directory — explore, launch, and experiment with purpose-built developer utilities, productivity suites, and learning aids." />
-    <meta property="og:title" content="Apps — 4TM" />
-    <meta property="og:description" content="Application Ecosystem & Curated Web Software Directory — explore, launch, and experiment with purpose-built developer utilities, productivity suites, and learning aids." />
+    <title>4TM Apps — Curated Web Software Directory & Developer Utilities</title>
+    <meta name="description" content="Application Ecosystem & Curated Web Software Directory — explore, launch, and experiment with purpose-built developer utilities, API studios, and productivity suites." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://apps.4tm.io.vn/" />
+    
+    <!-- OpenGraph Metadata -->
+    <meta property="og:site_name" content="4TM Apps" />
+    <meta property="og:title" content="4TM Apps — Curated Web Software Directory & Developer Utilities" />
+    <meta property="og:description" content="Application Ecosystem & Curated Web Software Directory — explore, launch, and experiment with purpose-built developer utilities, API studios, and productivity suites." />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://apps.4tm.io.vn/" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="vi_VN" />
+    <meta property="og:image" content="https://4tm.io.vn/og-cover.png" />
+    
+    <!-- Twitter / X Card -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="4TM Apps — Curated Web Software Directory & Developer Utilities" />
+    <meta name="twitter:description" content="Application Ecosystem & Curated Web Software Directory — explore, launch, and experiment with purpose-built developer utilities, API studios, and productivity suites." />
+    <meta name="twitter:image" content="https://4tm.io.vn/og-cover.png" />
+    
+    <!-- Site Identity & Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3414472167895157"
+     crossorigin="anonymous"></script>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json" id="schema-jsonld-4tm">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://apps.4tm.io.vn/#organization",
+          "name": "4TM Apps",
+          "url": "https://apps.4tm.io.vn",
+          "logo": "https://4tm.io.vn/favicon.svg",
+          "description": "Curated web software directory, developer tools, and productivity applications."
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://apps.4tm.io.vn/#website",
+          "url": "https://apps.4tm.io.vn/",
+          "name": "4TM Apps",
+          "publisher": {
+            "@id": "https://apps.4tm.io.vn/#organization"
+          },
+          "inLanguage": ["en", "vi"]
+        }
+      ]
+    }
+    </script>
+    
     <script>
       (function() {
         try {
@@ -33,7 +84,7 @@
       })();
     </script>
   </head>
-  <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans antialiased selection:bg-indigo-500 selection:text-white transition-colors duration-200">
+  <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans antialiased selection:bg-orange-500 selection:text-white transition-colors duration-200">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

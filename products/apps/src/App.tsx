@@ -8,7 +8,7 @@ import { AppCatalog } from './components/AppCatalog';
 import { AppModal } from './components/AppModal';
 import { createClient, User } from '@supabase/supabase-js';
 import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
-import { ThemeProvider, AdSlot } from '@shared';
+import { ThemeProvider, AdSlot, useSEO, SchemaGenerators } from '@shared';
 
 const FAVORITES_STORAGE_KEY = '4tm_apps_favorites';
 
@@ -100,6 +100,44 @@ export function App() {
   };
 
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Dynamic SEO Synchronization
+  const pageTitle = selectedApp
+    ? `${selectedApp.title[language]} | 4TM Apps`
+    : language === 'vi'
+    ? '4TM Apps — Danh bạ Ứng dụng Web & Công cụ Lập trình viên'
+    : '4TM Apps — Curated Web Software Directory & Developer Utilities';
+
+  const pageDescription = selectedApp
+    ? selectedApp.description[language]
+    : language === 'vi'
+    ? 'Khám phá và sử dụng các ứng dụng web chuyên dụng cho lập trình viên: trợ lý học tập, sổ tay snippet, API Studio và phối màu trực quan.'
+    : 'Application Ecosystem & Curated Web Software Directory — explore, launch, and experiment with purpose-built developer utilities, API studios, and productivity suites.';
+
+  const canonicalUrl = selectedApp
+    ? `https://apps.4tm.io.vn/#${selectedApp.id}`
+    : 'https://apps.4tm.io.vn/';
+
+  useSEO({
+    title: pageTitle,
+    description: pageDescription,
+    canonicalUrl,
+    language,
+    jsonLd: selectedApp
+      ? [
+          SchemaGenerators.softwareApplication({
+            id: selectedApp.id,
+            name: selectedApp.title[language],
+            description: selectedApp.description[language],
+            category: 'DeveloperApplication',
+            url: `https://apps.4tm.io.vn/#${selectedApp.id}`,
+          }),
+          SchemaGenerators.website('https://apps.4tm.io.vn', '4TM Apps', pageDescription),
+        ]
+      : [
+          SchemaGenerators.website('https://apps.4tm.io.vn', '4TM Apps', pageDescription),
+        ],
+  });
 
   const handleSignOut = async () => {
     if (supabase) {

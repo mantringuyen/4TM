@@ -10,7 +10,7 @@ import { BookDetailView } from './components/BookDetailView';
 import { ReaderView } from './components/ReaderView';
 import { createClient, User } from '@supabase/supabase-js';
 import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
-import { ThemeProvider, AdSlot } from '@shared';
+import { ThemeProvider, AdSlot, useSEO, SchemaGenerators } from '@shared';
 
 // Client-side Supabase client (lazy & safe fallback)
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -115,6 +115,47 @@ export function App() {
 
   const [user, setUser] = useState<User | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Dynamic SEO Synchronization
+  const isBookView = (activeView === 'detail' || activeView === 'reader') && !!selectedBook;
+  const pageTitle = isBookView && selectedBook
+    ? `${selectedBook.title} | 4TM Ebook`
+    : language === 'vi'
+    ? '4TM Ebook — Thư viện Ấn phẩm Kỹ thuật & Sách Lập trình'
+    : '4TM Ebook — Digital Technical Publications & Engineering Library';
+
+  const pageDescription = isBookView && selectedBook
+    ? (selectedBook.description?.[language] || selectedBook.description?.en || selectedBook.title)
+    : language === 'vi'
+    ? 'Thư viện ấn phẩm kỹ thuật chuyên sâu về Python, SQL, JavaScript, HTML, CSS, Excel, Power BI, AI và kiến trúc phần mềm không gián đoạn.'
+    : 'Digital Technical Publications & Engineering Library — in-depth software engineering handbooks, architectural guides, and distraction-free digital technical reading platform.';
+
+  const canonicalUrl = isBookView && selectedBook
+    ? `https://ebook.4tm.io.vn/#/book/${selectedBook.slug || selectedBook.id}`
+    : 'https://ebook.4tm.io.vn/';
+
+  useSEO({
+    title: pageTitle,
+    description: pageDescription,
+    canonicalUrl,
+    language,
+    jsonLd: isBookView && selectedBook
+      ? [
+          SchemaGenerators.book({
+            id: selectedBook.id,
+            title: selectedBook.title,
+            description: pageDescription,
+            author: selectedBook.author || '4TM Technical Board',
+            inLanguage: language,
+            genre: 'Computer Science & Software Engineering',
+            url: `https://ebook.4tm.io.vn/#/book/${selectedBook.slug || selectedBook.id}`,
+          }),
+          SchemaGenerators.website('https://ebook.4tm.io.vn', '4TM Ebook', pageDescription),
+        ]
+      : [
+          SchemaGenerators.website('https://ebook.4tm.io.vn', '4TM Ebook', pageDescription),
+        ],
+  });
 
   const fetchBookContent = useCallback(async (slugOrId: string) => {
     const cached = getCachedBookContent(slugOrId);

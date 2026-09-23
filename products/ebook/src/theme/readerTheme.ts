@@ -69,8 +69,8 @@ export const READER_THEME_TOKENS: Record<ReaderPaperTheme, ReaderThemeTokens> = 
     codeBorder: 'border-slate-200',
     codeHeaderBg: 'bg-slate-100',
     codeHeaderText: 'text-slate-600',
-    codePreBg: 'bg-slate-950',
-    codePreText: 'text-slate-100',
+    codePreBg: 'bg-[#F8FAFC]',
+    codePreText: 'text-slate-800',
     codeExplanationBg: 'bg-slate-50',
 
     inlineCodeBg: 'bg-slate-100',

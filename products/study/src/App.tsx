@@ -27,7 +27,66 @@ import { ReviewModal } from './components/ReviewModal';
 import { BookmarksModal, NotesModal } from './components/BookmarksAndNotesModals';
 import { Terminal, ShieldCheck, Heart, Sparkles, Globe, Clock } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './services/supabase';
-import { BrandLogo, BRAND_CONFIG, processSsoCallback, issuePeerRootHandoff, AdSlot } from '@shared';
+import {
+  BrandLogo,
+  BRAND_CONFIG,
+  processSsoCallback,
+  issuePeerRootHandoff,
+  AdSlot,
+  useSEO,
+  SchemaGenerators,
+} from '@shared';
+
+const STUDY_COURSES_SEO: Record<CourseId, { en: string; vi: string; descEn: string; descVi: string }> = {
+  python: {
+    en: 'Python Programming Course — From Core Syntax to OOP Engineering',
+    vi: 'Khóa học Lập trình Python — Từ Cú pháp Cơ bản đến OOP Nâng cao',
+    descEn: 'Master Python 3 fundamentals, dynamic typing, data structures, object-oriented programming, and error handling with browser code execution.',
+    descVi: 'Làm chủ Python 3 từ biến số, kiểu dữ liệu, hàm, cấu trúc dữ liệu List/Dict đến lập trình hướng đối tượng với trình chạy code trực tiếp.',
+  },
+  javascript: {
+    en: 'Modern JavaScript (ES6+) Course — Web Runtimes & Async Programming',
+    vi: 'Khóa học Lập trình JavaScript Hiện Đại (ES6+) — Web Runtimes & Bất đồng bộ',
+    descEn: 'Learn modern JavaScript ES6+, DOM manipulation, closures, promises, async/await, and browser runtime execution.',
+    descVi: 'Học JavaScript hiện đại từ ES6+, thao tác DOM, bao đóng (closures), Promise, async/await và kiến trúc runtime trình duyệt.',
+  },
+  html: {
+    en: 'Semantic HTML5 Course — Accessible Web Architecture & SEO',
+    vi: 'Khóa học HTML5 Ngữ Nghĩa — Kiến trúc Web Chuẩn Accessibility & SEO',
+    descEn: 'Build semantic, accessible, SEO-optimized HTML5 document structures, forms, audio/video media, and web components.',
+    descVi: 'Xây dựng cấu trúc tài liệu HTML5 chuẩn ngữ nghĩa, biểu mẫu form nâng cao, đa phương tiện và khả năng tiếp cận (Accessibility).',
+  },
+  css: {
+    en: 'Modern CSS3 & Responsive Design Course — Flexbox, Grid & Animations',
+    vi: 'Khóa học CSS3 & Thiết Kế Đáp Ứng — Flexbox, CSS Grid & Animation',
+    descEn: 'Master modern CSS styling, Flexbox layouts, CSS Grid systems, custom properties, responsive breakpoints, and keyframe animations.',
+    descVi: 'Làm chủ tạo kiểu CSS hiện đại, bố cục Flexbox, CSS Grid, biến CSS tùy chỉnh, media queries và hoạt ảnh mượt mà.',
+  },
+  sql: {
+    en: 'SQL & Relational Database Engineering Course — Queries, Joins & Indexing',
+    vi: 'Khóa học SQL & Cơ Sở Dữ Liệu Quan Hệ — Truy vấn, Phép Join & Đánh chỉ mục',
+    descEn: 'Master relational databases, SQL queries, complex multi-table JOINs, GROUP BY aggregations, window functions, and indexing strategies.',
+    descVi: 'Làm chủ cơ sở dữ liệu quan hệ, câu lệnh truy vấn SQL, phép nối JOIN phức tạp, hàm tổng hợp và tối ưu hóa chỉ mục Index.',
+  },
+  excel: {
+    en: 'Advanced Excel & Data Modeling Course — Formulas, XLOOKUP & Analytics',
+    vi: 'Khóa học Excel Nâng Cao & Mô Hình Dữ Liệu — Công thức, XLOOKUP & Phân tích',
+    descEn: 'Master business Excel formulas, dynamic arrays, XLOOKUP, INDEX/MATCH, PivotTables, and analytical financial modeling.',
+    descVi: 'Làm chủ công thức phân tích kinh doanh Excel, mảng động (Dynamic Arrays), XLOOKUP, PivotTable và mô hình hóa dữ liệu.',
+  },
+  powerbi: {
+    en: 'Power BI & DAX Analytics Course — Data Modeling & Interactive Dashboards',
+    vi: 'Khóa học Power BI & DAX — Mô hình hóa Dữ liệu & Thiết kế Dashboard',
+    descEn: 'Build production Power BI dashboards, star-schema data models, Power Query M ETL transformations, and time-intelligence DAX measures.',
+    descVi: 'Thiết kế dashboard báo cáo Power BI chuyên nghiệp, mô hình sao (Star Schema), xử lý ETL Power Query và công thức DAX thời gian.',
+  },
+  ai: {
+    en: 'AI Engineering & LLM Architecture Course — Prompts, RAG & Agents',
+    vi: 'Khóa học Kỹ Thuật AI & Kiến Trúc LLM — Kỹ nghệ Prompt, RAG & AI Agent',
+    descEn: 'Master Large Language Models, prompt engineering architectures, Retrieval-Augmented Generation (RAG), vector embeddings, and autonomous agents.',
+    descVi: 'Làm chủ mô hình ngôn ngữ lớn LLM, kỹ nghệ Prompt, mô hình truy xuất tăng cường RAG, vector embeddings và tác tử AI tự trị.',
+  },
+};
 
 function AppContent() {
   const { language, setLanguage, dict } = useLanguage();
@@ -53,8 +112,58 @@ function AppContent() {
     lessonId?: string;
   }>({});
 
-  // Modals state
-  const [authModalOpen, setAuthModalOpen] = useState(false);
+  // Dynamic SEO Synchronization
+  const currentCourseInfo = viewPayload.courseId ? STUDY_COURSES_SEO[viewPayload.courseId] : null;
+  const isCourseView = (currentView === 'course-detail' || currentView === 'lesson') && !!currentCourseInfo;
+  
+  const pageTitle = isCourseView && currentCourseInfo
+    ? `${currentCourseInfo[language]} | 4TM Study`
+    : currentView === 'learning-paths'
+    ? language === 'vi' ? 'Lộ trình học Lập trình & Kỹ thuật phần mềm | 4TM Study' : 'Software Engineering Learning Paths | 4TM Study'
+    : currentView === 'learning-process'
+    ? language === 'vi' ? 'Quy trình & Phương pháp Học thực chiến | 4TM Study' : 'Mastery Learning Methodology | 4TM Study'
+    : currentView === 'playground'
+    ? language === 'vi' ? 'Trình chạy Code trực tiếp & Thử nghiệm | 4TM Study' : 'Interactive Code Playground | 4TM Study'
+    : currentView === 'courses'
+    ? language === 'vi' ? 'Danh mục Khóa học Lập trình & Phân tích Dữ liệu | 4TM Study' : 'Engineering & Data Courses Catalog | 4TM Study'
+    : language === 'vi'
+    ? '4TM Study — Nền tảng Học Lập trình Tương tác & Khóa học Kỹ thuật'
+    : '4TM Study — Interactive Programming LMS & Engineering Courses';
+
+  const pageDescription = isCourseView && currentCourseInfo
+    ? language === 'vi' ? currentCourseInfo.descVi : currentCourseInfo.descEn
+    : language === 'vi'
+    ? 'Nền tảng học lập trình tương tác với trình chạy code trực tiếp trên trình duyệt, lộ trình bài bản Python, JavaScript, HTML, CSS, SQL, Excel, Power BI, AI và hệ thống bài tập thực chiến.'
+    : 'Autonomous full-stack learning platform with client-side code execution, structured courses across Python, JavaScript, HTML, CSS, SQL, Excel, Power BI, and AI with bilingual EN/VI support.';
+
+  const canonicalUrl = isCourseView && viewPayload.courseId
+    ? `https://study.4tm.io.vn/course/${viewPayload.courseId}`
+    : currentView === 'learning-paths'
+    ? 'https://study.4tm.io.vn/learning-path'
+    : currentView === 'learning-process'
+    ? 'https://study.4tm.io.vn/process'
+    : 'https://study.4tm.io.vn/';
+
+  useSEO({
+    title: pageTitle,
+    description: pageDescription,
+    canonicalUrl,
+    language,
+    jsonLd: isCourseView && viewPayload.courseId && currentCourseInfo
+      ? [
+          SchemaGenerators.course({
+            id: viewPayload.courseId,
+            name: currentCourseInfo[language],
+            description: language === 'vi' ? currentCourseInfo.descVi : currentCourseInfo.descEn,
+            provider: '4TM Study',
+            url: `https://study.4tm.io.vn/course/${viewPayload.courseId}`,
+          }),
+          SchemaGenerators.website('https://study.4tm.io.vn', '4TM Study', pageDescription),
+        ]
+      : [
+          SchemaGenerators.website('https://study.4tm.io.vn', '4TM Study', pageDescription),
+        ],
+  });
   const [authModalInitialMode, setAuthModalInitialMode] = useState<AuthModalMode>('signin');
   const [authModalInitialError, setAuthModalInitialError] = useState<string>('');
   const [searchModalOpen, setSearchModalOpen] = useState(false);

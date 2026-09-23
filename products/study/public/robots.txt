@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /sso
+Disallow: /api/
+Disallow: /admin
+Disallow: /dashboard
+
+Sitemap: https://study.4tm.io.vn/sitemap.xml

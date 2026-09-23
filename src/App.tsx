@@ -17,9 +17,67 @@ import {
   SSO_STATE_STORAGE_KEY,
   SSO_DOWNSTREAM_TARGET_STORAGE_KEY,
   AdSlot,
+  useSEO,
+  SchemaGenerators,
 } from '@shared';
+import { useLanguage } from './i18n/LanguageContext';
 import { issueSsoTicket } from './services/ssoIssuer';
 import type { User, Session } from '@supabase/supabase-js';
+
+const RootContent: React.FC<{
+  user: User | null;
+  onOpenAuthModal: () => void;
+  onSignOut: () => void;
+  isSigningOut: boolean;
+  ssoNotice: string | null;
+}> = ({ user, onOpenAuthModal, onSignOut, isSigningOut, ssoNotice }) => {
+  const { language } = useLanguage();
+
+  useSEO({
+    title:
+      language === 'vi'
+        ? 'Hệ sinh thái 4TM — Học lập trình & Kỹ thuật phần mềm thực chiến'
+        : '4TM Ecosystem — Learning by Doing',
+    description:
+      language === 'vi'
+        ? 'Cổng thông tin hệ sinh thái 4TM kết nối nền tảng học lập trình tương tác (Study), thư viện ấn phẩm kỹ thuật (Ebook), bộ công cụ lập trình (Tools), ứng dụng web (Apps) và trò chơi tư duy máy tính (Games).'
+        : 'Official 4TM Ecosystem Homepage connecting Interactive Programming LMS (Study), Engineering Ebooks, Developer Utilities (Tools), Web Applications (Apps), and CS Games.',
+    canonicalUrl: 'https://4tm.io.vn/',
+    language,
+    jsonLd: [
+      SchemaGenerators.organization(),
+      SchemaGenerators.website(
+        'https://4tm.io.vn',
+        '4TM Ecosystem',
+        'Official 4TM Ecosystem Homepage connecting Study, Ebook, Tools, Apps, and Games.'
+      ),
+    ],
+  });
+
+  return (
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-blue-600 selection:text-white transition-colors duration-200">
+      {ssoNotice && (
+        <div className="bg-blue-600 text-white text-xs font-semibold py-2 px-4 text-center sticky top-0 z-50 transition-all shadow-md">
+          {ssoNotice}
+        </div>
+      )}
+      <Navbar
+        user={user}
+        onOpenAuthModal={onOpenAuthModal}
+        onSignOut={onSignOut}
+        isSigningOut={isSigningOut}
+      />
+      <main className="flex-1">
+        <Hero />
+        <EcosystemGrid />
+        <WhySection />
+        <SynergySection />
+      </main>
+      <AdSlot product="root" user={user} supabaseClient={supabase} />
+      <Footer />
+    </div>
+  );
+};
 
 export const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -152,32 +210,17 @@ export const App: React.FC = () => {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-blue-600 selection:text-white transition-colors duration-200">
-          {ssoNotice && (
-            <div className="bg-blue-600 text-white text-xs font-semibold py-2 px-4 text-center sticky top-0 z-50 transition-all shadow-md">
-              {ssoNotice}
-            </div>
-          )}
-          <Navbar
-            user={user}
-            onOpenAuthModal={() => setIsAuthModalOpen(true)}
-            onSignOut={handleSignOut}
-            isSigningOut={isSigningOut}
-          />
-          <main className="flex-1">
-            <Hero />
-            <EcosystemGrid />
-            <WhySection />
-            <SynergySection />
-          </main>
-          <AdSlot product="root" user={user} supabaseClient={supabase} />
-          <Footer />
-
-          <AuthModal
-            isOpen={isAuthModalOpen}
-            onClose={() => setIsAuthModalOpen(false)}
-          />
-        </div>
+        <RootContent
+          user={user}
+          onOpenAuthModal={() => setIsAuthModalOpen(true)}
+          onSignOut={handleSignOut}
+          isSigningOut={isSigningOut}
+          ssoNotice={ssoNotice}
+        />
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+        />
       </LanguageProvider>
     </ThemeProvider>
   );

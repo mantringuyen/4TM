@@ -8,3 +8,4 @@ export * from './ads';
 export * from './AdSlot';
 export * from './systemSettings';
 export * from './Header';
+export * from './seo';
