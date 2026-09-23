@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
-    "lint": "tsc --noEmit",
+    "lint": "tsc --noEmit && tsc --noEmit -p products/tools/tsconfig.json",
     "test": "tsx tests/sso_security.test.ts && tsx tests/registration_and_ad_qa.test.ts",
     "test:e2e": "playwright test",
     "start": "node dist/server.cjs",

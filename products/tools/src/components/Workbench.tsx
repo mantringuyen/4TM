@@ -18,9 +18,28 @@ import {
   QrCode,
   Loader2,
   X,
+  BarChart3,
+  Calendar,
+  Workflow,
+  Layers,
+  Table,
+  Sparkles,
+  GitCompare,
+  Scissors,
+  FileCode,
+  Cpu,
+  ShieldAlert,
+  AlignLeft,
+  RefreshCw,
+  Sliders,
+  Globe,
+  HelpCircle,
+  AlertCircle,
+  AlertTriangle,
+  Send,
 } from 'lucide-react';
 
-// Lazy-loaded Phase 1 Workspaces
+// Lazy-loaded Phase 1 & Existing Workspaces
 const DataConverterTool = React.lazy(() =>
   import('./workspaces/DataConverterTool').then((m) => ({ default: m.DataConverterTool }))
 );
@@ -39,8 +58,6 @@ const CssGeneratorTool = React.lazy(() =>
 const QrGeneratorTool = React.lazy(() =>
   import('./workspaces/QrGeneratorTool').then((m) => ({ default: m.QrGeneratorTool }))
 );
-
-// Lazy-loaded Existing Workspaces
 const Base64Tool = React.lazy(() =>
   import('./workspaces/Base64Tool').then((m) => ({ default: m.Base64Tool }))
 );
@@ -60,6 +77,96 @@ const TimestampTool = React.lazy(() =>
   import('./workspaces/TimestampTool').then((m) => ({ default: m.TimestampTool }))
 );
 
+// Lazy-loaded Excel Workspaces
+const ExcelFormulaExplainerTool = React.lazy(() =>
+  import('./workspaces/excel/ExcelFormulaExplainerTool').then((m) => ({ default: m.ExcelFormulaExplainerTool }))
+);
+const ExcelFormulaBuilderTool = React.lazy(() =>
+  import('./workspaces/excel/ExcelFormulaBuilderTool').then((m) => ({ default: m.ExcelFormulaBuilderTool }))
+);
+const ExcelFormulaDebuggerTool = React.lazy(() =>
+  import('./workspaces/excel/ExcelFormulaDebuggerTool').then((m) => ({ default: m.ExcelFormulaDebuggerTool }))
+);
+
+// Lazy-loaded Power BI Workspaces
+const DaxExplainerTool = React.lazy(() =>
+  import('./workspaces/powerbi/DaxExplainerTool').then((m) => ({ default: m.DaxExplainerTool }))
+);
+const DaxTimeIntelligenceBuilderTool = React.lazy(() =>
+  import('./workspaces/powerbi/DaxTimeIntelligenceBuilderTool').then((m) => ({ default: m.DaxTimeIntelligenceBuilderTool }))
+);
+const PowerQueryMExplainerTool = React.lazy(() =>
+  import('./workspaces/powerbi/PowerQueryMExplainerTool').then((m) => ({ default: m.PowerQueryMExplainerTool }))
+);
+
+// Lazy-loaded SQL Workspaces
+const SqlJoinVisualizerTool = React.lazy(() =>
+  import('./workspaces/sql/SqlJoinVisualizerTool').then((m) => ({ default: m.SqlJoinVisualizerTool }))
+);
+const SqlNullTesterTool = React.lazy(() =>
+  import('./workspaces/sql/SqlNullTesterTool').then((m) => ({ default: m.SqlNullTesterTool }))
+);
+const SqlQueryExplainerTool = React.lazy(() =>
+  import('./workspaces/sql/SqlQueryExplainerTool').then((m) => ({ default: m.SqlQueryExplainerTool }))
+);
+
+// Lazy-loaded Python Workspaces
+const PythonErrorExplainerTool = React.lazy(() =>
+  import('./workspaces/python/PythonErrorExplainerTool').then((m) => ({ default: m.PythonErrorExplainerTool }))
+);
+const PythonStructureVisualizerTool = React.lazy(() =>
+  import('./workspaces/python/PythonStructureVisualizerTool').then((m) => ({ default: m.PythonStructureVisualizerTool }))
+);
+const PythonComplexityInspectorTool = React.lazy(() =>
+  import('./workspaces/python/PythonComplexityInspectorTool').then((m) => ({ default: m.PythonComplexityInspectorTool }))
+);
+const PandasExpressionExplorerTool = React.lazy(() =>
+  import('./workspaces/python/PandasExpressionExplorerTool').then((m) => ({ default: m.PandasExpressionExplorerTool }))
+);
+
+// Lazy-loaded AI Workspaces
+const PromptStructureAnalyzerTool = React.lazy(() =>
+  import('./workspaces/ai/PromptStructureAnalyzerTool').then((m) => ({ default: m.PromptStructureAnalyzerTool }))
+);
+const PromptDiffTool = React.lazy(() =>
+  import('./workspaces/ai/PromptDiffTool').then((m) => ({ default: m.PromptDiffTool }))
+);
+const RagChunkingPlaygroundTool = React.lazy(() =>
+  import('./workspaces/ai/RagChunkingPlaygroundTool').then((m) => ({ default: m.RagChunkingPlaygroundTool }))
+);
+const JsonSchemaPromptBuilderTool = React.lazy(() =>
+  import('./workspaces/ai/JsonSchemaPromptBuilderTool').then((m) => ({ default: m.JsonSchemaPromptBuilderTool }))
+);
+const ReActTraceVisualizerTool = React.lazy(() =>
+  import('./workspaces/ai/ReActTraceVisualizerTool').then((m) => ({ default: m.ReActTraceVisualizerTool }))
+);
+const PromptDefensePlaygroundTool = React.lazy(() =>
+  import('./workspaces/ai/PromptDefensePlaygroundTool').then((m) => ({ default: m.PromptDefensePlaygroundTool }))
+);
+
+// Lazy-loaded Developer & Web Workspaces
+const JsonPathExplorerTool = React.lazy(() =>
+  import('./workspaces/developer/JsonPathExplorerTool').then((m) => ({ default: m.JsonPathExplorerTool }))
+);
+const RegexPlaygroundTool = React.lazy(() =>
+  import('./workspaces/developer/RegexPlaygroundTool').then((m) => ({ default: m.RegexPlaygroundTool }))
+);
+const CronExpressionBuilderTool = React.lazy(() =>
+  import('./workspaces/developer/CronExpressionBuilderTool').then((m) => ({ default: m.CronExpressionBuilderTool }))
+);
+const HttpRequestBuilderTool = React.lazy(() =>
+  import('./workspaces/developer/HttpRequestBuilderTool').then((m) => ({ default: m.HttpRequestBuilderTool }))
+);
+const CssSpecificityCalculatorTool = React.lazy(() =>
+  import('./workspaces/web/CssSpecificityCalculatorTool').then((m) => ({ default: m.CssSpecificityCalculatorTool }))
+);
+const HtmlAccessibilityInspectorTool = React.lazy(() =>
+  import('./workspaces/web/HtmlAccessibilityInspectorTool').then((m) => ({ default: m.HtmlAccessibilityInspectorTool }))
+);
+const UrlInspectorTool = React.lazy(() =>
+  import('./workspaces/web/UrlInspectorTool').then((m) => ({ default: m.UrlInspectorTool }))
+);
+
 export interface WorkbenchProps {
   tools: ToolItem[];
   language: Language;
@@ -75,16 +182,24 @@ export const Workbench: React.FC<WorkbenchProps> = ({
 }) => {
   const dict = TRANSLATIONS[language];
 
-  // Initialize tool based on current URL path using slug
+  // Initialize tool based on current URL path using slug (handles /slug, /tools/slug, etc.)
   const getToolIdFromUrl = (): ToolId => {
     if (typeof window !== 'undefined') {
       const cleanPath = window.location.pathname.replace(/^\/+|\/+$/g, '');
       if (cleanPath) {
-        const matched = tools.find((t) => t.slug === cleanPath || t.id === cleanPath);
+        const segments = cleanPath.split('/');
+        const candidate = segments[segments.length - 1];
+        const matched = tools.find(
+          (t) =>
+            t.slug === candidate ||
+            t.id === candidate ||
+            t.slug === cleanPath ||
+            t.id === cleanPath
+        );
         if (matched) return matched.id;
       }
     }
-    return 'data-converter';
+    return 'excel-formula-explainer';
   };
 
   const [activeToolId, setActiveToolId] = useState<ToolId>(getToolIdFromUrl);
@@ -114,6 +229,14 @@ export const Workbench: React.FC<WorkbenchProps> = ({
       if (metaDesc) {
         metaDesc.setAttribute('content', activeTool.description[language]);
       }
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) {
+        ogTitle.setAttribute('content', `${activeTool.seoTitle[language]} | 4TM Tools`);
+      }
+      const ogDesc = document.querySelector('meta[property="og:description"]');
+      if (ogDesc) {
+        ogDesc.setAttribute('content', activeTool.description[language]);
+      }
     }
   }, [activeTool, language]);
 
@@ -121,7 +244,8 @@ export const Workbench: React.FC<WorkbenchProps> = ({
     setActiveToolId(id);
     const targetTool = tools.find((t) => t.id === id);
     if (targetTool && typeof window !== 'undefined') {
-      const newPath = `/${targetTool.slug}`;
+      const isPrefixed = window.location.pathname.startsWith('/tools');
+      const newPath = isPrefixed ? `/tools/${targetTool.slug}` : `/${targetTool.slug}`;
       if (window.location.pathname !== newPath) {
         window.history.pushState(null, '', newPath);
       }
@@ -146,39 +270,106 @@ export const Workbench: React.FC<WorkbenchProps> = ({
   }, [tools, selectedCategory, searchQuery]);
 
   const categories = useMemo(() => {
-    const cats = Array.from(new Set(tools.map((t) => t.category)));
-    return ['all', ...cats];
+    const desiredOrder = ['all', 'excel', 'powerbi', 'sql', 'python', 'ai', 'developer', 'web'];
+    const presentCats = Array.from(new Set(tools.map((t) => t.category)));
+    return desiredOrder.filter((c) => c === 'all' || presentCats.includes(c as ToolCategory));
   }, [tools]);
 
   const renderToolWorkspace = () => {
     switch (activeTool.id) {
-      // Phase 1 Tools
-      case 'data-converter':
-        return <DataConverterTool language={language} />;
-      case 'text-case-converter':
-        return <TextCaseTool language={language} />;
+      // Excel Tools
+      case 'excel-formula-explainer':
+        return <ExcelFormulaExplainerTool language={language} />;
+      case 'excel-formula-builder':
+        return <ExcelFormulaBuilderTool language={language} />;
+      case 'excel-formula-debugger':
+        return <ExcelFormulaDebuggerTool language={language} />;
+
+      // Power BI Tools
+      case 'dax-explainer':
+        return <DaxExplainerTool language={language} />;
+      case 'dax-time-intelligence':
+        return <DaxTimeIntelligenceBuilderTool language={language} />;
+      case 'powerquery-m-explainer':
+        return <PowerQueryMExplainerTool language={language} />;
+
+      // SQL Tools
+      case 'sql-join-visualizer':
+        return <SqlJoinVisualizerTool language={language} />;
+      case 'sql-null-tester':
+        return <SqlNullTesterTool language={language} />;
+      case 'sql-query-explainer':
+        return <SqlQueryExplainerTool language={language} />;
       case 'sql-formatter':
         return <SqlFormatterTool language={language} />;
+
+      // Python Tools
+      case 'python-error-explainer':
+        return <PythonErrorExplainerTool language={language} />;
+      case 'python-structure-visualizer':
+        return <PythonStructureVisualizerTool language={language} />;
+      case 'python-complexity-inspector':
+        return <PythonComplexityInspectorTool language={language} />;
+      case 'pandas-expression-explorer':
+        return <PandasExpressionExplorerTool language={language} />;
+
+      // AI Tools
+      case 'prompt-structure-analyzer':
+        return <PromptStructureAnalyzerTool language={language} />;
+      case 'prompt-diff':
+        return <PromptDiffTool language={language} />;
+      case 'rag-chunking-playground':
+        return <RagChunkingPlaygroundTool language={language} />;
+      case 'json-schema-prompt-builder':
+        return <JsonSchemaPromptBuilderTool language={language} />;
+      case 'react-trace-visualizer':
+        return <ReActTraceVisualizerTool language={language} />;
+      case 'prompt-defense-playground':
+        return <PromptDefensePlaygroundTool language={language} />;
+
+      // Developer Tools
+      case 'data-converter':
+        return <DataConverterTool language={language} />;
+      case 'jsonpath-explorer':
+        return <JsonPathExplorerTool language={language} />;
+      case 'regex-playground':
+        return <RegexPlaygroundTool language={language} />;
+      case 'jwt-debugger':
+      case 'jwt':
+        return <JwtTool language={language} />;
+      case 'http-request-builder':
+        return <HttpRequestBuilderTool language={language} />;
+      case 'cron-builder':
+        return <CronExpressionBuilderTool language={language} />;
       case 'encoder-decoder':
         return <EncoderDecoderTool language={language} />;
-      case 'css-generator':
-        return <CssGeneratorTool language={language} />;
-      case 'qr-generator':
-        return <QrGeneratorTool language={language} />;
-
-      // Existing Tools
+      case 'crypto-hasher':
+      case 'hasher':
+        return <HasherTool language={language} />;
+      case 'uuid-generator':
+      case 'uuid':
+        return <UuidTool language={language} />;
+      case 'unix-timestamp':
+      case 'timestamp':
+        return <TimestampTool language={language} />;
+      case 'text-case-converter':
+        return <TextCaseTool language={language} />;
       case 'base64':
         return <Base64Tool language={language} />;
       case 'json':
         return <JsonTool language={language} />;
-      case 'hasher':
-        return <HasherTool language={language} />;
-      case 'jwt':
-        return <JwtTool language={language} />;
-      case 'uuid':
-        return <UuidTool language={language} />;
-      case 'timestamp':
-        return <TimestampTool language={language} />;
+
+      // Web Tools
+      case 'css-specificity-calculator':
+        return <CssSpecificityCalculatorTool language={language} />;
+      case 'html-accessibility-inspector':
+        return <HtmlAccessibilityInspectorTool language={language} />;
+      case 'url-inspector':
+        return <UrlInspectorTool language={language} />;
+      case 'css-layout-generator':
+        return <CssGeneratorTool language={language} />;
+      case 'qr-generator':
+        return <QrGeneratorTool language={language} />;
 
       default:
         return <div className="p-8 text-center text-slate-500">Tool workspace unavailable</div>;
@@ -187,30 +378,84 @@ export const Workbench: React.FC<WorkbenchProps> = ({
 
   const getToolIcon = (id: ToolId) => {
     switch (id) {
-      case 'data-converter':
+      // Excel
+      case 'excel-formula-explainer':
+      case 'excel-formula-builder':
+      case 'excel-formula-debugger':
         return <FileSpreadsheet className="w-4 h-4 text-emerald-500" />;
-      case 'text-case-converter':
-        return <Type className="w-4 h-4 text-teal-500" />;
+
+      // Power BI
+      case 'dax-explainer':
+      case 'dax-time-intelligence':
+        return <BarChart3 className="w-4 h-4 text-amber-500" />;
+      case 'powerquery-m-explainer':
+        return <Workflow className="w-4 h-4 text-amber-500" />;
+
+      // SQL
+      case 'sql-join-visualizer':
+      case 'sql-null-tester':
+      case 'sql-query-explainer':
       case 'sql-formatter':
         return <Database className="w-4 h-4 text-cyan-500" />;
-      case 'encoder-decoder':
-        return <Binary className="w-4 h-4 text-indigo-500" />;
-      case 'css-generator':
-        return <Palette className="w-4 h-4 text-purple-500" />;
-      case 'qr-generator':
-        return <QrCode className="w-4 h-4 text-pink-500" />;
-      case 'base64':
-        return <Binary className="w-4 h-4" />;
-      case 'json':
-        return <FileJson className="w-4 h-4" />;
-      case 'hasher':
-        return <ShieldCheck className="w-4 h-4" />;
+
+      // Python
+      case 'python-error-explainer':
+      case 'python-structure-visualizer':
+      case 'python-complexity-inspector':
+      case 'pandas-expression-explorer':
+        return <Layers className="w-4 h-4 text-blue-500" />;
+
+      // AI
+      case 'prompt-structure-analyzer':
+      case 'prompt-diff':
+      case 'rag-chunking-playground':
+      case 'json-schema-prompt-builder':
+      case 'react-trace-visualizer':
+      case 'prompt-defense-playground':
+        return <Sparkles className="w-4 h-4 text-purple-500" />;
+
+      // Developer
+      case 'data-converter':
+        return <RefreshCw className="w-4 h-4 text-emerald-500" />;
+      case 'jsonpath-explorer':
+        return <Search className="w-4 h-4 text-emerald-500" />;
+      case 'regex-playground':
+        return <Sliders className="w-4 h-4 text-emerald-500" />;
+      case 'jwt-debugger':
       case 'jwt':
-        return <KeyRound className="w-4 h-4" />;
+        return <KeyRound className="w-4 h-4 text-emerald-500" />;
+      case 'http-request-builder':
+        return <Send className="w-4 h-4 text-emerald-500" />;
+      case 'cron-builder':
+        return <Clock className="w-4 h-4 text-emerald-500" />;
+      case 'encoder-decoder':
+        return <Binary className="w-4 h-4 text-emerald-500" />;
+      case 'crypto-hasher':
+      case 'hasher':
+        return <ShieldCheck className="w-4 h-4 text-emerald-500" />;
+      case 'uuid-generator':
       case 'uuid':
-        return <Fingerprint className="w-4 h-4" />;
+        return <Fingerprint className="w-4 h-4 text-emerald-500" />;
+      case 'unix-timestamp':
       case 'timestamp':
-        return <Clock className="w-4 h-4" />;
+        return <Clock className="w-4 h-4 text-emerald-500" />;
+      case 'text-case-converter':
+        return <Type className="w-4 h-4 text-emerald-500" />;
+
+      // Web
+      case 'css-specificity-calculator':
+        return <Sliders className="w-4 h-4 text-sky-500" />;
+      case 'html-accessibility-inspector':
+        return <ShieldCheck className="w-4 h-4 text-sky-500" />;
+      case 'url-inspector':
+        return <Globe className="w-4 h-4 text-sky-500" />;
+      case 'css-layout-generator':
+        return <Palette className="w-4 h-4 text-sky-500" />;
+      case 'qr-generator':
+        return <QrCode className="w-4 h-4 text-sky-500" />;
+
+      default:
+        return <Wrench className="w-4 h-4 text-slate-400" />;
     }
   };
 
@@ -306,7 +551,7 @@ export const Workbench: React.FC<WorkbenchProps> = ({
         <ToolHeader tool={activeTool} language={language} />
 
         {/* Render the Active Interactive Workspace with Suspense */}
-        <div className="mt-4">
+        <div className="mt-6">
           <Suspense
             fallback={
               <div className="p-12 flex flex-col items-center justify-center gap-3 text-slate-400">

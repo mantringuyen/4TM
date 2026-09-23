@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ToolItem, Language } from '../../types';
 import { TRANSLATIONS } from '../../i18n/translations';
-import { ShieldCheck, BookOpen } from 'lucide-react';
+import { ShieldCheck, BookOpen, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ToolHeaderProps {
   tool: ToolItem;
@@ -10,40 +10,56 @@ interface ToolHeaderProps {
 
 export const ToolHeader: React.FC<ToolHeaderProps> = ({ tool, language }) => {
   const dict = TRANSLATIONS[language];
+  const [showHelp, setShowHelp] = useState(false);
+
+  const categoryName = dict.categories[tool.category] || tool.category;
 
   return (
     <header className="pb-6 mb-6 border-b border-slate-200 dark:border-slate-800">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+      {/* Clean Unboxed Metadata Strip */}
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400 mb-3 font-mono">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-            {dict.categories[tool.category] || tool.category}
+          <span className="font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
+            {categoryName}
           </span>
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-            {tool.badge}
-          </span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
-            <ShieldCheck className="w-3 h-3" />
+          <span aria-hidden="true">·</span>
+          <span>{tool.badge}</span>
+          <span aria-hidden="true">·</span>
+          <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
             <span>{dict.hero.privacyPromise}</span>
           </span>
         </div>
 
-        {/* 4TM Study Relations */}
-        {tool.studyRelation && tool.studyRelation.length > 0 && tool.studyRelation[0] !== 'None' && (
-          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-            <BookOpen className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="font-medium">{dict.common.studyRelationLabel}</span>
-            <div className="flex items-center gap-1">
-              {tool.studyRelation.map((course) => (
-                <span
-                  key={course}
-                  className="px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-mono text-[11px] font-semibold border border-emerald-200 dark:border-emerald-800/50"
-                >
-                  {course}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* 4TM Study Relations & Optional Help Toggle */}
+        <div className="flex items-center gap-3">
+          {tool.studyRelation && tool.studyRelation.length > 0 && tool.studyRelation[0] !== 'None' && (
+            <a
+              href="https://study.4tm.io.vn"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+              title="View matching 4TM Study module"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-emerald-500" />
+              <span>{dict.common.studyRelationLabel}:</span>
+              <span className="font-semibold text-slate-700 dark:text-slate-200">
+                {tool.studyRelation.join(', ')}
+              </span>
+            </a>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setShowHelp(!showHelp)}
+            className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-xs"
+            aria-expanded={showHelp}
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
+            <span>{showHelp ? (language === 'vi' ? 'Đóng gợi ý' : 'Hide Guide') : (language === 'vi' ? 'Hướng dẫn' : 'Quick Guide')}</span>
+            {showHelp ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
+        </div>
       </div>
 
       <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -54,17 +70,28 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({ tool, language }) => {
         {tool.description[language]}
       </p>
 
-      {/* Keywords */}
-      <div className="flex flex-wrap gap-1.5 mt-3">
-        {tool.keywords.map((kw) => (
-          <span
-            key={kw}
-            className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/60 text-[11px] font-mono text-slate-500 dark:text-slate-400 border border-slate-200/80 dark:border-slate-800"
-          >
-            #{kw}
-          </span>
-        ))}
-      </div>
+      {/* Expandable Quick Help Banner */}
+      {showHelp && (
+        <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-xs text-slate-600 dark:text-slate-300 space-y-2">
+          <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 font-mono uppercase tracking-wide">
+            <HelpCircle className="w-4 h-4 text-emerald-500" />
+            <span>{language === 'vi' ? 'Cách sử dụng hiệu quả:' : 'How to get the most out of this tool:'}</span>
+          </div>
+          <p className="leading-relaxed">
+            {language === 'vi'
+              ? 'Tất cả quá trình tính toán, phân tích cú pháp và mã hóa đều diễn ra 100% cục bộ trên trình duyệt của bạn (WebAssembly / JavaScript Client-side). Không có dữ liệu nào được gửi về máy chủ từ xa.'
+              : 'All transformations, syntax parsing, and compilations run 100% client-side in your browser sandbox. No input data, queries, or tokens leave your device.'}
+          </p>
+          <div className="flex flex-wrap gap-2 pt-1 font-mono text-[11px] text-slate-500 dark:text-slate-400">
+            <span>Keywords:</span>
+            {tool.keywords.map((kw) => (
+              <span key={kw} className="underline decoration-slate-300 dark:decoration-slate-700">
+                #{kw}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </header>
   );
 };

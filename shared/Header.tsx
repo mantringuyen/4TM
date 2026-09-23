@@ -13,7 +13,24 @@ import {
   ExternalLink,
   Check,
   Layers,
+  ChevronDown,
 } from 'lucide-react';
+
+export interface HeaderNavChildItem {
+  id?: string;
+  label: string;
+  href?: string;
+  description?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  badge?: string;
+  category?: string;
+  onClick?: (e?: any) => void;
+}
+
+export interface HeaderNavCategory {
+  name: string;
+  items: HeaderNavChildItem[];
+}
 
 export interface HeaderNavItem {
   id?: string;
@@ -23,6 +40,8 @@ export interface HeaderNavItem {
   onClick?: (e?: any) => void;
   badge?: string;
   active?: boolean;
+  dropdownItems?: HeaderNavChildItem[];
+  dropdownCategories?: HeaderNavCategory[];
 }
 
 export interface HeaderProps {
@@ -96,9 +115,11 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null);
   const menuPanelRef = useRef<HTMLDivElement>(null);
   const menuBtnRef = useRef<HTMLButtonElement>(null);
   const mobileSearchInputRef = useRef<HTMLInputElement>(null);
+  const navContainerRef = useRef<HTMLDivElement>(null);
 
   const resolvedProductId = (productId === 'hub' ? 'ecosystem' : productId) as ProductId;
   const accent = getProductAccent(resolvedProductId);
@@ -111,27 +132,35 @@ export const Header: React.FC<HeaderProps> = ({
   const defaultSignInLabel = language === 'vi' ? 'Đăng nhập' : 'Sign In';
   const defaultSignOutLabel = language === 'vi' ? 'Đăng xuất' : 'Sign Out';
 
-  // Close menu on outside click
+  // Close menu or dropdown on outside click
   useEffect(() => {
-    if (!menuOpen) return;
-
     const handleOutsideInteraction = (e: Event) => {
       const target = e.target as Node | null;
       if (!target) return;
 
-      if (menuPanelRef.current && menuPanelRef.current.contains(target)) {
-        return;
+      if (menuOpen) {
+        if (menuPanelRef.current && menuPanelRef.current.contains(target)) {
+          return;
+        }
+        if (menuBtnRef.current && menuBtnRef.current.contains(target)) {
+          return;
+        }
+        setMenuOpen(false);
       }
-      if (menuBtnRef.current && menuBtnRef.current.contains(target)) {
-        return;
+
+      if (activeDropdownId) {
+        if (navContainerRef.current && navContainerRef.current.contains(target)) {
+          return;
+        }
+        setActiveDropdownId(null);
       }
-      setMenuOpen(false);
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setMenuOpen(false);
         setMobileSearchOpen(false);
+        setActiveDropdownId(null);
       }
     };
 
@@ -146,7 +175,7 @@ export const Header: React.FC<HeaderProps> = ({
       document.removeEventListener('touchstart', handleOutsideInteraction, true);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [menuOpen]);
+  }, [menuOpen, activeDropdownId]);
 
   // Focus input when mobile search bar expands
   useEffect(() => {
@@ -192,13 +221,134 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Center / Main Navigation area (desktop) */}
-        <div className="hidden md:flex items-center gap-1 lg:gap-2 flex-1 justify-center px-2 min-w-0 overflow-hidden">
+        <div ref={navContainerRef} className="hidden md:flex items-center gap-1 lg:gap-2 flex-1 justify-center px-2 min-w-0">
           {children ? (
             children
           ) : navItems && navItems.length > 0 ? (
-            <nav className="flex items-center gap-1 lg:gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
+            <nav className="flex items-center gap-1 lg:gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 relative">
               {navItems.map((item, idx) => {
                 const Icon = item.icon;
+                const itemId = item.id || `nav-${idx}`;
+                const hasDropdown = (item.dropdownCategories && item.dropdownCategories.length > 0) || (item.dropdownItems && item.dropdownItems.length > 0);
+                const isDropdownOpen = activeDropdownId === itemId;
+
+                if (hasDropdown) {
+                  return (
+                    <div key={itemId} className="relative">
+                      <button
+                        type="button"
+                        id={`${itemId}-dropdown-btn`}
+                        onClick={() => setActiveDropdownId(isDropdownOpen ? null : itemId)}
+                        className={`px-2.5 lg:px-3 py-1.5 rounded-xl hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                          item.active || isDropdownOpen ? accent.classes.activeNav : ''
+                        }`}
+                      >
+                        {Icon && <Icon className="w-3.5 h-3.5 opacity-75" />}
+                        <span>{item.label}</span>
+                        {item.badge && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 font-mono">
+                            {item.badge}
+                          </span>
+                        )}
+                        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 ${isDropdownOpen ? 'rotate-180 text-blue-500' : 'opacity-60'}`} />
+                      </button>
+
+                      {/* Dropdown Popover */}
+                      {isDropdownOpen && (
+                        <div
+                          id={`${itemId}-dropdown-panel`}
+                          role="menu"
+                          className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-[520px] max-w-[90vw] max-h-[75vh] overflow-y-auto rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-2xl p-3.5 z-50 animate-in fade-in zoom-in-95 duration-150 text-left"
+                        >
+                          {item.dropdownCategories ? (
+                            <div className="space-y-3">
+                              {item.dropdownCategories.map((cat, catIdx) => (
+                                <div key={cat.name || catIdx} className="space-y-1">
+                                  <div className="px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800/60">
+                                    {cat.name}
+                                  </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 pt-1">
+                                    {cat.items.map((sub, subIdx) => {
+                                      const SubIcon = sub.icon;
+                                      return (
+                                        <a
+                                          key={sub.id || subIdx}
+                                          href={sub.href || '#'}
+                                          onClick={(e) => {
+                                            if (sub.onClick) {
+                                              e.preventDefault();
+                                              sub.onClick(e);
+                                            }
+                                            setActiveDropdownId(null);
+                                          }}
+                                          className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors group"
+                                        >
+                                          {SubIcon && (
+                                            <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-blue-500/10 text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex items-center justify-center shrink-0 mt-0.5 transition-colors">
+                                              <SubIcon className="w-3.5 h-3.5" />
+                                            </div>
+                                          )}
+                                          <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-1.5">
+                                              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 truncate">
+                                                {sub.label}
+                                              </span>
+                                              {sub.badge && (
+                                                <span className="text-[9px] px-1.5 py-0.2 rounded font-mono bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                                                  {sub.badge}
+                                                </span>
+                                              )}
+                                            </div>
+                                            {sub.description && (
+                                              <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
+                                                {sub.description}
+                                              </p>
+                                            )}
+                                          </div>
+                                        </a>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="space-y-1">
+                              {item.dropdownItems?.map((sub, subIdx) => {
+                                const SubIcon = sub.icon;
+                                return (
+                                  <a
+                                    key={sub.id || subIdx}
+                                    href={sub.href || '#'}
+                                    onClick={(e) => {
+                                      if (sub.onClick) {
+                                        e.preventDefault();
+                                        sub.onClick(e);
+                                      }
+                                      setActiveDropdownId(null);
+                                    }}
+                                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                  >
+                                    {SubIcon && <SubIcon className="w-3.5 h-3.5 text-slate-500" />}
+                                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex-1">
+                                      {sub.label}
+                                    </span>
+                                    {sub.badge && (
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 font-mono">
+                                        {sub.badge}
+                                      </span>
+                                    )}
+                                  </a>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
                 return item.href ? (
                   <a
                     key={item.id || idx}
@@ -464,9 +614,81 @@ export const Header: React.FC<HeaderProps> = ({
               <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">
                 {language === 'vi' ? 'Điều hướng' : 'Navigation'}
               </p>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {menuItems.map((item, idx) => {
                   const Icon = item.icon;
+                  const hasDropdown = (item.dropdownCategories && item.dropdownCategories.length > 0) || (item.dropdownItems && item.dropdownItems.length > 0);
+
+                  if (hasDropdown) {
+                    return (
+                      <div key={item.id || idx} className="rounded-xl bg-slate-50 dark:bg-slate-800/40 p-2 border border-slate-200/60 dark:border-slate-800">
+                        <div className="flex items-center justify-between px-1.5 py-1 text-xs font-bold text-slate-900 dark:text-white">
+                          <div className="flex items-center gap-2">
+                            {Icon && <Icon className="w-4 h-4 text-blue-500" />}
+                            <span>{item.label}</span>
+                          </div>
+                          {item.badge && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 font-mono">
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
+                        {item.dropdownCategories ? (
+                          <div className="space-y-2 mt-1.5 pt-1.5 border-t border-slate-200/60 dark:border-slate-800/80">
+                            {item.dropdownCategories.map((cat, cIdx) => (
+                              <div key={cIdx} className="space-y-0.5">
+                                <div className="text-[9px] font-mono font-bold uppercase tracking-wider text-slate-400 px-1.5">
+                                  {cat.name}
+                                </div>
+                                <div className="grid grid-cols-1 gap-0.5">
+                                  {cat.items.map((sub, sIdx) => {
+                                    const SubIcon = sub.icon;
+                                    return (
+                                      <a
+                                        key={sIdx}
+                                        href={sub.href || '#'}
+                                        onClick={(e) => {
+                                          if (sub.onClick) {
+                                            e.preventDefault();
+                                            sub.onClick(e);
+                                          }
+                                          closeMenu();
+                                        }}
+                                        className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 transition-colors"
+                                      >
+                                        {SubIcon && <SubIcon className="w-3.5 h-3.5 text-slate-400" />}
+                                        <span className="truncate">{sub.label}</span>
+                                      </a>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="space-y-0.5 mt-1 pt-1 border-t border-slate-200/60 dark:border-slate-800/80">
+                            {item.dropdownItems?.map((sub, sIdx) => (
+                              <a
+                                key={sIdx}
+                                href={sub.href || '#'}
+                                onClick={(e) => {
+                                  if (sub.onClick) {
+                                    e.preventDefault();
+                                    sub.onClick(e);
+                                  }
+                                  closeMenu();
+                                }}
+                                className="flex items-center justify-between px-2 py-1.5 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 transition-colors"
+                              >
+                                <span>{sub.label}</span>
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
                   return item.href ? (
                     <a
                       key={item.id || idx}
