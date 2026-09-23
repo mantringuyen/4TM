@@ -31,6 +31,8 @@ import {
   ShieldAlert,
   AlignLeft,
   RefreshCw,
+  RotateCcw,
+  ChevronDown,
   Sliders,
   Globe,
   HelpCircle,
@@ -258,12 +260,18 @@ export const Workbench: React.FC<WorkbenchProps> = ({
         return false;
       }
       if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
+        const q = searchQuery.toLowerCase().trim();
         const matchesName = tool.name.toLowerCase().includes(q);
         const matchesTagline =
           tool.tagline.en.toLowerCase().includes(q) || tool.tagline.vi.toLowerCase().includes(q);
+        const matchesDesc =
+          tool.description.en.toLowerCase().includes(q) || tool.description.vi.toLowerCase().includes(q);
         const matchesKw = tool.keywords.some((k) => k.toLowerCase().includes(q));
-        if (!matchesName && !matchesTagline && !matchesKw) return false;
+        const matchesSlug = tool.slug.toLowerCase().includes(q);
+        const matchesCat = tool.category.toLowerCase().includes(q);
+        if (!matchesName && !matchesTagline && !matchesDesc && !matchesKw && !matchesSlug && !matchesCat) {
+          return false;
+        }
       }
       return true;
     });
@@ -274,6 +282,21 @@ export const Workbench: React.FC<WorkbenchProps> = ({
     const presentCats = Array.from(new Set(tools.map((t) => t.category)));
     return desiredOrder.filter((c) => c === 'all' || presentCats.includes(c as ToolCategory));
   }, [tools]);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: tools.length };
+    tools.forEach((t) => {
+      counts[t.category] = (counts[t.category] || 0) + 1;
+    });
+    return counts;
+  }, [tools]);
+
+  const hasActiveFilters = selectedCategory !== 'all' || searchQuery.trim().length > 0;
+
+  const handleClearFilters = () => {
+    setSelectedCategory('all');
+    setSearchQuery('');
+  };
 
   const renderToolWorkspace = () => {
     switch (activeTool.id) {
@@ -475,11 +498,11 @@ export const Workbench: React.FC<WorkbenchProps> = ({
         </p>
       </div>
 
-      {/* Tool Selection Tabs & Search Bar */}
+      {/* Tool Selection & Discovery Filter Area */}
       <div className="space-y-4 mb-8">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 max-w-3xl mx-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 max-w-4xl mx-auto">
           {/* Search Input */}
-          <div className="relative w-full">
+          <div className="relative w-full sm:flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               id="tools-search-input"
@@ -489,8 +512,8 @@ export const Workbench: React.FC<WorkbenchProps> = ({
               onKeyDown={(e) => {
                 if (e.key === 'Escape') setSearchQuery('');
               }}
-              placeholder={dict.hero.searchPlaceholder}
-              className="w-full pl-11 pr-10 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
+              placeholder={dict.filter?.searchPlaceholder || dict.hero.searchPlaceholder}
+              className="w-full pl-11 pr-10 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-xs"
             />
             {searchQuery && (
               <button
@@ -505,48 +528,156 @@ export const Workbench: React.FC<WorkbenchProps> = ({
             )}
           </div>
 
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+          {/* Mobile Category Dropdown (< 640px) */}
+          <div className="relative w-full sm:hidden">
+            <select
+              id="tools-mobile-category-select"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className={`w-full appearance-none pl-3.5 pr-8 py-2.5 rounded-2xl border text-xs font-semibold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                selectedCategory !== 'all'
+                  ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold'
+                  : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300'
+              }`}
+            >
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat === 'all'
+                    ? `${language === 'vi' ? 'Tất cả danh mục' : 'All Categories'} (${categoryCounts.all || 36})`
+                    : `${dict.categories[cat as ToolCategory] || cat} (${categoryCounts[cat] || 0})`}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-slate-400" />
+          </div>
+
+          {/* Desktop Category Filter Pills (>= 640px) */}
+          <div className="hidden sm:flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
             {categories.map((cat) => (
               <button
                 key={cat}
                 type="button"
+                id={`tools-category-pill-${cat}`}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
                   selectedCategory === cat
                     ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
                     : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
                 }`}
               >
-                {cat === 'all' ? (language === 'vi' ? 'Tất cả' : 'All') : dict.categories[cat as ToolCategory] || cat}
+                <span>{cat === 'all' ? (language === 'vi' ? 'Tất cả' : 'All') : dict.categories[cat as ToolCategory] || cat}</span>
+                <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-md ${
+                  selectedCategory === cat
+                    ? 'bg-slate-800 dark:bg-slate-200 text-slate-200 dark:text-slate-800'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                }`}>
+                  {categoryCounts[cat] ?? 0}
+                </span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Quick Tool Selector Grid */}
-        <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-          {filteredTools.map((tool) => (
+        {/* Active Filter Chips & Result Counter Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-2 max-w-4xl mx-auto pt-1 text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Result count */}
+            <span className="font-mono text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+              {filteredTools.length === 1
+                ? dict.filter?.showingToolsCountSingle?.replace('{total}', String(tools.length)) ||
+                  `Showing 1 of ${tools.length} tools`
+                : dict.filter?.showingToolsCount
+                    ?.replace('{count}', String(filteredTools.length))
+                    ?.replace('{total}', String(tools.length)) ||
+                  `Showing ${filteredTools.length} of ${tools.length} tools`}
+            </span>
+
+            {/* Active Category Chip */}
+            {selectedCategory !== 'all' && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-[11px] font-bold border border-emerald-500/20">
+                <span>
+                  {dict.filter?.activeCategory || 'Category'}:{' '}
+                  {dict.categories[selectedCategory as ToolCategory] || selectedCategory}
+                </span>
+                <X
+                  className="w-3 h-3 cursor-pointer hover:text-emerald-800 dark:hover:text-emerald-200"
+                  onClick={() => setSelectedCategory('all')}
+                  aria-label="Remove category filter"
+                />
+              </span>
+            )}
+
+            {/* Active Search Query Chip */}
+            {searchQuery.trim() && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[11px] font-semibold">
+                <span>&quot;{searchQuery}&quot;</span>
+                <X
+                  className="w-3 h-3 cursor-pointer hover:text-slate-900 dark:hover:text-white"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Remove search filter"
+                />
+              </span>
+            )}
+          </div>
+
+          {/* Reset All Filters Button */}
+          {hasActiveFilters && (
             <button
-              key={tool.id}
               type="button"
-              id={`tool-tab-${tool.id}`}
-              onClick={() => handleSelectTool(tool.id)}
-              className={`px-3.5 py-2 rounded-2xl text-xs font-bold inline-flex items-center gap-2 transition-all cursor-pointer ${
-                activeToolId === tool.id
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20 ring-2 ring-emerald-500/40'
-                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
-              }`}
+              id="tools-reset-filters-btn"
+              onClick={handleClearFilters}
+              className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer font-bold text-[11px]"
             >
-              {getToolIcon(tool.id)}
-              <span>{tool.name}</span>
+              <RotateCcw className="w-3 h-3" />
+              <span>{dict.filter?.clearFilters || 'Clear Filters'}</span>
             </button>
-          ))}
+          )}
         </div>
+
+        {/* Quick Tool Selector Grid or Empty State */}
+        {filteredTools.length > 0 ? (
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-2 max-w-5xl mx-auto">
+            {filteredTools.map((tool) => (
+              <button
+                key={tool.id}
+                type="button"
+                id={`tool-tab-${tool.id}`}
+                onClick={() => handleSelectTool(tool.id)}
+                className={`px-3.5 py-2 rounded-2xl text-xs font-bold inline-flex items-center gap-2 transition-all cursor-pointer active:scale-95 ${
+                  activeToolId === tool.id
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20 ring-2 ring-emerald-500/40'
+                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
+                }`}
+              >
+                {getToolIcon(tool.id)}
+                <span>{tool.name}</span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          /* Empty State */
+          <div className="text-center py-10 px-4 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-md mx-auto shadow-xs">
+            <Wrench className="w-9 h-9 text-slate-400 mx-auto mb-3" />
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">
+              {dict.filter?.noToolsFound || 'No tools match your criteria'}
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              {dict.filter?.noToolsFoundDesc || 'Try adjusting your search terms or selecting a different category.'}
+            </p>
+            <button
+              type="button"
+              id="tools-empty-reset-btn"
+              onClick={handleClearFilters}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white cursor-pointer hover:bg-emerald-500 shadow-md shadow-emerald-600/20"
+            >
+              {dict.filter?.clearFilters || 'Clear Filters'}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Active Tool Main Workbench Container */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none text-slate-900 dark:text-white">
+      <div id="active-tool-workbench" className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none text-slate-900 dark:text-white">
         {/* Active Tool Header */}
         <ToolHeader tool={activeTool} language={language} />
 

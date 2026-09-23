@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Terminal, 
   Sparkles, 
@@ -16,26 +16,36 @@ import {
   BarChart3,
   Globe,
   Compass,
-  Play,
-  Check,
   Search,
-  X
+  X,
+  GraduationCap
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
-import { CourseId } from '../types';
-import { CourseBrandIcon } from './CourseBrandIcon';
+import { CourseId, UserProfile } from '../types';
+import { CourseCatalogSection } from './CourseCatalogSection';
 
 interface HomeViewProps {
+  user?: UserProfile;
   onNavigate: (view: string, payload?: any) => void;
   onSelectCourse: (courseId: CourseId) => void;
+  initialSearchQuery?: string;
+  onSearchChange?: (query: string) => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
+  user,
   onNavigate,
   onSelectCourse,
+  initialSearchQuery = '',
+  onSearchChange,
 }) => {
-  const { t, dict, language } = useLanguage();
-  const [heroSearch, setHeroSearch] = useState<string>('');
+  const { dict, language } = useLanguage();
+  const [courseSearch, setCourseSearch] = useState<string>(initialSearchQuery);
+  const coursesRef = useRef<HTMLDivElement>(null);
+
+  const handleHeroStartLearning = () => {
+    coursesRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const structuredPaths = [
     {
@@ -92,9 +102,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
   ];
 
   return (
-    <div className="space-y-16 pb-16 animate-in fade-in">
+    <div className="space-y-20 pb-20 animate-in fade-in">
       
-      {/* Hero Section */}
+      {/* 1. Hero / Short Introduction */}
       <section className="relative overflow-hidden pt-12 sm:pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center space-y-6 max-w-3xl mx-auto">
           
@@ -111,75 +121,21 @@ export const HomeView: React.FC<HomeViewProps> = ({
             {dict.home.heroDescription}
           </p>
 
-          {/* Landing Body Search Input */}
-          <div className="max-w-xl mx-auto w-full pt-2">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
-              <input
-                id="study-home-search-input"
-                type="text"
-                value={heroSearch}
-                onChange={(e) => setHeroSearch(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && heroSearch.trim()) {
-                    onNavigate('courses', { searchQuery: heroSearch.trim() });
-                  }
-                  if (e.key === 'Escape') {
-                    setHeroSearch('');
-                  }
-                }}
-                placeholder={
-                  dict.nav.searchPlaceholder ||
-                  (language === 'vi'
-                    ? 'Tìm bài học, chủ đề (ví dụ: Python, SQL JOIN, Excel)...'
-                    : 'Search lessons, topics (e.g. Python, SQL JOIN, Excel)...')
-                }
-                className="w-full pl-11 pr-24 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs transition-all text-left"
-                aria-label={language === 'vi' ? 'Tìm kiếm bài học và khóa học' : 'Search lessons and courses'}
-              />
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                {heroSearch && (
-                  <button
-                    type="button"
-                    id="study-home-search-clear-btn"
-                    onClick={() => setHeroSearch('')}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
-                    aria-label={language === 'vi' ? 'Xóa tìm kiếm' : 'Clear search'}
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-                <button
-                  type="button"
-                  id="study-home-search-submit-btn"
-                  onClick={() => {
-                    if (heroSearch.trim()) {
-                      onNavigate('courses', { searchQuery: heroSearch.trim() });
-                    } else {
-                      onNavigate('courses');
-                    }
-                  }}
-                  className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
-                >
-                  <Search className="w-3 h-3" />
-                  <span className="hidden sm:inline">{language === 'vi' ? 'Tìm' : 'Search'}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
           {/* CTA Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
             <button
+              type="button"
               id="hero-start-learning-btn"
-              onClick={() => onNavigate('courses')}
+              onClick={handleHeroStartLearning}
               className="px-7 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-sm flex items-center gap-2.5 shadow-xl shadow-blue-600/30 transition-all transform active:scale-95 cursor-pointer"
             >
+              <GraduationCap className="w-4 h-4" />
               <span>{dict.home.startLearning}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
 
             <button
+              type="button"
               id="hero-open-playground-btn"
               onClick={() => onNavigate('playground')}
               className="px-6 py-3.5 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-bold text-sm flex items-center gap-2 shadow-sm transition-colors cursor-pointer"
@@ -189,8 +145,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </button>
           </div>
 
-          {/* 3 Pillars List in Exact Requested Order: 1. Song ngữ (EN/VI), 2. Quy trình học 5 bước, 3. Cơ bản -> Trung cấp -> Nâng cao */}
-          <div className="flex flex-wrap items-center justify-center gap-6 pt-6 text-xs font-mono text-slate-600 dark:text-slate-400">
+          {/* 3 Pillars List: 1. Song ngữ (EN/VI), 2. Quy trình học 5 bước, 3. Cơ bản -> Trung cấp -> Nâng cao */}
+          <div className="flex flex-wrap items-center justify-center gap-6 pt-4 text-xs font-mono text-slate-600 dark:text-slate-400">
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
               {dict.home.bilingualBadge}
@@ -208,9 +164,21 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </section>
 
-      {/* 5-Stage Learning Methodology Showcase */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center space-y-3 mb-12">
+      {/* 2. Courses — Primary Content Discovery Area */}
+      <div ref={coursesRef} id="courses-catalog-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <CourseCatalogSection
+          user={user}
+          onNavigate={onNavigate}
+          onSelectCourse={onSelectCourse}
+          initialSearchQuery={courseSearch}
+          onSearchChange={setCourseSearch}
+          showSectionHeader={true}
+        />
+      </div>
+
+      {/* 3. 5 Steps to Learn — Preserved with Full Bilingual Support */}
+      <section id="methodology-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center space-y-3 mb-10">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0B1E3B] dark:text-white">
             {dict.home.pipelineHeading}
           </h2>
@@ -284,6 +252,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         {/* View Full Learning Process CTA */}
         <div className="mt-6 text-center">
           <button
+            type="button"
             id="home-view-learning-process-btn"
             onClick={() => onNavigate('learning-process')}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-750 text-slate-800 dark:text-slate-200 font-bold text-xs transition-colors cursor-pointer active:scale-95"
@@ -294,6 +263,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </section>
 
+      {/* 4. Remaining Supporting Content */}
       {/* Curated Structured Career Learning Paths */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -307,6 +277,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           <button
+            type="button"
             onClick={() => onNavigate('learning-paths')}
             className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 flex items-center gap-1 self-start sm:self-center cursor-pointer"
           >
@@ -364,6 +335,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
                 <button
+                  type="button"
                   onClick={() => onNavigate('learning-paths', { pathId: path.id })}
                   className={`w-full py-3 px-4 rounded-xl ${path.btnStyle} font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 shadow-md`}
                 >
@@ -398,6 +370,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           <button
+            type="button"
             id="home-view-free-tier-btn"
             onClick={() => onNavigate('free-tier')}
             className="px-5 py-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-200 font-bold text-xs flex items-center gap-2 border border-slate-200 dark:border-slate-700 shrink-0 self-start md:self-center cursor-pointer shadow-sm active:scale-95"

@@ -553,8 +553,11 @@ function AppContent() {
         }>
           {currentView === 'home' && (
             <HomeView
+              user={user}
               onNavigate={handleNavigate}
               onSelectCourse={cId => handleNavigate('course-detail', { courseId: cId })}
+              initialSearchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
             />
           )}
 
