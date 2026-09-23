@@ -30,6 +30,9 @@ export const TRANSLATIONS = {
       noToolsFound: 'No tools match your criteria',
       noToolsFoundDesc: 'Try adjusting your search terms or selecting a different category.',
       activeToolLabel: 'Active Tool',
+      openTool: 'Open Tool',
+      inUse: 'In Use',
+      exploreCatalog: 'Explore All 36 Tools',
     },
     categories: {
       all: 'All Categories',
@@ -125,6 +128,9 @@ export const TRANSLATIONS = {
       noToolsFound: 'Không tìm thấy công cụ phù hợp',
       noToolsFoundDesc: 'Thử thay đổi từ khóa tìm kiếm hoặc chọn danh mục khác.',
       activeToolLabel: 'Công cụ đang chọn',
+      openTool: 'Mở công cụ',
+      inUse: 'Đang mở',
+      exploreCatalog: 'Khám phá tất cả 36 công cụ',
     },
     categories: {
       all: 'Tất Cả Danh Mục',
