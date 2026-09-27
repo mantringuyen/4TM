@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, ExternalLink, ShieldCheck, Zap, Info } from 'lucide-react';
+import { Sparkles, ExternalLink } from 'lucide-react';
 import {
-  shouldDisplayAds,
   fetchSystemSettings,
   subscribeSystemSettings,
   getLocalCachedSettings,
@@ -10,9 +9,15 @@ import {
 import {
   AdSlotProps,
   DEFAULT_CAMPAIGNS,
-  SponsoredCampaign,
   BOTTOM_AD_DIMENSIONS,
 } from './AdConfig';
+import {
+  DEFAULT_ADSENSE_CLIENT_ID,
+  evaluateAdEligibility,
+  shouldLoadAdSenseScript,
+  ensureAdSenseScriptLoaded,
+  removeAdSenseScript,
+} from './AdEligibility';
 import { useAds } from './AdProvider';
 
 export const AdSlot: React.FC<AdSlotProps> = ({
@@ -23,21 +28,66 @@ export const AdSlot: React.FC<AdSlotProps> = ({
   adSlotId,
   adFormat = 'auto',
   showDevPlaceholder = false,
+  view,
+  isLoading = false,
+  isAuthChecking = false,
+  isSsoProcessing = false,
+  isError = false,
+  isEmptyResult = false,
+  isModalOpen = false,
+  isValidRoute = true,
+  isContentReady = true,
 }) => {
   // Optional AdProvider context
   const adContext = useAds();
-  
+
   const [localSettings, setLocalSettings] = useState<SystemSettingsState>(() => getLocalCachedSettings());
+  const [isSettingsSynced, setIsSettingsSynced] = useState<boolean>(() => !supabaseClient);
   const [activeCampaignIndex, setActiveCampaignIndex] = useState(0);
+  const [hasMounted, setHasMounted] = useState(false);
+  const [, setLocationTick] = useState(0);
+
+  useEffect(() => {
+    setHasMounted(true);
+    if (typeof window === 'undefined') return;
+
+    const syncLocation = () => {
+      setLocationTick((t) => t + 1);
+    };
+
+    window.addEventListener('popstate', syncLocation);
+    window.addEventListener('hashchange', syncLocation);
+    return () => {
+      window.removeEventListener('popstate', syncLocation);
+      window.removeEventListener('hashchange', syncLocation);
+    };
+  }, []);
 
   // Synchronize settings if outside provider or if supabase client is explicitly passed
   useEffect(() => {
+    let active = true;
     if (supabaseClient) {
-      fetchSystemSettings(supabaseClient).then((s) => setLocalSettings(s));
+      fetchSystemSettings(supabaseClient)
+        .then((s) => {
+          if (active) {
+            setLocalSettings(s);
+            setIsSettingsSynced(true);
+          }
+        })
+        .catch(() => {
+          if (active) setIsSettingsSynced(true);
+        });
+    } else {
+      setIsSettingsSynced(true);
     }
 
-    const unsubscribe = subscribeSystemSettings((s) => setLocalSettings(s));
-    return () => unsubscribe();
+    const unsubscribe = subscribeSystemSettings((s) => {
+      if (active) setLocalSettings(s);
+    });
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [supabaseClient]);
 
   // Merge active settings
@@ -53,19 +103,107 @@ export const AdSlot: React.FC<AdSlotProps> = ({
     }
   }, [product]);
 
-  // Check display criteria (User Ad-Free, Global Switch, Product Switch, Provider Type)
-  const isVisible = adContext
-    ? adContext.shouldShowAds(product, user)
-    : shouldDisplayAds(product, user, settings);
+  const currentPathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const currentSearch = typeof window !== 'undefined' ? window.location.search : '';
+  const currentHash = typeof window !== 'undefined' ? window.location.hash : '';
+
+  const eligibilityContext = {
+    product,
+    user,
+    settings,
+    pathname: currentPathname,
+    search: currentSearch,
+    hash: currentHash,
+    view,
+    isLoading,
+    isAuthChecking,
+    isSsoProcessing,
+    isError,
+    isEmptyResult,
+    isModalOpen,
+    isValidRoute,
+    isContentReady: hasMounted && isSettingsSynced && isContentReady,
+  };
+
+  const eligibility = evaluateAdEligibility(eligibilityContext);
+  const providerAllowed = adContext ? adContext.shouldShowAds(product, user) : true;
+  const isVisible = eligibility.eligible && providerAllowed;
+
+  const isAdSenseMode = settings.ad_provider?.type === 'adsense';
+  const rawNetwork = adContext?.adsenseClientId || settings.ad_provider?.network || '';
+  const adsenseClient = rawNetwork.startsWith('ca-pub-')
+    ? rawNetwork
+    : isAdSenseMode
+    ? DEFAULT_ADSENSE_CLIENT_ID
+    : '';
+  const slotIdentifier = adSlotId || settings.ad_provider?.slotId || '';
+
+  // Conditionally load Google AdSense script ONLY when screen eligibility has settled and provider is adsense.
+  // If screen becomes ineligible (loading/error/auth/empty/modal/private), cancel pending load and remove script.
+  useEffect(() => {
+    const canLoadAdSense =
+      isVisible &&
+      isAdSenseMode &&
+      Boolean(adsenseClient) &&
+      Boolean(slotIdentifier) &&
+      shouldLoadAdSenseScript(eligibilityContext);
+
+    if (!canLoadAdSense) {
+      removeAdSenseScript();
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const latestContext = {
+        ...eligibilityContext,
+        pathname: typeof window !== 'undefined' ? window.location.pathname : currentPathname,
+        search: typeof window !== 'undefined' ? window.location.search : currentSearch,
+        hash: typeof window !== 'undefined' ? window.location.hash : currentHash,
+      };
+      if (!shouldLoadAdSenseScript(latestContext)) {
+        removeAdSenseScript();
+        return;
+      }
+      ensureAdSenseScriptLoaded(adsenseClient, latestContext).then((loaded) => {
+        if (!loaded) return;
+        try {
+          const w = window as any;
+          w.adsbygoogle = w.adsbygoogle || [];
+          w.adsbygoogle.push({});
+        } catch {
+          // Ignore duplicate push on re-render
+        }
+      });
+    }, 50);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [
+    isVisible,
+    isAdSenseMode,
+    adsenseClient,
+    slotIdentifier,
+    currentPathname,
+    currentSearch,
+    currentHash,
+    view,
+    isLoading,
+    isAuthChecking,
+    isSsoProcessing,
+    isError,
+    isEmptyResult,
+    isModalOpen,
+    isValidRoute,
+    isContentReady,
+    isSettingsSynced,
+  ]);
 
   if (!isVisible) {
     return null;
   }
 
   const campaign = DEFAULT_CAMPAIGNS[activeCampaignIndex] || DEFAULT_CAMPAIGNS[0];
-  const isAdSenseMode = settings.ad_provider?.type === 'adsense';
-  const adsenseClient = adContext?.adsenseClientId || settings.ad_provider?.network || '';
-  const slotIdentifier = adSlotId || settings.ad_provider?.slotId || '';
 
   return (
     <aside

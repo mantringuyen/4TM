@@ -30,6 +30,7 @@ interface HomeViewProps {
   onSelectCourse: (courseId: CourseId) => void;
   initialSearchQuery?: string;
   onSearchChange?: (query: string) => void;
+  onResultCountChange?: (count: number) => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
@@ -38,6 +39,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onSelectCourse,
   initialSearchQuery = '',
   onSearchChange,
+  onResultCountChange,
 }) => {
   const { dict, language } = useLanguage();
   const [courseSearch, setCourseSearch] = useState<string>(initialSearchQuery);
@@ -172,6 +174,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           onSelectCourse={onSelectCourse}
           initialSearchQuery={courseSearch}
           onSearchChange={setCourseSearch}
+          onResultCountChange={onResultCountChange}
           showSectionHeader={true}
         />
       </div>

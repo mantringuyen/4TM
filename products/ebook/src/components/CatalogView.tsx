@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Book, BookMetadata, Category, Subject, Language } from '../types';
 import { DOMAINS, TOPICS } from '../data/ebooks';
 import { TRANSLATIONS } from '../i18n/translations';
@@ -20,6 +20,7 @@ export interface CatalogViewProps {
   onSelectBook: (book: Book | BookMetadata) => void;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
+  onResultCountChange?: (count: number) => void;
 }
 
 export const CatalogView: React.FC<CatalogViewProps> = ({
@@ -28,6 +29,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   onSelectBook,
   searchQuery: propSearchQuery,
   onSearchChange,
+  onResultCountChange,
 }) => {
   const dict = TRANSLATIONS[language];
 
@@ -108,6 +110,10 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
       return true;
     });
   }, [books, selectedTopic, selectedDomain, selectedBookType, selectedLevel, searchQuery]);
+
+  useEffect(() => {
+    onResultCountChange?.(filteredBooks.length);
+  }, [filteredBooks.length, onResultCountChange]);
 
   const handleResetFilters = () => {
     setSelectedTopic('all');

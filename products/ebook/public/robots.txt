@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /sso
+Disallow: /auth
 Disallow: /api/
 
 Sitemap: https://ebook.4tm.io.vn/sitemap.xml

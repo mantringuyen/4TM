@@ -23,6 +23,15 @@ export interface AdSlotProps {
   adSlotId?: string;
   adFormat?: 'auto' | 'horizontal' | 'rectangle';
   showDevPlaceholder?: boolean;
+  view?: string;
+  isLoading?: boolean;
+  isAuthChecking?: boolean;
+  isSsoProcessing?: boolean;
+  isError?: boolean;
+  isEmptyResult?: boolean;
+  isModalOpen?: boolean;
+  isValidRoute?: boolean;
+  isContentReady?: boolean;
 }
 
 export interface AdSystemConfig {

@@ -38,7 +38,7 @@ export const DEFAULT_SYSTEM_SETTINGS: SystemSettingsState = {
     tools: true,
     games: true,
     apps: true,
-    root: true,
+    root: false,
   },
   ad_provider: {
     type: 'partner_banner',

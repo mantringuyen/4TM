@@ -30,7 +30,7 @@ const requiredSlugs = [
   'text-case-converter',
   'sql-formatter',
   'encoder-decoder',
-  'css-generator',
+  'css-layout-generator',
   'qr-generator',
 ];
 

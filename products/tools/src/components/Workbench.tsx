@@ -176,6 +176,27 @@ export interface WorkbenchProps {
   language: Language;
   searchQuery?: string;
   onSearchChange?: (q: string) => void;
+  onResultCountChange?: (count: number) => void;
+  onRouteValidityChange?: (isValid: boolean) => void;
+  onWorkspaceLoadingChange?: (isLoading: boolean) => void;
+}
+
+function WorkspaceSuspenseFallback({
+  onLoadingChange,
+}: {
+  onLoadingChange?: (isLoading: boolean) => void;
+}) {
+  useEffect(() => {
+    onLoadingChange?.(true);
+    return () => onLoadingChange?.(false);
+  }, [onLoadingChange]);
+
+  return (
+    <div className="p-12 flex flex-col items-center justify-center gap-3 text-slate-400">
+      <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+      <span className="text-xs font-mono">Loading workspace...</span>
+    </div>
+  );
 }
 
 export const Workbench: React.FC<WorkbenchProps> = ({
@@ -183,39 +204,65 @@ export const Workbench: React.FC<WorkbenchProps> = ({
   language,
   searchQuery: propSearchQuery,
   onSearchChange,
+  onResultCountChange,
+  onRouteValidityChange,
+  onWorkspaceLoadingChange,
 }) => {
   const dict = TRANSLATIONS[language];
 
-  // Initialize tool based on current URL path using slug (handles /slug, /tools/slug, etc.)
-  const getToolIdFromUrl = (): ToolId => {
+  // Resolve tool and route validity based on current URL path using slug (handles /, /slug, /tools/slug)
+  const LEGACY_TOOL_ALIASES: Record<string, ToolId> = {
+    'css-generator': 'css-layout-generator',
+    jwt: 'jwt-debugger',
+    hasher: 'crypto-hasher',
+    uuid: 'uuid-generator',
+    timestamp: 'unix-timestamp',
+  };
+
+  const resolveToolRoute = (): { toolId: ToolId; isValidRoute: boolean } => {
     if (typeof window !== 'undefined') {
       const cleanPath = window.location.pathname.replace(/^\/+|\/+$/g, '');
-      if (cleanPath) {
-        const segments = cleanPath.split('/');
+      if (!cleanPath || cleanPath === 'index.html' || cleanPath === 'tools') {
+        return { toolId: 'excel-formula-explainer', isValidRoute: true };
+      }
+      const segments = cleanPath.split('/');
+      if (segments.length === 1 || (segments.length === 2 && segments[0] === 'tools')) {
         const candidate = segments[segments.length - 1];
+        const normalizedCandidate = LEGACY_TOOL_ALIASES[candidate] || candidate;
         const matched = tools.find(
           (t) =>
-            t.slug === candidate ||
-            t.id === candidate ||
+            t.slug === normalizedCandidate ||
+            t.id === normalizedCandidate ||
             t.slug === cleanPath ||
             t.id === cleanPath
         );
-        if (matched) return matched.id;
+        if (matched) {
+          return { toolId: matched.id, isValidRoute: true };
+        }
       }
+      return { toolId: 'excel-formula-explainer', isValidRoute: false };
     }
-    return 'excel-formula-explainer';
+    return { toolId: 'excel-formula-explainer', isValidRoute: true };
   };
 
-  const [activeToolId, setActiveToolId] = useState<ToolId>(getToolIdFromUrl);
+  const initialResolved = resolveToolRoute();
+  const [activeToolId, setActiveToolId] = useState<ToolId>(initialResolved.toolId);
+  const [isValidRoute, setIsValidRoute] = useState<boolean>(initialResolved.isValidRoute);
   const [internalSearchQuery, setInternalSearchQuery] = useState('');
   const searchQuery = propSearchQuery !== undefined ? propSearchQuery : internalSearchQuery;
   const setSearchQuery = onSearchChange || setInternalSearchQuery;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
+  useEffect(() => {
+    onRouteValidityChange?.(isValidRoute);
+  }, [isValidRoute, onRouteValidityChange]);
+
   // Handle browser back / forward navigation
   useEffect(() => {
     const handlePopState = () => {
-      setActiveToolId(getToolIdFromUrl());
+      const resolved = resolveToolRoute();
+      setActiveToolId(resolved.toolId);
+      setIsValidRoute(resolved.isValidRoute);
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -227,10 +274,15 @@ export const Workbench: React.FC<WorkbenchProps> = ({
 
   // Sync document title, meta description, canonical URL, and JSON-LD for SEO
   useSEO({
-    title: activeTool ? `${activeTool.seoTitle[language]} | 4TM Tools` : '4TM Tools — Technical Utilities & Developer Tooling Suite',
+    title: !isValidRoute
+      ? '404 — Tool Not Found | 4TM Tools'
+      : activeTool
+      ? `${activeTool.seoTitle[language]} | 4TM Tools`
+      : '4TM Tools — Technical Utilities & Developer Tooling Suite',
     description: activeTool ? activeTool.description[language] : 'Technical Utilities & Developer Tooling Suite — 36 in-browser developer tools.',
-    canonicalUrl: activeTool ? `https://tools.4tm.io.vn/${activeTool.slug}` : 'https://tools.4tm.io.vn/',
+    canonicalUrl: activeTool && isValidRoute ? `https://tools.4tm.io.vn/${activeTool.slug}` : 'https://tools.4tm.io.vn/',
     language,
+    noindex: !isValidRoute,
     jsonLd: activeTool
       ? [
           SchemaGenerators.softwareApplication({
@@ -249,6 +301,7 @@ export const Workbench: React.FC<WorkbenchProps> = ({
 
   const handleSelectTool = (id: ToolId) => {
     setActiveToolId(id);
+    setIsValidRoute(true);
     const targetTool = tools.find((t) => t.id === id);
     if (targetTool && typeof window !== 'undefined') {
       const isPrefixed = window.location.pathname.startsWith('/tools');
@@ -281,6 +334,10 @@ export const Workbench: React.FC<WorkbenchProps> = ({
       return true;
     });
   }, [tools, selectedCategory, searchQuery]);
+
+  useEffect(() => {
+    onResultCountChange?.(filteredTools.length);
+  }, [filteredTools.length, onResultCountChange]);
 
   const categories = useMemo(() => {
     const desiredOrder = ['all', 'excel', 'powerbi', 'sql', 'python', 'ai', 'developer', 'web'];
@@ -775,10 +832,7 @@ export const Workbench: React.FC<WorkbenchProps> = ({
         <div className="mt-6">
           <Suspense
             fallback={
-              <div className="p-12 flex flex-col items-center justify-center gap-3 text-slate-400">
-                <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
-                <span className="text-xs font-mono">Loading workspace...</span>
-              </div>
+              <WorkspaceSuspenseFallback onLoadingChange={onWorkspaceLoadingChange} />
             }
           >
             {renderToolWorkspace()}

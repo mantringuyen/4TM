@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Search,
   X,
@@ -22,6 +22,7 @@ export interface CourseCatalogSectionProps {
   onSelectCourse?: (courseId: CourseId) => void;
   initialSearchQuery?: string;
   onSearchChange?: (query: string) => void;
+  onResultCountChange?: (count: number) => void;
   headingText?: string;
   subheadingText?: string;
   showSectionHeader?: boolean;
@@ -33,6 +34,7 @@ export const CourseCatalogSection: React.FC<CourseCatalogSectionProps> = ({
   onSelectCourse,
   initialSearchQuery = '',
   onSearchChange,
+  onResultCountChange,
   headingText,
   subheadingText,
   showSectionHeader = true,
@@ -150,6 +152,10 @@ export const CourseCatalogSection: React.FC<CourseCatalogSectionProps> = ({
         return true;
       });
   }, [selectedDomain, selectedLevel, searchQuery, language]);
+
+  useEffect(() => {
+    onResultCountChange?.(filteredCourses.length);
+  }, [filteredCourses.length, onResultCountChange]);
 
   const hasActiveFilters = useMemo(() => {
     return selectedDomain !== 'all' || selectedLevel !== 'all' || searchQuery.trim().length > 0;

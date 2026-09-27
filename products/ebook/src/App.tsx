@@ -32,13 +32,14 @@ function parseLocationHash(hash: string): {
   view: 'catalog' | 'detail' | 'reader';
   bookSlug?: string;
   chapterIndex?: number;
+  isValidHash: boolean;
 } {
   if (!hash || hash.includes('ticket=')) {
-    return { view: 'catalog' };
+    return { view: 'catalog', isValidHash: !hash.includes('ticket=') };
   }
   const clean = hash.replace(/^#\/?/, '').trim();
   if (!clean || clean === 'catalog') {
-    return { view: 'catalog' };
+    return { view: 'catalog', isValidHash: true };
   }
 
   const readerMatch = clean.match(/^book\/([^/]+)\/ch\/(\d+)$/i);
@@ -47,6 +48,7 @@ function parseLocationHash(hash: string): {
       view: 'reader',
       bookSlug: decodeURIComponent(readerMatch[1]),
       chapterIndex: parseInt(readerMatch[2], 10),
+      isValidHash: true,
     };
   }
 
@@ -55,10 +57,50 @@ function parseLocationHash(hash: string): {
     return {
       view: 'detail',
       bookSlug: decodeURIComponent(detailMatch[1]),
+      isValidHash: true,
     };
   }
 
-  return { view: 'catalog' };
+  return { view: 'catalog', isValidHash: false };
+}
+
+function resolveInitialEbookRoute() {
+  if (typeof window === 'undefined') {
+    return {
+      view: 'catalog' as const,
+      book: null as Book | BookMetadata | null,
+      chapterIndex: 0,
+      isValidHash: true,
+    };
+  }
+  const parsed = parseLocationHash(window.location.hash || '');
+  if ((parsed.view === 'detail' || parsed.view === 'reader') && parsed.bookSlug) {
+    const canonicalSlug = LEGACY_SLUG_ALIASES[parsed.bookSlug] || parsed.bookSlug;
+    const foundBook = EBOOKS.find((b) => b.slug === canonicalSlug || b.id === canonicalSlug) || null;
+    if (foundBook) {
+      const cached = getCachedBookContent(canonicalSlug);
+      const rawCh = typeof parsed.chapterIndex === 'number' && !isNaN(parsed.chapterIndex) ? parsed.chapterIndex : 0;
+      const validCh = Math.max(0, Math.min(rawCh, foundBook.chapters.length - 1));
+      return {
+        view: parsed.view,
+        book: cached || foundBook,
+        chapterIndex: validCh,
+        isValidHash: true,
+      };
+    }
+    return {
+      view: 'catalog' as const,
+      book: null,
+      chapterIndex: 0,
+      isValidHash: false,
+    };
+  }
+  return {
+    view: 'catalog' as const,
+    book: null,
+    chapterIndex: 0,
+    isValidHash: parsed.isValidHash,
+  };
 }
 
 // Helper: Safely update window hash / history
@@ -81,11 +123,13 @@ export function App() {
     return 'en';
   });
 
-  const [activeView, setActiveView] = useState<'catalog' | 'detail' | 'reader'>('catalog');
-  const [selectedBook, setSelectedBook] = useState<Book | BookMetadata | null>(null);
+  const initialRoute = resolveInitialEbookRoute();
+  const [activeView, setActiveView] = useState<'catalog' | 'detail' | 'reader'>(initialRoute.view);
+  const [selectedBook, setSelectedBook] = useState<Book | BookMetadata | null>(initialRoute.book);
   const [isLoadingBookContent, setIsLoadingBookContent] = useState<boolean>(false);
   const [bookContentLoadError, setBookContentLoadError] = useState<boolean>(false);
-  const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
+  const [currentChapterIndex, setCurrentChapterIndex] = useState(initialRoute.chapterIndex);
+  const [isValidHashRoute, setIsValidHashRoute] = useState<boolean>(initialRoute.isValidHash);
 
   // Bookmarks state
   const [bookmarks, setBookmarks] = useState<string[]>(() => {
@@ -115,6 +159,17 @@ export function App() {
 
   const [user, setUser] = useState<User | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [ssoProcessing, setSsoProcessing] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return (window.location.hash || '').includes('ticket=') || (window.location.search || '').includes('ticket=');
+  });
+  const [isCatalogEmpty, setIsCatalogEmpty] = useState(false);
+
+  const currentPathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const isValidPathname =
+    currentPathname === '/' ||
+    currentPathname === '' ||
+    currentPathname === '/index.html';
 
   // Dynamic SEO Synchronization
   const isBookView = (activeView === 'detail' || activeView === 'reader') && !!selectedBook;
@@ -139,6 +194,7 @@ export function App() {
     description: pageDescription,
     canonicalUrl,
     language,
+    noindex: !isValidPathname || activeView === 'reader',
     jsonLd: isBookView && selectedBook
       ? [
           SchemaGenerators.book({
@@ -210,6 +266,7 @@ export function App() {
       setSelectedBook(null);
       setIsLoadingBookContent(false);
       setBookContentLoadError(false);
+      setIsValidHashRoute(parsed.isValidHash);
     } else if (parsed.view === 'detail' && parsed.bookSlug) {
       const rawSlug = parsed.bookSlug;
       const canonicalSlug = LEGACY_SLUG_ALIASES[rawSlug] || rawSlug;
@@ -222,6 +279,7 @@ export function App() {
         setActiveView('detail');
         setIsLoadingBookContent(false);
         setBookContentLoadError(false);
+        setIsValidHashRoute(true);
         if (rawSlug !== canonicalSlug) {
           setHashUrl(`#/book/${canonicalSlug}`, true);
         }
@@ -229,6 +287,7 @@ export function App() {
         // Fallback to catalog if book not found
         setActiveView('catalog');
         setSelectedBook(null);
+        setIsValidHashRoute(false);
         setHashUrl('#/catalog', true);
       }
     } else if (parsed.view === 'reader' && parsed.bookSlug) {
@@ -244,6 +303,7 @@ export function App() {
         setSelectedBook(cached || foundBook);
         setCurrentChapterIndex(validCh);
         setActiveView('reader');
+        setIsValidHashRoute(true);
         fetchBookContent(canonicalSlug);
         if (rawSlug !== canonicalSlug) {
           setHashUrl(`#/book/${canonicalSlug}/ch/${validCh}`, true);
@@ -252,6 +312,7 @@ export function App() {
         // Fallback to catalog if book not found
         setActiveView('catalog');
         setSelectedBook(null);
+        setIsValidHashRoute(false);
         setHashUrl('#/catalog', true);
       }
     }
@@ -303,6 +364,7 @@ export function App() {
       const hash = window.location.hash || '';
       const search = window.location.search || '';
       if (hash.includes('ticket=') || search.includes('ticket=')) {
+        setSsoProcessing(true);
         processSsoCallback({
           supabaseClient: supabase,
         })
@@ -313,6 +375,9 @@ export function App() {
           })
           .catch((err) => {
             console.warn('SSO callback processing error:', err);
+          })
+          .finally(() => {
+            setSsoProcessing(false);
           });
       }
     }
@@ -328,6 +393,7 @@ export function App() {
   const handleSelectBook = (book: Book | BookMetadata) => {
     setSelectedBook(book);
     setActiveView('detail');
+    setIsValidHashRoute(true);
     setHashUrl(`#/book/${book.slug}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -415,6 +481,7 @@ export function App() {
               onSelectBook={handleSelectBook}
               searchQuery={searchQuery}
               onSearchChange={handleSearchChange}
+              onResultCountChange={(count) => setIsCatalogEmpty(count === 0)}
             />
           )}
 
@@ -462,7 +529,19 @@ export function App() {
         </div>
 
         {/* Footer (hidden in reader mode) */}
-        {activeView !== 'reader' && <AdSlot product="ebook" user={user} supabaseClient={supabase} />}
+        {activeView !== 'reader' && (
+          <AdSlot
+            product="ebook"
+            user={user}
+            supabaseClient={supabase}
+            view={activeView}
+            isLoading={isLoadingBookContent}
+            isError={bookContentLoadError}
+            isSsoProcessing={ssoProcessing}
+            isEmptyResult={activeView === 'catalog' && isCatalogEmpty}
+            isValidRoute={isValidPathname && isValidHashRoute && (activeView === 'catalog' || (activeView === 'detail' && !!selectedBook))}
+          />
+        )}
         {activeView !== 'reader' && <Footer language={language} />}
       </div>
     </ThemeProvider>

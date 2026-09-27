@@ -45,6 +45,8 @@ interface LessonViewProps {
   onUpdateProgress: (lessonId: string, stage: 'learn' | 'exercises' | 'challenge' | 'quiz' | 'project', payload?: any) => void;
   onToggleBookmark: (lessonId: string, title: string, courseId: CourseId, levelId: LevelId) => void;
   onSaveNote: (lessonId: string, noteContent: string) => void;
+  onContentReadyChange?: (ready: boolean) => void;
+  onErrorChange?: (hasError: boolean) => void;
 }
 
 export const LessonView: React.FC<LessonViewProps> = ({
@@ -57,6 +59,8 @@ export const LessonView: React.FC<LessonViewProps> = ({
   onUpdateProgress,
   onToggleBookmark,
   onSaveNote,
+  onContentReadyChange,
+  onErrorChange,
 }) => {
   const { t, dict, language } = useLanguage();
   const { lesson: initialLessonStub, module, course } = getLessonById(courseId, levelId, lessonId);
@@ -67,9 +71,11 @@ export const LessonView: React.FC<LessonViewProps> = ({
     return initialLessonStub && initialLessonStub.learn ? initialLessonStub : null;
   });
   const [isLoadingLesson, setIsLoadingLesson] = useState<boolean>(!fullLesson);
+  const [lessonLoadError, setLessonLoadError] = useState<boolean>(false);
 
   useEffect(() => {
     let isMounted = true;
+    setLessonLoadError(false);
     if (!fullLesson || fullLesson.id !== lessonId) {
       setIsLoadingLesson(true);
       loadLessonDetails(courseId, levelId, lessonId)
@@ -77,13 +83,19 @@ export const LessonView: React.FC<LessonViewProps> = ({
           if (isMounted) {
             if (loaded) {
               setFullLesson(loaded);
+              setLessonLoadError(false);
+            } else if (!initialLessonStub?.learn) {
+              setLessonLoadError(true);
             }
             setIsLoadingLesson(false);
           }
         })
         .catch(err => {
           console.error("Failed to load lesson:", err);
-          if (isMounted) setIsLoadingLesson(false);
+          if (isMounted) {
+            setLessonLoadError(true);
+            setIsLoadingLesson(false);
+          }
         });
     }
     return () => {
@@ -92,6 +104,17 @@ export const LessonView: React.FC<LessonViewProps> = ({
   }, [courseId, levelId, lessonId]);
 
   const lesson = fullLesson || initialLessonStub;
+  const isLessonNotFound = !lesson || !course || !currentLevel;
+  const isLessonContentReady = Boolean(!isLoadingLesson && !lessonLoadError && !isLessonNotFound && lesson?.learn);
+
+  useEffect(() => {
+    onContentReadyChange?.(isLessonContentReady);
+    onErrorChange?.(lessonLoadError || isLessonNotFound);
+    return () => {
+      onContentReadyChange?.(false);
+      onErrorChange?.(false);
+    };
+  }, [isLessonContentReady, lessonLoadError, isLessonNotFound, onContentReadyChange, onErrorChange]);
 
   // Compute latest incomplete stage for resuming
   const computeResumeStage = (targetLessonId: string): 'learn' | 'exercises' | 'challenge' | 'quiz' | 'project' => {

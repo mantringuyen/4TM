@@ -24,13 +24,29 @@ import { useLanguage } from './i18n/LanguageContext';
 import { issueSsoTicket } from './services/ssoIssuer';
 import type { User, Session } from '@supabase/supabase-js';
 
+const SSO_PENDING_PEER_REQUEST_KEY = '4tm_sso_pending_peer_request';
+
 const RootContent: React.FC<{
   user: User | null;
   onOpenAuthModal: () => void;
   onSignOut: () => void;
   isSigningOut: boolean;
   ssoNotice: string | null;
-}> = ({ user, onOpenAuthModal, onSignOut, isSigningOut, ssoNotice }) => {
+  ssoProcessing: boolean;
+  isAuthModalOpen: boolean;
+  isValidRoute: boolean;
+  isAuthOrSsoRoute: boolean;
+}> = ({
+  user,
+  onOpenAuthModal,
+  onSignOut,
+  isSigningOut,
+  ssoNotice,
+  ssoProcessing,
+  isAuthModalOpen,
+  isValidRoute,
+  isAuthOrSsoRoute,
+}) => {
   const { language } = useLanguage();
 
   useSEO({
@@ -44,6 +60,7 @@ const RootContent: React.FC<{
         : 'Official 4TM Ecosystem Homepage connecting Interactive Programming LMS (Study), Engineering Ebooks, Developer Utilities (Tools), Web Applications (Apps), and CS Games.',
     canonicalUrl: 'https://4tm.io.vn/',
     language,
+    noindex: !isValidRoute || isAuthOrSsoRoute,
     jsonLd: [
       SchemaGenerators.organization(),
       SchemaGenerators.website(
@@ -73,7 +90,14 @@ const RootContent: React.FC<{
         <WhySection />
         <SynergySection />
       </main>
-      <AdSlot product="root" user={user} supabaseClient={supabase} />
+      <AdSlot
+        product="root"
+        user={user}
+        supabaseClient={supabase}
+        isSsoProcessing={ssoProcessing}
+        isModalOpen={isAuthModalOpen}
+        isValidRoute={isValidRoute && !isAuthOrSsoRoute}
+      />
       <Footer />
     </div>
   );
@@ -86,6 +110,41 @@ export const App: React.FC = () => {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [ssoProcessing, setSsoProcessing] = useState(false);
   const [ssoNotice, setSsoNotice] = useState<string | null>(null);
+
+  const currentPathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const isAuthOrSsoRoute =
+    currentPathname === '/sso' ||
+    currentPathname.startsWith('/sso/') ||
+    currentPathname === '/auth' ||
+    currentPathname.startsWith('/auth/');
+  const isValidRoute =
+    currentPathname === '/' ||
+    currentPathname === '' ||
+    currentPathname === '/index.html';
+
+  // Helper to complete a pending peer SSO request (/auth?target_origin=...&state=...) once authenticated
+  const fulfillPendingPeerSso = async (
+    targetOrigin: string,
+    state: string,
+    redirectPath = ''
+  ) => {
+    if (!isValidSsoTargetOrigin(targetOrigin) || !state) return false;
+    setSsoProcessing(true);
+    setSsoNotice(`Routing to ${targetOrigin}...`);
+    const issueRes = await issueSsoTicket({
+      supabaseClient: supabase,
+      targetOrigin,
+      state,
+      redirectPath,
+    });
+    if (issueRes.success && issueRes.redirectUrl) {
+      window.location.replace(issueRes.redirectUrl);
+      return true;
+    }
+    setSsoProcessing(false);
+    setSsoNotice(null);
+    return false;
+  };
 
   // 1. Root Supabase session lifecycle
   useEffect(() => {
@@ -103,6 +162,21 @@ export const App: React.FC = () => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+
+      if (session?.user && typeof window !== 'undefined' && window.sessionStorage) {
+        const rawPending = window.sessionStorage.getItem(SSO_PENDING_PEER_REQUEST_KEY);
+        if (rawPending) {
+          window.sessionStorage.removeItem(SSO_PENDING_PEER_REQUEST_KEY);
+          try {
+            const parsed = JSON.parse(rawPending);
+            if (parsed?.targetOrigin && parsed?.state) {
+              fulfillPendingPeerSso(parsed.targetOrigin, parsed.state, parsed.redirectPath || '');
+            }
+          } catch {
+            // Ignore malformed sessionStorage payload
+          }
+        }
+      }
     });
 
     return () => {
@@ -110,21 +184,23 @@ export const App: React.FC = () => {
     };
   }, []);
 
-  // 2. Handle SP-initiated SSO incoming request /sso?from=... and callback fragments
+  // 2. Handle SP-initiated SSO incoming request (/sso or /auth) and callback fragments
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const pathname = window.location.pathname;
     const search = window.location.search || '';
     const hash = window.location.hash || '';
+    const searchParams = new URLSearchParams(search.startsWith('?') ? search.substring(1) : search);
+    const hashParams = new URLSearchParams(hash.startsWith('#') ? hash.substring(1) : hash);
 
     // A. SP-Initiated Handshake Entry: Root creates state nonce and redirects to peer
-    if (pathname === '/sso' || search.includes('from=')) {
-      const searchParams = new URLSearchParams(search.startsWith('?') ? search.substring(1) : search);
+    if (pathname === '/sso' || pathname === '/auth' || search.includes('from=')) {
       const fromPeer = searchParams.get('from');
       const downstreamTarget = searchParams.get('target_origin');
 
       if (fromPeer === 'study') {
+        setSsoProcessing(true);
         const rootState = generateSsoState();
         if (window.sessionStorage) {
           window.sessionStorage.setItem(SSO_STATE_STORAGE_KEY, rootState);
@@ -140,11 +216,59 @@ export const App: React.FC = () => {
         window.location.replace(redirectUrl);
         return;
       }
+
+      // Direct peer SSO auth request: /auth?target_origin=...&state=... (without ticket callback)
+      const peerTargetOrigin = searchParams.get('target_origin');
+      const peerState = searchParams.get('state');
+      const peerRedirectPath = searchParams.get('redirect_path') || '';
+
+      if (
+        !hash.includes('ticket=') &&
+        !search.includes('ticket=') &&
+        peerTargetOrigin &&
+        peerState &&
+        isValidSsoTargetOrigin(peerTargetOrigin)
+      ) {
+        setSsoProcessing(true);
+        // Clean query parameters from address bar while handling SSO
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState({}, document.title, '/');
+        }
+
+        if (supabase) {
+          supabase.auth.getSession().then(async ({ data: { session: activeSess } }) => {
+            if (activeSess?.user) {
+              await fulfillPendingPeerSso(peerTargetOrigin, peerState, peerRedirectPath);
+            } else {
+              if (window.sessionStorage) {
+                window.sessionStorage.setItem(
+                  SSO_PENDING_PEER_REQUEST_KEY,
+                  JSON.stringify({
+                    targetOrigin: peerTargetOrigin,
+                    state: peerState,
+                    redirectPath: peerRedirectPath,
+                  })
+                );
+              }
+              setSsoProcessing(false);
+              setIsAuthModalOpen(true);
+            }
+          });
+        } else {
+          setSsoProcessing(false);
+          setIsAuthModalOpen(true);
+        }
+        return;
+      }
     }
 
-    // B. SSO Callback Handoff (Return from Study or external IdP with ticket)
+    // B. SSO Callback Handoff (Return from Study or external IdP with ticket on / or /auth)
     if (hash.includes('ticket=') || search.includes('ticket=')) {
       setSsoProcessing(true);
+
+      // Capture any explicit target_origin passed in callback before parseAndScrubSsoCallback scrubs the URL
+      const callbackTargetOrigin =
+        hashParams.get('target_origin') || searchParams.get('target_origin');
 
       // Process SSO callback using Root's local sessionStorage state
       processSsoCallback({
@@ -159,10 +283,13 @@ export const App: React.FC = () => {
           }
 
           // Check if downstream target was stored during SP-initiation (Flow C: Study -> Root -> Games)
-          let downstreamTarget: string | null = null;
+          let downstreamTarget: string | null = callbackTargetOrigin || null;
           if (window.sessionStorage) {
-            downstreamTarget = window.sessionStorage.getItem(SSO_DOWNSTREAM_TARGET_STORAGE_KEY);
+            const storedTarget = window.sessionStorage.getItem(SSO_DOWNSTREAM_TARGET_STORAGE_KEY);
             window.sessionStorage.removeItem(SSO_DOWNSTREAM_TARGET_STORAGE_KEY);
+            if (!downstreamTarget && storedTarget) {
+              downstreamTarget = storedTarget;
+            }
           }
 
           if (
@@ -216,6 +343,10 @@ export const App: React.FC = () => {
           onSignOut={handleSignOut}
           isSigningOut={isSigningOut}
           ssoNotice={ssoNotice}
+          ssoProcessing={ssoProcessing}
+          isAuthModalOpen={isAuthModalOpen}
+          isValidRoute={isValidRoute}
+          isAuthOrSsoRoute={isAuthOrSsoRoute}
         />
         <AuthModal
           isOpen={isAuthModalOpen}

@@ -452,7 +452,23 @@ export default {
 
     // 5. Static assets / SPA fallback
     if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
-      return await env.ASSETS.fetch(request);
+      const assetRes = await env.ASSETS.fetch(request);
+      const isKnownRootRoute =
+        pathname === '/' ||
+        pathname === '/index.html' ||
+        pathname === '/sso' ||
+        pathname.startsWith('/sso/') ||
+        pathname === '/auth' ||
+        pathname.startsWith('/auth/');
+      const isStaticFileRequest = /\.[a-z0-9]+$/i.test(pathname);
+
+      if (!isKnownRootRoute && !isStaticFileRequest && assetRes.status === 200) {
+        return new Response(assetRes.body, {
+          status: 404,
+          headers: assetRes.headers,
+        });
+      }
+      return assetRes;
     }
 
     return new Response('Not Found', { status: 404 });

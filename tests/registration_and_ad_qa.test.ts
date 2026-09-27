@@ -3,6 +3,15 @@
  */
 
 import { shouldDisplayAds, DEFAULT_SYSTEM_SETTINGS, SystemSettingsState } from '../shared/systemSettings';
+import {
+  evaluateAdEligibility,
+  shouldLoadAdSenseScript,
+  ensureAdSenseScriptLoaded,
+  removeAdSenseScript,
+  isDisallowedPathname,
+  hasDisallowedUrlParams,
+  VALID_TOOLS_SLUGS,
+} from '../shared/ads/AdEligibility';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -197,6 +206,263 @@ assert(
 assert(
   DEFAULT_SYSTEM_SETTINGS.public_registration_enabled === false,
   'Default public_registration_enabled is FALSE'
+);
+
+// ----------------------------------------------------
+// 5. ADSENSE AUDIT COMPLIANCE & CENTRALIZED ELIGIBILITY
+// ----------------------------------------------------
+// 5.1 Root ads disabled by default and ineligible for AdSense
+assert(
+  DEFAULT_SYSTEM_SETTINGS.ads_products.root === false,
+  'Root product ads are disabled by default (ads_products.root === false)'
+);
+assert(
+  shouldDisplayAds('root', null, DEFAULT_SYSTEM_SETTINGS) === false,
+  'shouldDisplayAds("root") returns false'
+);
+assert(
+  evaluateAdEligibility({ product: 'root', pathname: '/' }).eligible === false,
+  'evaluateAdEligibility rejects Root product'
+);
+assert(
+  shouldLoadAdSenseScript({
+    product: 'root',
+    pathname: '/',
+    settings: {
+      ...DEFAULT_SYSTEM_SETTINGS,
+      ad_provider: { type: 'adsense', network: 'ca-pub-3414472167895157', slotId: '12345' },
+    },
+  }) === false,
+  'shouldLoadAdSenseScript never loads AdSense on Root'
+);
+
+// 5.2 Static index.html files must NOT hardcode adsbygoogle.js
+const htmlFilesToVerify = [
+  '../index.html',
+  '../products/study/index.html',
+  '../products/ebook/index.html',
+  '../products/tools/index.html',
+];
+for (const relHtml of htmlFilesToVerify) {
+  const htmlContent = fs.readFileSync(path.resolve(__dirname, relHtml), 'utf8');
+  assert(
+    !htmlContent.includes('pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'),
+    `Static HTML (${relHtml}) does not unconditionally load adsbygoogle.js`
+  );
+}
+
+// 5.3 Disallowed pathnames & URL parameters rejected
+const ALL_REQUIRED_DISALLOWED_ROUTES = [
+  '/auth',
+  '/sso',
+  '/sso/handoff',
+  '/callback',
+  '/login',
+  '/signin',
+  '/signup',
+  '/register',
+  '/logout',
+  '/reset-password',
+  '/forgot-password',
+  '/admin',
+  '/dashboard',
+  '/my-courses',
+  '/404',
+  '/not-found',
+];
+
+for (const badPath of ALL_REQUIRED_DISALLOWED_ROUTES) {
+  assert(
+    isDisallowedPathname(badPath) === true &&
+      evaluateAdEligibility({ product: 'study', pathname: badPath }).eligible === false &&
+      shouldLoadAdSenseScript({
+        product: 'study',
+        pathname: badPath,
+        settings: {
+          ...DEFAULT_SYSTEM_SETTINGS,
+          ad_provider: { type: 'adsense', network: 'ca-pub-3414472167895157', slotId: '12345' },
+        },
+      }) === false,
+    `Centralized eligibility rejects disallowed pathname: ${badPath}`
+  );
+}
+
+const ALL_REQUIRED_DISALLOWED_PARAMS = [
+  'ticket',
+  'state',
+  'target_origin',
+  'redirect_path',
+  'auth',
+  'login',
+  'signup',
+  'register',
+  'recovery',
+  'error',
+  'error_code',
+  'error_description',
+  'access_token',
+  'refresh_token',
+  'token_hash',
+  'code',
+];
+
+for (const paramKey of ALL_REQUIRED_DISALLOWED_PARAMS) {
+  const queryStr = `?${paramKey}=test_val`;
+  const hashStr = `#${paramKey}=test_val`;
+  assert(
+    hasDisallowedUrlParams(queryStr, '') === true &&
+      hasDisallowedUrlParams('', hashStr) === true &&
+      evaluateAdEligibility({ product: 'study', pathname: '/', search: queryStr }).eligible === false &&
+      evaluateAdEligibility({ product: 'ebook', pathname: '/', hash: hashStr }).eligible === false &&
+      evaluateAdEligibility({ product: 'tools', pathname: '/', search: queryStr }).eligible === false,
+    `Centralized eligibility blocks disallowed URL parameter (${paramKey}) in query and hash`
+  );
+}
+
+// 5.4 Root verification (/ , /auth, /sso, unknown routes -> 0 AdSlot, 0 adsbygoogle.js)
+for (const rootRoute of ['/', '/auth', '/sso', '/unknown-route']) {
+  const rootRes = evaluateAdEligibility({
+    product: 'root',
+    pathname: rootRoute,
+    settings: {
+      ...DEFAULT_SYSTEM_SETTINGS,
+      ad_provider: { type: 'adsense', network: 'ca-pub-3414472167895157', slotId: '12345' },
+    },
+  });
+  assert(
+    rootRes.eligible === false && rootRes.shouldLoadAdSense === false,
+    `Root route (${rootRoute}) renders 0 AdSlot and 0 adsbygoogle.js`
+  );
+}
+
+// 5.5 Component states (loading, auth-checking, sso, error, empty-result, modal, reader, invalid route) rejected
+assert(
+  evaluateAdEligibility({ product: 'study', pathname: '/', isLoading: true }).eligible === false,
+  'Centralized eligibility rejects loading state'
+);
+assert(
+  evaluateAdEligibility({ product: 'study', pathname: '/', isAuthChecking: true }).eligible === false,
+  'Centralized eligibility rejects auth-checking state'
+);
+assert(
+  evaluateAdEligibility({ product: 'study', pathname: '/', isSsoProcessing: true }).eligible === false,
+  'Centralized eligibility rejects SSO processing state'
+);
+assert(
+  evaluateAdEligibility({ product: 'ebook', pathname: '/', isError: true }).eligible === false,
+  'Centralized eligibility rejects error state'
+);
+assert(
+  evaluateAdEligibility({ product: 'tools', pathname: '/', isEmptyResult: true }).eligible === false,
+  'Centralized eligibility rejects empty-result state'
+);
+assert(
+  evaluateAdEligibility({ product: 'study', pathname: '/', isModalOpen: true }).eligible === false,
+  'Centralized eligibility rejects open modal state'
+);
+assert(
+  evaluateAdEligibility({ product: 'ebook', pathname: '/', view: 'reader', hash: '#/book/python-core-concepts-definitions/ch/0' }).eligible === false,
+  'Centralized eligibility rejects Ebook reader view'
+);
+assert(
+  evaluateAdEligibility({ product: 'study', pathname: '/course/nonexistent-course' }).eligible === false,
+  'Centralized eligibility rejects unknown Study course route'
+);
+assert(
+  evaluateAdEligibility({ product: 'tools', pathname: '/unknown-tool-slug' }).eligible === false,
+  'Centralized eligibility rejects unknown Tools route'
+);
+
+// 5.6 Study public routes & lesson content readiness verification
+for (const validStudyRoute of [
+  '/',
+  '/courses',
+  '/learning-path',
+  '/process',
+  '/playground',
+  '/free-tier',
+  '/course/python',
+  '/course/javascript',
+  '/course/html',
+  '/course/css',
+  '/course/sql',
+  '/course/excel',
+  '/course/powerbi',
+  '/course/ai',
+]) {
+  assert(
+    evaluateAdEligibility({ product: 'study', pathname: validStudyRoute, isContentReady: true }).eligible === true,
+    `Study public route is eligible for ads when content is ready: ${validStudyRoute}`
+  );
+}
+
+// Lesson pages must only become eligible AFTER actual lesson content has loaded (not solely valid route)
+assert(
+  evaluateAdEligibility({ product: 'study', pathname: '/course/python', view: 'lesson' }).eligible === false &&
+    evaluateAdEligibility({ product: 'study', pathname: '/course/python', view: 'lesson', isContentReady: false }).eligible === false,
+  'Study lesson page is ineligible before actual lesson content has loaded (even when route is valid)'
+);
+assert(
+  evaluateAdEligibility({ product: 'study', pathname: '/course/python', view: 'lesson', isContentReady: true }).eligible === true,
+  'Study lesson page becomes eligible only after actual lesson content has loaded (isContentReady=true)'
+);
+
+// 5.7 Ebook verification (Catalog -> 1, Detail -> 1, Reader -> 0, Loading/Error/Empty/SSO -> 0)
+assert(
+  evaluateAdEligibility({ product: 'ebook', pathname: '/', hash: '#/catalog', view: 'catalog', isContentReady: true }).eligible === true,
+  'Ebook catalog view is eligible for 1 bottom AdSlot'
+);
+assert(
+  evaluateAdEligibility({ product: 'ebook', pathname: '/', hash: '#/book/python-handbook', view: 'detail', isContentReady: true }).eligible === true,
+  'Ebook book detail view is eligible for 1 bottom AdSlot'
+);
+assert(
+  evaluateAdEligibility({ product: 'ebook', pathname: '/', hash: '#/book/python-handbook/ch/0', view: 'reader', isContentReady: true }).eligible === false,
+  'Ebook reader view is never eligible for ads (0 AdSlot)'
+);
+
+// 5.8 Tools verification (Homepage -> 1, Valid slug -> 1, Loading/Error/Empty/SSO/Invalid -> 0)
+assert(
+  evaluateAdEligibility({ product: 'tools', pathname: '/', isContentReady: true }).eligible === true,
+  'Tools homepage is eligible for 1 bottom AdSlot'
+);
+for (const slug of Array.from(VALID_TOOLS_SLUGS).slice(0, 5)) {
+  assert(
+    evaluateAdEligibility({ product: 'tools', pathname: `/${slug}`, isContentReady: true }).eligible === true,
+    `Tools valid slug (/${slug}) is eligible for 1 bottom AdSlot`
+  );
+}
+assert(
+  evaluateAdEligibility({ product: 'tools', pathname: '/invalid-tool-xyz', isValidRoute: true }).eligible === false,
+  'Tools invalid slug is rejected even if isValidRoute prop defaults to true'
+);
+
+// 5.9 AdSense script transition safety (never remains loaded if screen becomes loading/error/auth/empty)
+const adsenseSettings: SystemSettingsState = {
+  ...DEFAULT_SYSTEM_SETTINGS,
+  ads_enabled: true,
+  ad_provider: { type: 'adsense', network: 'ca-pub-3414472167895157', slotId: '987654321' },
+};
+assert(
+  shouldLoadAdSenseScript({
+    product: 'study',
+    pathname: '/courses',
+    view: 'courses',
+    isContentReady: true,
+    settings: adsenseSettings,
+  }) === true,
+  'shouldLoadAdSenseScript returns true when all 9 AdSense eligibility conditions are met'
+);
+assert(
+  shouldLoadAdSenseScript({
+    product: 'study',
+    pathname: '/courses',
+    view: 'courses',
+    isContentReady: true,
+    isEmptyResult: true,
+    settings: adsenseSettings,
+  }) === false,
+  'shouldLoadAdSenseScript returns false immediately when screen transitions to empty/loading/error/auth'
 );
 
 console.log('=====================================================');

@@ -7,7 +7,7 @@ import { Footer } from './components/Footer';
 import { Workbench } from './components/Workbench';
 import { createClient, User } from '@supabase/supabase-js';
 import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
-import { ThemeProvider, AdSlot } from '@shared';
+import { ThemeProvider, AdSlot, isValidProductPublicRoute, hasDisallowedUrlParams } from '@shared';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -23,6 +23,20 @@ export function App() {
   });
 
   const [user, setUser] = useState<User | null>(null);
+  const [ssoProcessing, setSsoProcessing] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      (window.location.hash || '').includes('ticket=') ||
+      (window.location.search || '').includes('ticket=') ||
+      hasDisallowedUrlParams(window.location.search, window.location.hash)
+    );
+  });
+  const [isToolsEmpty, setIsToolsEmpty] = useState(false);
+  const [isValidRoute, setIsValidRoute] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return isValidProductPublicRoute('tools', window.location.pathname, window.location.hash);
+  });
+  const [isWorkspaceLoading, setIsWorkspaceLoading] = useState(false);
 
   // Initialize Auth & Handle SSO Ticket
   useEffect(() => {
@@ -43,6 +57,7 @@ export function App() {
       const hash = window.location.hash || '';
       const search = window.location.search || '';
       if (hash.includes('ticket=') || search.includes('ticket=')) {
+        setSsoProcessing(true);
         processSsoCallback({
           supabaseClient: supabase,
         })
@@ -53,6 +68,9 @@ export function App() {
           })
           .catch((err) => {
             console.warn('SSO callback processing error:', err);
+          })
+          .finally(() => {
+            setSsoProcessing(false);
           });
       }
     }
@@ -103,10 +121,21 @@ export function App() {
             language={language}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
+            onResultCountChange={(count) => setIsToolsEmpty(count === 0)}
+            onRouteValidityChange={setIsValidRoute}
+            onWorkspaceLoadingChange={setIsWorkspaceLoading}
           />
         </div>
 
-        <AdSlot product="tools" user={user} supabaseClient={supabase} />
+        <AdSlot
+          product="tools"
+          user={user}
+          supabaseClient={supabase}
+          isLoading={isWorkspaceLoading}
+          isSsoProcessing={ssoProcessing}
+          isEmptyResult={isToolsEmpty}
+          isValidRoute={isValidRoute}
+        />
         <Footer language={language} />
       </div>
     </ThemeProvider>

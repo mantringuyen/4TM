@@ -88,35 +88,134 @@ const STUDY_COURSES_SEO: Record<CourseId, { en: string; vi: string; descEn: stri
   },
 };
 
+const VALID_COURSE_IDS = new Set<CourseId>([
+  'python',
+  'javascript',
+  'html',
+  'css',
+  'sql',
+  'excel',
+  'powerbi',
+  'ai',
+]);
+
+function resolveStudyLocation(pathname: string): {
+  view: string;
+  courseId?: CourseId;
+  isValidRoute: boolean;
+  isSsoOrAuthRoute: boolean;
+} {
+  const clean = (pathname || '').replace(/^\/+|\/+$/g, '').toLowerCase();
+
+  if (clean === '' || clean === 'index.html') {
+    return { view: 'home', isValidRoute: true, isSsoOrAuthRoute: false };
+  }
+  if (clean === 'courses') {
+    return { view: 'courses', isValidRoute: true, isSsoOrAuthRoute: false };
+  }
+  if (clean === 'learning-paths' || clean === 'learning-path') {
+    return { view: 'learning-paths', isValidRoute: true, isSsoOrAuthRoute: false };
+  }
+  if (clean === 'learning-process' || clean === 'process') {
+    return { view: 'learning-process', isValidRoute: true, isSsoOrAuthRoute: false };
+  }
+  if (clean === 'playground') {
+    return { view: 'playground', isValidRoute: true, isSsoOrAuthRoute: false };
+  }
+  if (clean === 'free-tier') {
+    return { view: 'free-tier', isValidRoute: true, isSsoOrAuthRoute: false };
+  }
+  if (clean === 'my-courses') {
+    return { view: 'my-courses', isValidRoute: true, isSsoOrAuthRoute: false };
+  }
+  if (clean === 'dashboard') {
+    return { view: 'dashboard', isValidRoute: true, isSsoOrAuthRoute: false };
+  }
+  if (clean === 'admin') {
+    return { view: 'admin', isValidRoute: true, isSsoOrAuthRoute: false };
+  }
+  if (
+    clean === 'sso' ||
+    clean.startsWith('sso/') ||
+    clean === 'auth' ||
+    clean.startsWith('auth/')
+  ) {
+    return { view: 'home', isValidRoute: false, isSsoOrAuthRoute: true };
+  }
+
+  const courseMatch = clean.match(/^course\/([a-z0-9_-]+)$/);
+  if (courseMatch) {
+    const slug = courseMatch[1] as CourseId;
+    if (VALID_COURSE_IDS.has(slug)) {
+      return {
+        view: 'course-detail',
+        courseId: slug,
+        isValidRoute: true,
+        isSsoOrAuthRoute: false,
+      };
+    }
+    return { view: 'not-found', isValidRoute: false, isSsoOrAuthRoute: false };
+  }
+
+  return { view: 'not-found', isValidRoute: false, isSsoOrAuthRoute: false };
+}
+
+function SuspenseLoadingFallback({
+  onLoadingChange,
+}: {
+  onLoadingChange: (loading: boolean) => void;
+}) {
+  useEffect(() => {
+    onLoadingChange(true);
+    return () => onLoadingChange(false);
+  }, [onLoadingChange]);
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+      <div className="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      <p className="text-xs font-mono text-slate-500">Loading view...</p>
+    </div>
+  );
+}
+
 function AppContent() {
   const { language, setLanguage, dict } = useLanguage();
 
+  const initialRoute =
+    typeof window !== 'undefined'
+      ? resolveStudyLocation(window.location.pathname)
+      : { view: 'home', isValidRoute: true, isSsoOrAuthRoute: false };
+
   // User & State Management (Supabase session is the single source of truth)
   const [authLoading, setAuthLoading] = useState<boolean>(true);
+  const [ssoProcessing, setSsoProcessing] = useState<boolean>(initialRoute.isSsoOrAuthRoute);
+  const [isViewLoading, setIsViewLoading] = useState<boolean>(false);
+  const [isLessonContentReady, setIsLessonContentReady] = useState<boolean>(false);
+  const [isLessonError, setIsLessonError] = useState<boolean>(false);
+  const [isCoursesEmpty, setIsCoursesEmpty] = useState<boolean>(false);
+  const [isValidRoute, setIsValidRoute] = useState<boolean>(initialRoute.isValidRoute);
   const [user, setUser] = useState<UserProfile>(() => getDefaultUser());
-  const [currentView, setCurrentView] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      const path = window.location.pathname.replace(/^\//, '');
-      if (path === 'my-courses') return 'my-courses';
-      if (path === 'learning-paths' || path === 'learning-path') return 'learning-paths';
-      if (path === 'learning-process') return 'learning-process';
-      if (path === 'dashboard') return 'dashboard';
-      if (path === 'playground') return 'playground';
-      if (path === 'courses') return 'courses';
-    }
-    return 'home';
-  });
+  const [currentView, setCurrentView] = useState<string>(initialRoute.view);
   const [viewPayload, setViewPayload] = useState<{
     courseId?: CourseId;
     levelId?: LevelId;
     lessonId?: string;
-  }>({});
+  }>(() => (initialRoute.courseId ? { courseId: initialRoute.courseId } : {}));
 
   // Dynamic SEO Synchronization
   const currentCourseInfo = viewPayload.courseId ? STUDY_COURSES_SEO[viewPayload.courseId] : null;
   const isCourseView = (currentView === 'course-detail' || currentView === 'lesson') && !!currentCourseInfo;
+  const isPrivateOrInvalidView =
+    !isValidRoute ||
+    currentView === 'not-found' ||
+    currentView === 'admin' ||
+    currentView === 'dashboard' ||
+    currentView === 'my-courses' ||
+    currentView === '/my-courses';
   
-  const pageTitle = isCourseView && currentCourseInfo
+  const pageTitle = currentView === 'not-found'
+    ? '404 — Page Not Found | 4TM Study'
+    : isCourseView && currentCourseInfo
     ? `${currentCourseInfo[language]} | 4TM Study`
     : currentView === 'learning-paths'
     ? language === 'vi' ? 'Lộ trình học Lập trình & Kỹ thuật phần mềm | 4TM Study' : 'Software Engineering Learning Paths | 4TM Study'
@@ -149,6 +248,7 @@ function AppContent() {
     description: pageDescription,
     canonicalUrl,
     language,
+    noindex: isPrivateOrInvalidView,
     jsonLd: isCourseView && viewPayload.courseId && currentCourseInfo
       ? [
           SchemaGenerators.course({
@@ -164,6 +264,7 @@ function AppContent() {
           SchemaGenerators.website('https://study.4tm.io.vn', '4TM Study', pageDescription),
         ],
   });
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalInitialMode, setAuthModalInitialMode] = useState<AuthModalMode>('signin');
   const [authModalInitialError, setAuthModalInitialError] = useState<string>('');
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -186,6 +287,7 @@ function AppContent() {
 
           // A. Handle incoming SP-initiated Root handoff request: /sso/handoff?state=...
           if (pathname.startsWith('/sso/handoff') || search.includes('state=')) {
+            setSsoProcessing(true);
             const searchParams = new URLSearchParams(search.startsWith('?') ? search.substring(1) : search);
             const stateFromRoot = searchParams.get('state');
 
@@ -196,6 +298,7 @@ function AppContent() {
                 setAuthModalInitialMode('signin');
                 setAuthModalInitialError('');
                 setAuthModalOpen(true);
+                setSsoProcessing(false);
               } else {
                 // User is authenticated on Study: issue Root handoff ticket with the Root-provided state
                 const handoffRes = await issuePeerRootHandoff({
@@ -206,15 +309,20 @@ function AppContent() {
                   window.location.replace(handoffRes.redirectUrl);
                   return;
                 }
+                setSsoProcessing(false);
               }
+            } else {
+              setSsoProcessing(false);
             }
           }
 
           // B. Handle incoming SSO callback from Root (Root -> Study)
           if (hash.includes('ticket=') || search.includes('ticket=')) {
+            setSsoProcessing(true);
             const callbackRes = await processSsoCallback({
               supabaseClient: supabase,
             });
+            setSsoProcessing(false);
             if (callbackRes.success && callbackRes.user) {
               const synced = await authService.initializeAuthSession();
               if (isMounted && synced && isUserLoggedIn(synced)) {
@@ -243,21 +351,22 @@ function AppContent() {
         console.error('Failed to initialize auth session:', err);
         if (isMounted) setUser(getDefaultUser());
       } finally {
-        if (isMounted) setAuthLoading(false);
+        if (isMounted) {
+          setAuthLoading(false);
+          setSsoProcessing(false);
+        }
       }
     };
 
     initAuth();
 
     const handlePopState = () => {
-      const path = window.location.pathname.replace(/^\//, '');
-      if (path === 'my-courses') setCurrentView('my-courses');
-      else if (path === 'learning-paths' || path === 'learning-path') setCurrentView('learning-paths');
-      else if (path === 'learning-process') setCurrentView('learning-process');
-      else if (path === 'dashboard') setCurrentView('dashboard');
-      else if (path === 'playground') setCurrentView('playground');
-      else if (path === 'courses') setCurrentView('courses');
-      else if (!path) setCurrentView('home');
+      const resolved = resolveStudyLocation(window.location.pathname);
+      setCurrentView(resolved.view);
+      setIsValidRoute(resolved.isValidRoute);
+      if (resolved.courseId) {
+        setViewPayload(prev => ({ ...prev, courseId: resolved.courseId }));
+      }
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -368,6 +477,11 @@ function AppContent() {
     : (user.role === 'admin' && user.status === 'active' && isUserLoggedIn(user));
 
   const handleNavigate = (view: string, payload?: any) => {
+    setIsValidRoute(true);
+    if (view === 'lesson') {
+      setIsLessonContentReady(false);
+      setIsLessonError(false);
+    }
     if (view === 'admin') {
       if (!canAccessAdmin) {
         setCurrentView('dashboard');
@@ -389,27 +503,48 @@ function AppContent() {
     }
     if (view === 'learning-path' || view === 'learning-paths') {
       setCurrentView('learning-paths');
+      if (typeof window !== 'undefined' && window.history?.pushState) {
+        window.history.pushState({}, '', '/learning-path');
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    if (view === 'learning-process') {
+    if (view === 'learning-process' || view === 'process') {
       setCurrentView('learning-process');
+      if (typeof window !== 'undefined' && window.history?.pushState) {
+        window.history.pushState({}, '', '/process');
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     if (view === 'my-courses' || view === '/my-courses') {
       setCurrentView('my-courses');
+      if (typeof window !== 'undefined' && window.history?.pushState) {
+        window.history.pushState({}, '', '/my-courses');
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     if (view === 'course-detail') {
+      const nextCourseId = (payload?.courseId || viewPayload.courseId || 'python') as CourseId;
       setCurrentView('course-detail');
       setViewPayload(prev => ({
-        courseId: payload?.courseId || prev.courseId || 'python',
+        courseId: nextCourseId,
         levelId: payload?.levelId || null,
       }));
+      if (typeof window !== 'undefined' && window.history?.pushState) {
+        window.history.pushState({}, '', `/course/${nextCourseId}`);
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
+    }
+
+    if (typeof window !== 'undefined' && window.history?.pushState) {
+      if (view === 'home') {
+        window.history.pushState({}, '', '/');
+      } else if (view === 'courses' || view === 'playground' || view === 'dashboard' || view === 'free-tier') {
+        window.history.pushState({}, '', `/${view}`);
+      }
     }
 
     setCurrentView(view);
@@ -654,12 +789,7 @@ function AppContent() {
 
       {/* Main View Router */}
       <div className="flex-1">
-        <Suspense fallback={
-          <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
-            <div className="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-xs font-mono text-slate-500">Loading view...</p>
-          </div>
-        }>
+        <Suspense fallback={<SuspenseLoadingFallback onLoadingChange={setIsViewLoading} />}>
           {currentView === 'home' && (
             <HomeView
               user={user}
@@ -667,6 +797,7 @@ function AppContent() {
               onSelectCourse={cId => handleNavigate('course-detail', { courseId: cId })}
               initialSearchQuery={searchQuery}
               onSearchChange={setSearchQuery}
+              onResultCountChange={count => setIsCoursesEmpty(count === 0)}
             />
           )}
 
@@ -677,6 +808,7 @@ function AppContent() {
               onSelectCourse={cId => handleNavigate('course-detail', { courseId: cId })}
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
+              onResultCountChange={count => setIsCoursesEmpty(count === 0)}
             />
           )}
 
@@ -729,6 +861,8 @@ function AppContent() {
               onUpdateProgress={handleUpdateProgress}
               onToggleBookmark={handleToggleBookmark}
               onSaveNote={handleSaveNote}
+              onContentReadyChange={setIsLessonContentReady}
+              onErrorChange={setIsLessonError}
             />
           )}
 
@@ -765,6 +899,40 @@ function AppContent() {
                 onStartReview={() => setReviewModalOpen(true)}
               />
             )
+          )}
+
+          {currentView === 'not-found' && (
+            <div className="max-w-3xl mx-auto px-4 py-20 text-center space-y-5">
+              <div className="inline-flex items-center px-3 py-1 rounded-full bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-mono font-bold">
+                404 — Route Not Found
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+                {language === 'vi'
+                  ? 'Không tìm thấy trang học tập này'
+                  : 'Requested learning page was not found'}
+              </h1>
+              <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+                {language === 'vi'
+                  ? 'Đường dẫn bạn truy cập không tồn tại. Vui lòng quay lại trang chủ hoặc danh mục khóa học.'
+                  : 'The URL you visited does not match any active course or learning module.'}
+              </p>
+              <div className="flex items-center justify-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => handleNavigate('home')}
+                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors cursor-pointer"
+                >
+                  {language === 'vi' ? 'Về trang chủ Study' : 'Back to Study Home'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleNavigate('courses')}
+                  className="px-5 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 text-xs font-bold transition-colors cursor-pointer"
+                >
+                  {dict.nav.courses}
+                </button>
+              </div>
+            </div>
           )}
         </Suspense>
       </div>
@@ -828,7 +996,27 @@ function AppContent() {
       />
 
       {/* Platform AdSlot */}
-      <AdSlot product="study" user={user} supabaseClient={supabase} />
+      <AdSlot
+        product="study"
+        user={user}
+        supabaseClient={supabase}
+        view={currentView}
+        isLoading={isViewLoading || (currentView === 'lesson' && !isLessonContentReady && !isLessonError)}
+        isAuthChecking={authLoading}
+        isSsoProcessing={ssoProcessing}
+        isError={currentView === 'lesson' && isLessonError}
+        isEmptyResult={(currentView === 'home' || currentView === 'courses') && isCoursesEmpty}
+        isModalOpen={
+          authModalOpen ||
+          searchModalOpen ||
+          reviewModalOpen ||
+          bookmarksModalOpen ||
+          notesModalOpen ||
+          accountSettingsModalOpen
+        }
+        isValidRoute={isValidRoute && currentView !== 'not-found'}
+        isContentReady={currentView === 'lesson' ? isLessonContentReady : !isViewLoading && !authLoading}
+      />
 
       {/* Platform Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-10 mt-12 transition-colors">

@@ -9,6 +9,7 @@ interface CoursesListProps {
   onSelectCourse?: (courseId: CourseId) => void;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
+  onResultCountChange?: (count: number) => void;
 }
 
 export const CoursesList: React.FC<CoursesListProps> = ({
@@ -17,6 +18,7 @@ export const CoursesList: React.FC<CoursesListProps> = ({
   onSelectCourse,
   searchQuery,
   onSearchChange,
+  onResultCountChange,
 }) => {
   const { dict } = useLanguage();
 
@@ -28,6 +30,7 @@ export const CoursesList: React.FC<CoursesListProps> = ({
         onSelectCourse={onSelectCourse}
         initialSearchQuery={searchQuery}
         onSearchChange={onSearchChange}
+        onResultCountChange={onResultCountChange}
         headingText={dict.home.coursesHeading}
         subheadingText={dict.home.coursesSubheading}
         showSectionHeader={true}
