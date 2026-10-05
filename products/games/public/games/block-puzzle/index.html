@@ -95,6 +95,51 @@ body {
 		</div>
 
 		<script>
+		// 4TM Iframe Console & Error Bridge to Parent Debug Panel
+		(function () {
+			function sendLog(level, args) {
+				try {
+					const text = Array.from(args).map(function (arg) {
+						if (arg instanceof Error) return arg.stack || arg.message || String(arg);
+						if (typeof arg === 'object' && arg !== null) {
+							try { return JSON.stringify(arg); } catch (_) { return String(arg); }
+						}
+						return String(arg);
+					}).join(' ');
+					const time = new Date().toTimeString().split(' ')[0];
+					if (window.parent && window.parent !== window) {
+						window.parent.postMessage({ type: '4TM_GAME_LOG', level: level, message: text, time: time }, '*');
+					}
+				} catch (_) {}
+			}
+
+			const origLog = console.log;
+			console.log = function () {
+				sendLog('log', arguments);
+				return origLog.apply(console, arguments);
+			};
+
+			const origWarn = console.warn;
+			console.warn = function () {
+				sendLog('warn', arguments);
+				return origWarn.apply(console, arguments);
+			};
+
+			const origErr = console.error;
+			console.error = function () {
+				sendLog('error', arguments);
+				return origErr.apply(console, arguments);
+			};
+
+			window.addEventListener('error', function (event) {
+				sendLog('error', [event.message || 'Window error', event.filename ? ('@ ' + event.filename + ':' + event.lineno) : '']);
+			});
+
+			window.addEventListener('unhandledrejection', function (event) {
+				sendLog('error', ['Unhandled Promise Rejection:', event.reason]);
+			});
+		})();
+
 		// 4TM Cross-Origin R2 & WASM Compression Handler
 		(function () {
 			const origFetch = window.fetch;
