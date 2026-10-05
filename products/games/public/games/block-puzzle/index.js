@@ -543,12 +543,22 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 				function done(result) {
 					onSuccess(result['instance'], result['module']);
 				}
-				if (typeof (WebAssembly.instantiateStreaming) !== 'undefined') {
-					WebAssembly.instantiateStreaming(Promise.resolve(r), imports).then(done);
-				} else {
-					r.arrayBuffer().then(function (buffer) {
-						WebAssembly.instantiate(buffer, imports).then(done);
+				function instantiateBuffer(buf) {
+					WebAssembly.instantiate(buf, imports).then(done).catch(function (err) {
+						console.error('[Godot Web] WebAssembly.instantiate failed:', err);
 					});
+				}
+				if (r instanceof ArrayBuffer || ArrayBuffer.isView(r)) {
+					const buf = r instanceof ArrayBuffer ? r : r.buffer;
+					instantiateBuffer(buf);
+				} else if (r && typeof r.arrayBuffer === 'function') {
+					if (typeof WebAssembly.instantiateStreaming !== 'undefined' && !(r.body && r.body.locked)) {
+						WebAssembly.instantiateStreaming(Promise.resolve(r), imports).then(done).catch(function () {
+							r.arrayBuffer().then(instantiateBuffer).catch(console.error);
+						});
+					} else {
+						r.arrayBuffer().then(instantiateBuffer).catch(console.error);
+					}
 				}
 				r = null;
 				return {};
@@ -718,18 +728,19 @@ const Engine = (function () {
 					// Make sure to test that when refactoring.
 					return new Promise(function (resolve, reject) {
 						promise.then(function (response) {
-							const cloned = new Response(response.clone().body, { 'headers': [['content-type', 'application/wasm']] });
-							Godot(me.config.getModuleConfig(loadPath, cloned)).then(function (module) {
-								const paths = me.config.persistentPaths;
-								module['initFS'](paths).then(function (err) {
-									me.rtenv = module;
-									if (me.config.unloadAfterInit) {
-										Engine.unload();
-									}
-									resolve();
-								});
-							});
-						});
+							return response.arrayBuffer().then(function (buffer) {
+								return Godot(me.config.getModuleConfig(loadPath, buffer)).then(function (module) {
+									const paths = me.config.persistentPaths;
+									return module['initFS'](paths).then(function (err) {
+										me.rtenv = module;
+										if (me.config.unloadAfterInit) {
+											Engine.unload();
+										}
+										resolve();
+									}).catch(reject);
+								}).catch(reject);
+							}).catch(reject);
+						}).catch(reject);
 					});
 				}
 				preloader.setProgressFunc(this.config.onProgress);
