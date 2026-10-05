@@ -76,7 +76,7 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
     }
   }, []);
 
-  // Toggle fullscreen mode (with iOS Safari / WebView fallback)
+  // Toggle fullscreen mode (with strict feature detection & iOS Safari / WebView fallback)
   const handleToggleFullscreen = useCallback(() => {
     const elem = containerRef.current;
     if (!elem) return;
@@ -85,58 +85,86 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
 
     if (!isFullscreen && !isCurrentlyNativeFs) {
       // Enter Fullscreen Mode
-      let nativeFsSuccess = false;
+      let nativeFsInitiated = false;
 
-      if (elem.requestFullscreen) {
-        elem
-          .requestFullscreen()
-          .then(() => {
+      // Strict feature detection: check method type BEFORE invocation
+      if (typeof elem.requestFullscreen === 'function') {
+        try {
+          const res = elem.requestFullscreen();
+          if (res && typeof res.catch === 'function') {
+            res.then(() => setIsFullscreen(true)).catch(() => setIsFullscreen(true));
+          } else {
             setIsFullscreen(true);
-            nativeFsSuccess = true;
-          })
-          .catch(() => {
-            // Rejected (e.g. mobile Safari) -> fallback to pseudo-fullscreen overlay
-            setIsFullscreen(true);
-          });
-      } else if ((elem as any).webkitRequestFullscreen) {
+          }
+          nativeFsInitiated = true;
+        } catch (_) {
+          setIsFullscreen(true);
+        }
+      } else if (typeof (elem as any).webkitRequestFullscreen === 'function') {
         try {
           (elem as any).webkitRequestFullscreen();
           setIsFullscreen(true);
-          nativeFsSuccess = true;
+          nativeFsInitiated = true;
         } catch (_) {
           setIsFullscreen(true);
         }
-      } else if ((elem as any).mozRequestFullScreen) {
+      } else if (typeof (elem as any).webkitRequestFullScreen === 'function') {
+        try {
+          (elem as any).webkitRequestFullScreen();
+          setIsFullscreen(true);
+          nativeFsInitiated = true;
+        } catch (_) {
+          setIsFullscreen(true);
+        }
+      } else if (typeof (elem as any).mozRequestFullScreen === 'function') {
         try {
           (elem as any).mozRequestFullScreen();
           setIsFullscreen(true);
-          nativeFsSuccess = true;
+          nativeFsInitiated = true;
         } catch (_) {
           setIsFullscreen(true);
         }
-      } else if ((elem as any).msRequestFullscreen) {
+      } else if (typeof (elem as any).msRequestFullscreen === 'function') {
         try {
           (elem as any).msRequestFullscreen();
           setIsFullscreen(true);
-          nativeFsSuccess = true;
+          nativeFsInitiated = true;
         } catch (_) {
           setIsFullscreen(true);
         }
-      } else {
-        // Browser does not support Fullscreen API (e.g. iPhone iOS Safari) -> pseudo-fullscreen modal
+      }
+
+      // If no native Fullscreen API method was available (e.g. iOS Safari / iPhone WebView),
+      // seamlessly fallback to pseudo-fullscreen mode
+      if (!nativeFsInitiated) {
         setIsFullscreen(true);
       }
     } else {
       // Exit Fullscreen Mode
       if (isCurrentlyNativeFs) {
-        if (document.exitFullscreen) {
-          document.exitFullscreen().catch(() => {});
-        } else if ((document as any).webkitExitFullscreen) {
-          (document as any).webkitExitFullscreen();
-        } else if ((document as any).mozCancelFullScreen) {
-          (document as any).mozCancelFullScreen();
-        } else if ((document as any).msExitFullscreen) {
-          (document as any).msExitFullscreen();
+        if (typeof document.exitFullscreen === 'function') {
+          try {
+            const res = document.exitFullscreen();
+            if (res && typeof res.catch === 'function') {
+              res.catch(() => {});
+            }
+          } catch (_) {}
+        } else if (typeof (document as any).webkitExitFullscreen === 'function') {
+          try {
+            (document as any).webkitExitFullscreen();
+          } catch (_) {}
+        } else if (typeof (document as any).webkitCancelFullScreen === 'function') {
+          try {
+            (document as any).webkitCancelFullScreen();
+          } catch (_) {}
+        } else if (typeof (document as any).mozCancelFullScreen === 'function') {
+          try {
+            (document as any).mozCancelFullScreen();
+          } catch (_) {}
+        } else if (typeof (document as any).msExitFullscreen === 'function') {
+          try {
+            (document as any).msExitFullscreen();
+          } catch (_) {}
         }
       }
       setIsFullscreen(false);
