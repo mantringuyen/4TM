@@ -824,12 +824,13 @@ const Engine = (function () {
 				// Add main-pack argument.
 				const exe = this.config.executable;
 				const pack = this.config.mainPack || `${exe}.pck`;
-				this.config.args = ['--main-pack', pack].concat(this.config.args);
+				const localPack = (pack.includes('/') ? pack.substring(pack.lastIndexOf('/') + 1) : pack) || `${exe}.pck`;
+				this.config.args = ['--main-pack', localPack].concat(this.config.args);
 				// Start and init with execName as loadPath if not inited.
 				const me = this;
 				return Promise.all([
 					this.init(exe),
-					this.preloadFile(pack, pack),
+					this.preloadFile(pack, localPack),
 				]).then(function () {
 					return me.start.apply(me);
 				});

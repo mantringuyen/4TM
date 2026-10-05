@@ -101,20 +101,19 @@ body {
 			window.fetch = async function (resource, init) {
 				let url = typeof resource === 'string' ? resource : (resource && resource.url ? resource.url : '');
 
-				// 1. Cross-origin R2 package handling
+				// 1. Cross-origin R2 package handling:
+				// Map games-data.4tm.io.vn directly to same-origin proxy on games.4tm.io.vn
+				// to avoid cross-origin CORS blockage and guarantee direct R2 binding streaming
 				if (url.includes('games-data.4tm.io.vn')) {
-					try {
-						const direct = await origFetch(resource, init);
-						if (direct && direct.ok) return direct;
-					} catch (e) {
-						console.warn('[4TM Games] Direct cross-origin fetch for R2 asset blocked by CORS, falling back to same-origin proxy:', e);
-					}
 					try {
 						const parsed = new URL(url, window.location.origin);
 						const proxyPath = '/api/games-data' + parsed.pathname;
-						return await origFetch(proxyPath, init);
+						if (resource instanceof Request) {
+							return origFetch(new Request(proxyPath, resource));
+						}
+						return origFetch(proxyPath, init);
 					} catch (proxyErr) {
-						console.error('[4TM Games] Proxy fallback failed:', proxyErr);
+						console.error('[4TM Games] Proxy mapping failed:', proxyErr);
 					}
 				}
 
@@ -151,7 +150,22 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"mainPack":"https://games-data.4tm.io.vn/games/block-puzzle/index.pck","args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":48215200,"index.wasm":35376909},"focusCanvas":true,"gdextensionLibs":[]};
+const GODOT_CONFIG = {
+	"mainPack": "https://games-data.4tm.io.vn/games/block-puzzle/index.pck",
+	"args": [],
+	"canvasResizePolicy": 2,
+	"ensureCrossOriginIsolationHeaders": true,
+	"executable": "index",
+	"experimentalVK": false,
+	"fileSizes": {
+		"index.pck": 48215200,
+		"https://games-data.4tm.io.vn/games/block-puzzle/index.pck": 48215200,
+		"/api/games-data/games/block-puzzle/index.pck": 48215200,
+		"index.wasm": 35376909
+	},
+	"focusCanvas": true,
+	"gdextensionLibs": []
+};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 

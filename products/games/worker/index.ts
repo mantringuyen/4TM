@@ -38,11 +38,12 @@ export default {
       });
     }
 
-    // Proxy / direct R2 handler for game packages and assets (e.g. /api/games-data/games/block-puzzle/index.pck)
-    if (url.pathname.startsWith('/api/games-data/')) {
-      const key = url.pathname.replace(/^\/api\/games-data\//, '');
+    // Proxy / direct R2 handler for game packages and assets (e.g. /api/games-data/games/block-puzzle/index.pck or /games-data/...)
+    if (url.pathname.startsWith('/api/games-data/') || url.pathname.startsWith('/games-data/')) {
+      const key = url.pathname.replace(/^\/(?:api\/)?games-data\//, '');
+      const isHead = request.method === 'HEAD';
 
-      // 1. Direct R2 bucket binding if available
+      // 1. Direct R2 bucket binding if available (DATA -> 4tm-games-dev)
       if (env.DATA) {
         try {
           const rangeHeader = request.headers.get('range');
@@ -59,12 +60,36 @@ export default {
             if (object.httpEtag) {
               headers.set('etag', object.httpEtag);
             }
+
+            // Ensure essential content headers for PCK / binary asset delivery
+            if (!headers.get('Content-Type')) {
+              headers.set('Content-Type', 'application/octet-stream');
+            }
+
             headers.set('Accept-Ranges', 'bytes');
             headers.set('Access-Control-Allow-Origin', '*');
-            headers.set('Access-Control-Expose-Headers', 'Content-Range, Content-Length, Accept-Ranges, etag');
+            headers.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+            headers.set('Access-Control-Allow-Headers', '*');
+            headers.set('Access-Control-Expose-Headers', 'Content-Range, Content-Length, Accept-Ranges, Content-Type, etag');
             headers.set('Cache-Control', 'public, max-age=31536000, immutable');
 
-            const status = object.body ? (rangeHeader ? 206 : 200) : 304;
+            // Set accurate Content-Length and Content-Range for 200 vs 206
+            let status = 200;
+            if (object.range) {
+              status = 206;
+              const rangeOffset = (object.range as any).offset ?? 0;
+              const rangeLength = (object.range as any).length ?? object.size;
+              const rangeEnd = rangeOffset + rangeLength - 1;
+              headers.set('Content-Range', `bytes ${rangeOffset}-${rangeEnd}/${object.size}`);
+              headers.set('Content-Length', rangeLength.toString());
+            } else {
+              headers.set('Content-Length', object.size.toString());
+            }
+
+            if (isHead) {
+              return new Response(null, { status, headers });
+            }
+
             return new Response(object.body, { status, headers });
           }
         } catch (r2Err) {
@@ -72,7 +97,7 @@ export default {
         }
       }
 
-      // 2. Fallback upstream fetch to public R2 CDN with CORS decoration
+      // 2. Fallback upstream fetch to public R2 CDN with CORS & Range decoration
       try {
         const upstreamUrl = `https://games-data.4tm.io.vn/${key}`;
         const upstreamRes = await fetch(upstreamUrl, {
@@ -82,9 +107,15 @@ export default {
 
         const headers = new Headers(upstreamRes.headers);
         headers.set('Access-Control-Allow-Origin', '*');
-        headers.set('Access-Control-Expose-Headers', 'Content-Range, Content-Length, Accept-Ranges, etag');
+        headers.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+        headers.set('Access-Control-Allow-Headers', '*');
+        headers.set('Access-Control-Expose-Headers', 'Content-Range, Content-Length, Accept-Ranges, Content-Type, etag');
 
-        return new Response(upstreamRes.body, {
+        if (!headers.get('Content-Type')) {
+          headers.set('Content-Type', 'application/octet-stream');
+        }
+
+        return new Response(isHead ? null : upstreamRes.body, {
           status: upstreamRes.status,
           headers,
         });
