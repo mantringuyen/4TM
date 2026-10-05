@@ -141,7 +141,7 @@ body {
 							return gzRes;
 						}
 					} catch (gzErr) {
-						console.error('[4TM Block Puzzle Loader v2] WASM gz fallback failed:', gzErr);
+						console.error('[4TM Block Puzzle Loader v3] WASM gz fallback failed:', gzErr);
 					}
 				}
 
@@ -206,7 +206,7 @@ const engine = new Engine(GODOT_CONFIG);
 	}
 
 	function displayFailureNotice(err) {
-		console.error(err);
+		console.error('[4TM Block Puzzle Loader v3] Failure notice:', err);
 		if (err instanceof Error) {
 			setStatusNotice(err.message);
 		} else if (typeof err === 'string') {
@@ -235,7 +235,7 @@ const engine = new Engine(GODOT_CONFIG);
 					setTimeout(() => resolve(), 2000);
 				}),
 			]).catch((err) => {
-				console.error('Error while registering service worker:', err);
+				console.error('[4TM Block Puzzle Loader v3] Error while registering service worker:', err);
 			}).then(() => {
 				window.location.reload();
 			});
@@ -244,7 +244,7 @@ const engine = new Engine(GODOT_CONFIG);
 			displayFailureNotice(missingMsg + missing.join('\n'));
 		}
 	} else {
-		console.log('[4TM Block Puzzle Loader v2] Starting Godot 4.3 Web Engine...');
+		console.log('[4TM Block Puzzle Loader v3] Starting Godot 4.3 Web Engine...');
 		setStatusMode('progress');
 		engine.startGame({
 			'onProgress': function (current, total) {
@@ -257,7 +257,7 @@ const engine = new Engine(GODOT_CONFIG);
 				}
 			},
 		}).then(() => {
-			console.log('[4TM Block Puzzle Loader v2] Engine started successfully, entering game arena');
+			console.log('[4TM Block Puzzle Loader v3] Engine started successfully, entering game arena');
 			setStatusMode('hidden');
 		}, displayFailureNotice);
 	}

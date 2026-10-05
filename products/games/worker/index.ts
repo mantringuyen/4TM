@@ -47,10 +47,16 @@ export default {
       if (env.DATA) {
         try {
           const rangeHeader = request.headers.get('range');
-          const object = await env.DATA.get(key, {
-            range: request.headers,
-            onlyIf: request.headers,
-          });
+          const getOptions: any = {};
+          if (rangeHeader) {
+            getOptions.range = request.headers;
+          }
+          const ifMatch = request.headers.get('if-match');
+          const ifNoneMatch = request.headers.get('if-none-match');
+          if (ifMatch || ifNoneMatch) {
+            getOptions.onlyIf = request.headers;
+          }
+          const object = await env.DATA.get(key, Object.keys(getOptions).length > 0 ? getOptions : undefined);
 
           if (object) {
             const headers = new Headers();
@@ -75,7 +81,7 @@ export default {
 
             // Set accurate Content-Length and Content-Range for 200 vs 206
             let status = 200;
-            if (object.range) {
+            if (rangeHeader && object.range) {
               status = 206;
               const rangeOffset = (object.range as any).offset ?? 0;
               const rangeLength = (object.range as any).length ?? object.size;
