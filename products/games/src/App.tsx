@@ -23,8 +23,44 @@ export function App() {
     return 'en';
   });
 
-  const [activeGame, setActiveGame] = useState<Game | null>(null);
+  const [activeGame, setActiveGame] = useState<Game | null>(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.replace(/\/+$/, '');
+      const hash = window.location.hash.replace(/^#\/?/, '').replace(/\/+$/, '');
+      if (path === '/block-puzzle' || hash === 'block-puzzle') {
+        return GAMES.find((g) => g.id === 'block-puzzle') || null;
+      }
+      if (hash) {
+        return GAMES.find((g) => g.id === hash || g.slug === hash) || null;
+      }
+    }
+    return null;
+  });
   const [user, setUser] = useState<User | null>(null);
+
+  // Sync route state on back/forward browser navigation
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleRouteChange = () => {
+      const path = window.location.pathname.replace(/\/+$/, '');
+      const hash = window.location.hash.replace(/^#\/?/, '').replace(/\/+$/, '');
+      if (path === '/block-puzzle' || hash === 'block-puzzle') {
+        setActiveGame(GAMES.find((g) => g.id === 'block-puzzle') || null);
+      } else if (hash) {
+        setActiveGame(GAMES.find((g) => g.id === hash || g.slug === hash) || null);
+      } else if (path === '' || path === '/') {
+        setActiveGame(null);
+      }
+    };
+
+    window.addEventListener('popstate', handleRouteChange);
+    window.addEventListener('hashchange', handleRouteChange);
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+      window.removeEventListener('hashchange', handleRouteChange);
+    };
+  }, []);
 
   // Initialize Auth & Handle SSO Ticket
   useEffect(() => {
@@ -93,7 +129,9 @@ export function App() {
     : 'Interactive Game Ecosystem — browser-native computer science puzzles, logic riddles, algorithmic visualizers, binary search games, and interactive problem-solving challenges.';
 
   const canonicalUrl = activeGame
-    ? `https://games.4tm.io.vn/#/${activeGame.id}`
+    ? activeGame.id === 'block-puzzle'
+      ? 'https://games.4tm.io.vn/block-puzzle'
+      : `https://games.4tm.io.vn/#/${activeGame.id}`
     : 'https://games.4tm.io.vn/';
 
   useSEO({
@@ -108,7 +146,10 @@ export function App() {
             name: activeGame.title[language],
             description: activeGame.description[language],
             genre: activeGame.category,
-            url: `https://games.4tm.io.vn/#/${activeGame.id}`,
+            url:
+              activeGame.id === 'block-puzzle'
+                ? 'https://games.4tm.io.vn/block-puzzle'
+                : `https://games.4tm.io.vn/#/${activeGame.id}`,
           }),
           SchemaGenerators.website('https://games.4tm.io.vn', '4TM Games', pageDescription),
         ]
@@ -121,6 +162,9 @@ export function App() {
     setSearchQuery(q);
     if (activeGame && q) {
       setActiveGame(null);
+      if (typeof window !== 'undefined') {
+        window.history.pushState(null, '', '/');
+      }
     }
   };
 
@@ -140,6 +184,9 @@ export function App() {
           onNavigateHome={() => {
             setActiveGame(null);
             setSearchQuery('');
+            if (typeof window !== 'undefined') {
+              window.history.pushState(null, '', '/');
+            }
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           user={user}
@@ -156,6 +203,9 @@ export function App() {
               language={language}
               onBackToCatalog={() => {
                 setActiveGame(null);
+                if (typeof window !== 'undefined') {
+                  window.history.pushState(null, '', '/');
+                }
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             />
@@ -165,6 +215,13 @@ export function App() {
               language={language}
               onSelectGame={(game) => {
                 setActiveGame(game);
+                if (typeof window !== 'undefined') {
+                  if (game.id === 'block-puzzle') {
+                    window.history.pushState(null, '', '/block-puzzle');
+                  } else {
+                    window.history.pushState(null, '', `/#/${game.id}`);
+                  }
+                }
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               searchQuery={searchQuery}

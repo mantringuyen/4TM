@@ -283,6 +283,10 @@ export const GameCatalog: React.FC<GameCatalogProps> = ({
 
                   <button
                     type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectGame(game);
+                    }}
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold bg-rose-600 group-hover:bg-rose-500 text-white shadow-md shadow-rose-600/20 transition-all cursor-pointer"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />

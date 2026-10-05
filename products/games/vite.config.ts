@@ -18,6 +18,13 @@ export default defineConfig(() => {
       dedupe: ['react', 'react-dom'],
     },
     server: {
+      proxy: {
+        '/api/games-data': {
+          target: 'https://games-data.4tm.io.vn',
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/api\/games-data/, ''),
+        },
+      },
       fs: {
         allow: [path.resolve(__dirname, '../../')],
       },
