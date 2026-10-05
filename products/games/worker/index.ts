@@ -129,24 +129,26 @@ export default {
 
     // Handle WASM request decompression / Content-Encoding
     if (url.pathname.endsWith('.wasm') && env.ASSETS) {
-      // First attempt direct ASSETS fetch
-      const wasmRes = await env.ASSETS.fetch(request);
-      if (wasmRes.ok && wasmRes.status === 200) {
-        const headers = new Headers(wasmRes.headers);
-        headers.set('Content-Type', 'application/wasm');
-        headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
-        return new Response(wasmRes.body, { status: 200, headers });
-      }
-
-      // If .wasm returned 404, check for pre-compressed .wasm.gz
+      // 1. Check for pre-compressed .wasm.gz in ASSETS (since only .wasm.gz exists on disk)
       const gzUrl = new URL(request.url + '.gz');
       const gzRes = await env.ASSETS.fetch(gzUrl.toString());
-      if (gzRes.ok && gzRes.status === 200) {
+      const gzType = gzRes.headers.get('content-type') || '';
+      if (gzRes.ok && gzRes.status === 200 && !gzType.includes('text/html')) {
         const headers = new Headers(gzRes.headers);
         headers.set('Content-Type', 'application/wasm');
         headers.set('Content-Encoding', 'gzip');
         headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
         return new Response(gzRes.body, { status: 200, headers });
+      }
+
+      // 2. Direct ASSETS fetch for uncompressed .wasm (verify not SPA HTML fallback)
+      const wasmRes = await env.ASSETS.fetch(request);
+      const wasmType = wasmRes.headers.get('content-type') || '';
+      if (wasmRes.ok && wasmRes.status === 200 && !wasmType.includes('text/html')) {
+        const headers = new Headers(wasmRes.headers);
+        headers.set('Content-Type', 'application/wasm');
+        headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
+        return new Response(wasmRes.body, { status: 200, headers });
       }
     }
 
