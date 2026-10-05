@@ -545,22 +545,41 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 				function done(result) {
 					onSuccess(result['instance'], result['module']);
 				}
+				function decompressBufferIfNeeded(buf) {
+					const bytes = new Uint8Array(buf);
+					if (bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b) {
+						if (typeof DecompressionStream !== 'undefined') {
+							try {
+								const ds = new DecompressionStream('gzip');
+								const writer = ds.writable.getWriter();
+								writer.write(bytes);
+								writer.close();
+								const res = new Response(ds.readable);
+								return res.arrayBuffer();
+							} catch (e) {
+								console.error('[4TM Block Puzzle Loader v4] DecompressionStream error:', e);
+							}
+						}
+					}
+					return Promise.resolve(buf);
+				}
 				function instantiateBuffer(buf) {
-					WebAssembly.instantiate(buf, imports).then(done).catch(function (err) {
-						console.error('[Godot Web] WebAssembly.instantiate failed:', err);
+					decompressBufferIfNeeded(buf).then(function (finalBuf) {
+						const u8 = new Uint8Array(finalBuf);
+						const isWasm = u8.length >= 4 && u8[0] === 0x00 && u8[1] === 0x61 && u8[2] === 0x73 && u8[3] === 0x6d;
+						console.log(`[4TM Block Puzzle Loader v4] Instantiating WASM binary: ${finalBuf.byteLength} bytes (valid magic: ${isWasm})`);
+						WebAssembly.instantiate(finalBuf, imports).then(done).catch(function (err) {
+							console.error('[Godot Web] WebAssembly.instantiate failed:', err);
+						});
+					}).catch(function (err) {
+						console.error('[4TM Block Puzzle Loader v4] WASM decompression failed:', err);
 					});
 				}
 				if (r instanceof ArrayBuffer || ArrayBuffer.isView(r)) {
 					const buf = r instanceof ArrayBuffer ? r : r.buffer;
 					instantiateBuffer(buf);
 				} else if (r && typeof r.arrayBuffer === 'function') {
-					if (typeof WebAssembly.instantiateStreaming !== 'undefined' && !(r.body && r.body.locked)) {
-						WebAssembly.instantiateStreaming(Promise.resolve(r), imports).then(done).catch(function () {
-							r.arrayBuffer().then(instantiateBuffer).catch(console.error);
-						});
-					} else {
-						r.arrayBuffer().then(instantiateBuffer).catch(console.error);
-					}
+					r.arrayBuffer().then(instantiateBuffer).catch(console.error);
 				}
 				r = null;
 				return {};
@@ -724,6 +743,29 @@ const Engine = (function () {
 					Engine.load(basePath, this.config.fileSizes[`${basePath}.wasm`]);
 				}
 				const me = this;
+				function decompressGzip(buf) {
+					const bytes = new Uint8Array(buf);
+					if (bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b) {
+						if (typeof DecompressionStream !== 'undefined') {
+							try {
+								const ds = new DecompressionStream('gzip');
+								const writer = ds.writable.getWriter();
+								writer.write(bytes);
+								writer.close();
+								const res = new Response(ds.readable);
+								return res.arrayBuffer().then(function (decompressed) {
+									const u8 = new Uint8Array(decompressed);
+									const isWasm = u8.length >= 4 && u8[0] === 0x00 && u8[1] === 0x61 && u8[2] === 0x73 && u8[3] === 0x6d;
+									console.log(`[4TM Block Puzzle Loader v4] Decompressed WASM binary: ${decompressed.byteLength} bytes (magic: ${isWasm ? '\\0asm' : 'invalid'})`);
+									return decompressed;
+								});
+							} catch (e) {
+								console.error('[4TM Block Puzzle Loader v4] DecompressionStream error in doInit:', e);
+							}
+						}
+					}
+					return Promise.resolve(buf);
+				}
 				function doInit(promise) {
 					// Care! Promise chaining is bogus with old emscripten versions.
 					// This caused a regression with the Mono build (which uses an older emscripten version).
@@ -731,16 +773,18 @@ const Engine = (function () {
 					return new Promise(function (resolve, reject) {
 						promise.then(function (response) {
 							return response.arrayBuffer().then(function (buffer) {
-								console.log(`[4TM Block Puzzle Loader v4] WASM binary loaded: ${buffer.byteLength} bytes`);
-								return Godot(me.config.getModuleConfig(loadPath, buffer)).then(function (module) {
-									const paths = me.config.persistentPaths;
-									return module['initFS'](paths).then(function (err) {
-										me.rtenv = module;
-										if (me.config.unloadAfterInit) {
-											Engine.unload();
-										}
-										console.log('[4TM Block Puzzle Loader v4] WASM runtime environment and initFS initialized');
-										resolve();
+								console.log(`[4TM Block Puzzle Loader v4] WASM raw binary loaded: ${buffer.byteLength} bytes`);
+								return decompressGzip(buffer).then(function (decompressedBuffer) {
+									return Godot(me.config.getModuleConfig(loadPath, decompressedBuffer)).then(function (module) {
+										const paths = me.config.persistentPaths;
+										return module['initFS'](paths).then(function (err) {
+											me.rtenv = module;
+											if (me.config.unloadAfterInit) {
+												Engine.unload();
+											}
+											console.log('[4TM Block Puzzle Loader v4] WASM runtime environment and initFS initialized');
+											resolve();
+										}).catch(reject);
 									}).catch(reject);
 								}).catch(reject);
 							}).catch(reject);
