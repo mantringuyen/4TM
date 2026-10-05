@@ -238,7 +238,7 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 			const me = this;
 			return this.loadPromise(pathOrBuffer, fileSize).then(function (buf) {
 				const byteLen = buf ? (buf.byteLength || buf.length || 0) : 0;
-				console.log(`[4TM Block Puzzle Loader v3] Preload complete: ${pathOrBuffer} -> ${destPath || pathOrBuffer} (${byteLen} bytes)`);
+				console.log(`[4TM Block Puzzle Loader v4] Preload complete: ${pathOrBuffer} -> ${destPath || pathOrBuffer} (${byteLen} bytes)`);
 				me.preloadedFiles.push({
 					path: destPath || pathOrBuffer,
 					buffer: buf,
@@ -731,7 +731,7 @@ const Engine = (function () {
 					return new Promise(function (resolve, reject) {
 						promise.then(function (response) {
 							return response.arrayBuffer().then(function (buffer) {
-								console.log(`[4TM Block Puzzle Loader v3] WASM binary loaded: ${buffer.byteLength} bytes`);
+								console.log(`[4TM Block Puzzle Loader v4] WASM binary loaded: ${buffer.byteLength} bytes`);
 								return Godot(me.config.getModuleConfig(loadPath, buffer)).then(function (module) {
 									const paths = me.config.persistentPaths;
 									return module['initFS'](paths).then(function (err) {
@@ -739,7 +739,7 @@ const Engine = (function () {
 										if (me.config.unloadAfterInit) {
 											Engine.unload();
 										}
-										console.log('[4TM Block Puzzle Loader v3] WASM runtime environment and initFS initialized');
+										console.log('[4TM Block Puzzle Loader v4] WASM runtime environment and initFS initialized');
 										resolve();
 									}).catch(reject);
 								}).catch(reject);
@@ -810,12 +810,13 @@ const Engine = (function () {
 					}
 					return new Promise(function (resolve, reject) {
 						for (const file of preloader.preloadedFiles) {
-							console.log(`[4TM Block Puzzle Loader v3] Copying preloaded file to MEMFS: ${file.path} (${file.buffer.byteLength || file.buffer.length} bytes)`);
+							console.log(`[4TM Block Puzzle Loader v4] Copying preloaded file to MEMFS: ${file.path} (${file.buffer.byteLength || file.buffer.length} bytes)`);
 							me.rtenv['copyToFS'](file.path, file.buffer);
 						}
 						preloader.preloadedFiles.length = 0; // Clear memory
-						console.log(`[4TM Block Puzzle Loader v3] Invoking callMain with args:`, me.config.args);
+						console.log(`[4TM Block Puzzle Loader v4] Invoking callMain with args:`, me.config.args);
 						me.rtenv['callMain'](me.config.args);
+						console.log('[4TM Block Puzzle Loader v4] Godot boot completed');
 						initPromise = null;
 						me.installServiceWorker();
 						resolve();
