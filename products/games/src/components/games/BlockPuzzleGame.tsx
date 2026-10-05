@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Language } from '../../types';
 import { TRANSLATIONS } from '../../i18n/translations';
 import { RotateCcw, Maximize2, Minimize2, Sparkles, Gamepad2, Loader2, X } from 'lucide-react';
@@ -10,12 +11,16 @@ export interface BlockPuzzleGameProps {
 export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) => {
   const dict = TRANSLATIONS[language];
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const portalIframeRef = useRef<HTMLIFrameElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isNativeFs, setIsNativeFs] = useState(false);
+  const [isPseudoFs, setIsPseudoFs] = useState(false);
 
-  // Helper to check if any element is currently in native full screen
+  const isFullscreen = isNativeFs || isPseudoFs;
+
+  // Helper to check native fullscreen element
   const getFullscreenElement = useCallback(() => {
     if (typeof document === 'undefined') return null;
     return (
@@ -27,15 +32,14 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
     );
   }, []);
 
-  // Listen to native browser fullscreen change events
+  // Sync native fullscreen events
   useEffect(() => {
     const handleFsChange = () => {
       const fsElem = getFullscreenElement();
       if (fsElem) {
-        setIsFullscreen(true);
+        setIsNativeFs(true);
       } else {
-        // Exited native fullscreen
-        setIsFullscreen(false);
+        setIsNativeFs(false);
       }
     };
 
@@ -52,102 +56,103 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
     };
   }, [getFullscreenElement]);
 
-  // Prevent outer background scrolling when in full/expanded screen mode (especially for iOS Safari)
+  // Lock outer page background scrolling when fullscreen is active (especially for iOS Safari)
   useEffect(() => {
     if (isFullscreen) {
+      const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow || '';
+      };
     } else {
       document.body.style.overflow = '';
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [isFullscreen]);
 
-  // Reload the game engine instance
+  // Restart handler
   const handleRestart = useCallback(() => {
     setIsLoading(true);
-    if (iframeRef.current) {
+    const activeIframe = isPseudoFs ? portalIframeRef.current : iframeRef.current;
+    if (activeIframe) {
       try {
-        iframeRef.current.contentWindow?.location.reload();
+        activeIframe.contentWindow?.location.reload();
       } catch (_) {
-        iframeRef.current.src = '/games/block-puzzle/index.html';
+        activeIframe.src = '/games/block-puzzle/index.html';
       }
     }
-  }, []);
+  }, [isPseudoFs]);
 
-  // Toggle fullscreen mode (with strict feature detection & iOS Safari / WebView fallback)
+  // Toggle fullscreen mode with strict feature detection & iOS viewport portal fallback
   const handleToggleFullscreen = useCallback(() => {
     const elem = containerRef.current;
-    if (!elem) return;
+    const isCurrentlyNative = !!getFullscreenElement();
 
-    const isCurrentlyNativeFs = !!getFullscreenElement();
+    if (!isFullscreen && !isCurrentlyNative) {
+      let nativeAttempted = false;
 
-    if (!isFullscreen && !isCurrentlyNativeFs) {
-      // Enter Fullscreen Mode
-      let nativeFsInitiated = false;
-
-      // Strict feature detection: check method type BEFORE invocation
-      if (typeof elem.requestFullscreen === 'function') {
+      // Check native Fullscreen API with strict function checks before invoking
+      if (elem && typeof elem.requestFullscreen === 'function') {
         try {
-          const res = elem.requestFullscreen();
-          if (res && typeof res.catch === 'function') {
-            res.then(() => setIsFullscreen(true)).catch(() => setIsFullscreen(true));
+          const promise = elem.requestFullscreen();
+          nativeAttempted = true;
+          if (promise && typeof promise.catch === 'function') {
+            promise
+              .then(() => setIsNativeFs(true))
+              .catch(() => {
+                // If rejected (e.g. mobile Safari / gesture issue), fallback to pseudo-fullscreen portal
+                setIsPseudoFs(true);
+              });
           } else {
-            setIsFullscreen(true);
+            setIsNativeFs(true);
           }
-          nativeFsInitiated = true;
         } catch (_) {
-          setIsFullscreen(true);
+          setIsPseudoFs(true);
         }
-      } else if (typeof (elem as any).webkitRequestFullscreen === 'function') {
+      } else if (elem && typeof (elem as any).webkitRequestFullscreen === 'function') {
         try {
           (elem as any).webkitRequestFullscreen();
-          setIsFullscreen(true);
-          nativeFsInitiated = true;
+          setIsNativeFs(true);
+          nativeAttempted = true;
         } catch (_) {
-          setIsFullscreen(true);
+          setIsPseudoFs(true);
         }
-      } else if (typeof (elem as any).webkitRequestFullScreen === 'function') {
+      } else if (elem && typeof (elem as any).webkitRequestFullScreen === 'function') {
         try {
           (elem as any).webkitRequestFullScreen();
-          setIsFullscreen(true);
-          nativeFsInitiated = true;
+          setIsNativeFs(true);
+          nativeAttempted = true;
         } catch (_) {
-          setIsFullscreen(true);
+          setIsPseudoFs(true);
         }
-      } else if (typeof (elem as any).mozRequestFullScreen === 'function') {
+      } else if (elem && typeof (elem as any).mozRequestFullScreen === 'function') {
         try {
           (elem as any).mozRequestFullScreen();
-          setIsFullscreen(true);
-          nativeFsInitiated = true;
+          setIsNativeFs(true);
+          nativeAttempted = true;
         } catch (_) {
-          setIsFullscreen(true);
+          setIsPseudoFs(true);
         }
-      } else if (typeof (elem as any).msRequestFullscreen === 'function') {
+      } else if (elem && typeof (elem as any).msRequestFullscreen === 'function') {
         try {
           (elem as any).msRequestFullscreen();
-          setIsFullscreen(true);
-          nativeFsInitiated = true;
+          setIsNativeFs(true);
+          nativeAttempted = true;
         } catch (_) {
-          setIsFullscreen(true);
+          setIsPseudoFs(true);
         }
       }
 
-      // If no native Fullscreen API method was available (e.g. iOS Safari / iPhone WebView),
-      // seamlessly fallback to pseudo-fullscreen mode
-      if (!nativeFsInitiated) {
-        setIsFullscreen(true);
+      // If native Fullscreen API is unavailable (e.g. iPhone / iOS Safari), activate viewport portal
+      if (!nativeAttempted) {
+        setIsPseudoFs(true);
       }
     } else {
       // Exit Fullscreen Mode
-      if (isCurrentlyNativeFs) {
+      if (isCurrentlyNative || getFullscreenElement()) {
         if (typeof document.exitFullscreen === 'function') {
           try {
-            const res = document.exitFullscreen();
-            if (res && typeof res.catch === 'function') {
-              res.catch(() => {});
-            }
+            const p = document.exitFullscreen();
+            if (p && typeof p.catch === 'function') p.catch(() => {});
           } catch (_) {}
         } else if (typeof (document as any).webkitExitFullscreen === 'function') {
           try {
@@ -167,9 +172,71 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
           } catch (_) {}
         }
       }
-      setIsFullscreen(false);
+      setIsNativeFs(false);
+      setIsPseudoFs(false);
     }
   }, [isFullscreen, getFullscreenElement]);
+
+  // Pseudo-fullscreen viewport portal view (unconstrained by parent layout)
+  const renderPseudoFsPortal = () => {
+    if (!isPseudoFs || typeof document === 'undefined') return null;
+
+    return createPortal(
+      <div className="fixed inset-0 z-[99999] w-screen h-screen w-[100vw] h-[100dvh] bg-slate-950 flex flex-col items-center justify-center p-2 sm:p-4 pt-[env(safe-area-inset-top,8px)] pb-[env(safe-area-inset-bottom,8px)] overflow-hidden">
+        {/* Floating Controls in Pseudo-Fullscreen */}
+        <div className="absolute top-3 right-3 z-30 flex items-center gap-2 bg-slate-900/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800 shadow-lg">
+          <button
+            type="button"
+            onClick={handleRestart}
+            className="p-2 rounded-xl bg-slate-800 text-slate-200 hover:text-rose-400 hover:bg-slate-700 transition-colors cursor-pointer"
+            title={dict.playView.restart}
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={handleToggleFullscreen}
+            className="p-2 rounded-xl bg-rose-600/80 hover:bg-rose-600 text-white transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
+            title="Exit Fullscreen"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Loading Overlay in Pseudo-Fullscreen */}
+        {isLoading && (
+          <div className="absolute inset-0 z-10 bg-slate-950/90 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center space-y-3">
+            <div className="relative">
+              <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
+              <Sparkles className="w-4 h-4 text-amber-400 absolute -top-1 -right-1 animate-pulse" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-white tracking-tight">
+                {language === 'vi' ? 'Đang Khởi Động Godot Web Engine...' : 'Initializing Godot Web Engine...'}
+              </div>
+              <div className="text-xs text-slate-400 font-mono mt-1">
+                {language === 'vi'
+                  ? 'Tải tài nguyên trò chơi từ R2 CDN'
+                  : 'Loading game assets from R2 CDN'}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Game Iframe centered at 9:16 portrait ratio */}
+        <iframe
+          ref={portalIframeRef}
+          src="/games/block-puzzle/index.html"
+          title="Block Puzzle — 4TM"
+          onLoad={() => setIsLoading(false)}
+          className="w-full h-full aspect-[9/16] max-w-full max-h-full rounded-2xl border-0 bg-black object-contain shadow-2xl"
+          allow="autoplay; fullscreen; focus-without-user-activation *"
+          tabIndex={0}
+        />
+      </div>,
+      document.body
+    );
+  };
 
   return (
     <div className="w-full max-w-xl mx-auto space-y-4">
@@ -226,64 +293,55 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
       <div
         ref={containerRef}
         className={`relative transition-all overflow-hidden flex flex-col items-center justify-center ${
-          isFullscreen
-            ? 'fixed inset-0 z-[9999] w-screen h-screen max-w-none max-h-none rounded-none bg-slate-950 p-2 sm:p-4'
+          isNativeFs
+            ? 'w-screen h-screen bg-slate-950 p-2 sm:p-4'
             : 'w-full rounded-3xl bg-slate-950 border-2 border-slate-800 shadow-2xl p-2 sm:p-3 aspect-[9/16] max-h-[740px]'
         }`}
       >
-        {/* Floating Quick Action Overlay in Fullscreen Mode */}
-        {isFullscreen && (
-          <div className="absolute top-3 right-3 z-30 flex items-center gap-2 bg-slate-900/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800 shadow-lg">
-            <button
-              type="button"
-              onClick={handleRestart}
-              className="p-2 rounded-xl bg-slate-800 text-slate-200 hover:text-rose-400 hover:bg-slate-700 transition-colors cursor-pointer"
-              title={dict.playView.restart}
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={handleToggleFullscreen}
-              className="p-2 rounded-xl bg-rose-600/80 hover:bg-rose-600 text-white transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
-              title="Exit Fullscreen"
-            >
-              <X className="w-4 h-4" />
-            </button>
+        {/* If pseudo-fullscreen portal is active, show placeholder in inline slot */}
+        {isPseudoFs ? (
+          <div className="w-full h-full aspect-[9/16] flex flex-col items-center justify-center text-slate-400 font-mono text-xs p-4 text-center space-y-2">
+            <Gamepad2 className="w-8 h-8 text-rose-500 animate-bounce" />
+            <div>Playing in Fullscreen Mode</div>
           </div>
-        )}
-
-        {/* Loading Overlay */}
-        {isLoading && (
-          <div className="absolute inset-0 z-10 bg-slate-950/90 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center space-y-3">
-            <div className="relative">
-              <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
-              <Sparkles className="w-4 h-4 text-amber-400 absolute -top-1 -right-1 animate-pulse" />
-            </div>
-            <div>
-              <div className="text-sm font-bold text-white tracking-tight">
-                {language === 'vi' ? 'Đang Khởi Động Godot Web Engine...' : 'Initializing Godot Web Engine...'}
+        ) : (
+          <>
+            {/* Loading Overlay */}
+            {isLoading && (
+              <div className="absolute inset-0 z-10 bg-slate-950/90 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center space-y-3">
+                <div className="relative">
+                  <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
+                  <Sparkles className="w-4 h-4 text-amber-400 absolute -top-1 -right-1 animate-pulse" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-white tracking-tight">
+                    {language === 'vi' ? 'Đang Khởi Động Godot Web Engine...' : 'Initializing Godot Web Engine...'}
+                  </div>
+                  <div className="text-xs text-slate-400 font-mono mt-1">
+                    {language === 'vi'
+                      ? 'Tải tài nguyên trò chơi từ R2 CDN'
+                      : 'Loading game assets from R2 CDN'}
+                  </div>
+                </div>
               </div>
-              <div className="text-xs text-slate-400 font-mono mt-1">
-                {language === 'vi'
-                  ? 'Tải tài nguyên trò chơi từ R2 CDN'
-                  : 'Loading game assets from R2 CDN'}
-              </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* Embedded Godot Web Runner */}
-        <iframe
-          ref={iframeRef}
-          src="/games/block-puzzle/index.html"
-          title="Block Puzzle — 4TM"
-          onLoad={() => setIsLoading(false)}
-          className="w-full h-full aspect-[9/16] max-w-full max-h-full rounded-2xl border-0 bg-black object-contain"
-          allow="autoplay; fullscreen; focus-without-user-activation *"
-          tabIndex={0}
-        />
+            {/* Embedded Godot Web Runner */}
+            <iframe
+              ref={iframeRef}
+              src="/games/block-puzzle/index.html"
+              title="Block Puzzle — 4TM"
+              onLoad={() => setIsLoading(false)}
+              className="w-full h-full aspect-[9/16] max-w-full max-h-full rounded-2xl border-0 bg-black object-contain"
+              allow="autoplay; fullscreen; focus-without-user-activation *"
+              tabIndex={0}
+            />
+          </>
+        )}
       </div>
+
+      {/* Render Viewport Portal for iPhone / Unsupported Fullscreen API */}
+      {renderPseudoFsPortal()}
     </div>
   );
 };
