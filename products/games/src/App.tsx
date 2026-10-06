@@ -24,17 +24,30 @@ interface BlockPuzzleThemeSyncProps {
  * 2. Keeps data-game="block-puzzle" route marker and theme-color=#000000.
  * 3. When leaving /block-puzzle, removes route marker, restores user's previous preference, and restores theme-color.
  * 4. Does NOT permanently overwrite the user's general 4tm_theme_mode preference.
+ * 5. Lifecycle depends strictly on isActive (not theme) to prevent theme changes from re-triggering the effect.
  */
 function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
   const { theme, setTheme } = useTheme();
   const savedPreferenceRef = useRef<ThemeMode | null>(null);
+  const themeRef = useRef(theme);
+  const setThemeRef = useRef(setTheme);
+
+  // Keep theme & setTheme refs updated without triggering the lifecycle effect
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
+
+  useEffect(() => {
+    setThemeRef.current = setTheme;
+  }, [setTheme]);
 
   useEffect(() => {
     const root = document.documentElement;
 
     if (isActive) {
+      // 1. Capture the user's original preference exactly once when entering Block Puzzle
       if (savedPreferenceRef.current === null) {
-        let stored = theme;
+        let stored = themeRef.current;
         try {
           const val = localStorage.getItem('4tm_theme_mode') as ThemeMode;
           if (val === 'light' || val === 'dark' || val === 'system') {
@@ -44,18 +57,22 @@ function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
         savedPreferenceRef.current = stored;
       }
 
+      // 2. Set root route marker for early CSS & scoping
       root.setAttribute('data-game', 'block-puzzle');
 
-      if (theme !== 'dark') {
-        setTheme('dark');
+      // 3. Set the existing shared theme to dark
+      if (themeRef.current !== 'dark') {
+        setThemeRef.current('dark');
       }
 
+      // 4. Ensure theme-color meta is black
       const themeColorMeta = (document.getElementById('theme-color-meta') ||
         document.querySelector('meta[name="theme-color"]')) as HTMLMetaElement | null;
       if (themeColorMeta) {
         themeColorMeta.content = '#000000';
       }
 
+      // 5. Restore original preference in localStorage if browser tab is closed/unloaded while playing
       const handleRestoreOnUnload = () => {
         if (savedPreferenceRef.current !== null) {
           try {
@@ -71,7 +88,8 @@ function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
         window.removeEventListener('pagehide', handleRestoreOnUnload);
       };
     } else {
-      // Remove route marker and boot stylesheet if present
+      // Leaving Block Puzzle:
+      // 1. Remove route marker and boot stylesheet
       root.removeAttribute('data-game');
       const bootStyle = document.getElementById('block-puzzle-boot-css');
       if (bootStyle && bootStyle.parentNode) {
@@ -82,11 +100,13 @@ function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
         earlyStyle.parentNode.removeChild(earlyStyle);
       }
 
+      // 2. Restore saved user preference exactly once
       if (savedPreferenceRef.current !== null) {
         const previous = savedPreferenceRef.current;
         savedPreferenceRef.current = null;
-        if (theme !== previous) {
-          setTheme(previous);
+
+        if (themeRef.current !== previous) {
+          setThemeRef.current(previous);
         }
         try {
           localStorage.setItem('4tm_theme_mode', previous);
@@ -100,8 +120,9 @@ function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
         root.style.backgroundColor = '';
       }
     }
-  }, [isActive, theme, setTheme]);
+  }, [isActive]);
 
+  // Clean up on component unmount
   useEffect(() => {
     return () => {
       const root = document.documentElement;
