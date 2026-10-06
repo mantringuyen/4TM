@@ -64,26 +64,32 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
       const originalDocBg = document.documentElement.style.backgroundColor;
       const originalColorScheme = document.documentElement.style.colorScheme;
 
+      // Capture original <html> light/dark classes
+      const rootClassList = document.documentElement.classList;
+      const hadLight = rootClassList.contains('light');
+      const hadDark = rootClassList.contains('dark');
+
       // Set fullscreen appearance styles
       document.body.style.overflow = 'hidden';
       document.body.style.backgroundColor = 'black';
       document.documentElement.style.backgroundColor = 'black';
       document.documentElement.style.colorScheme = 'dark';
 
+      // Toggle Tailwind classes for color-scheme and dynamic theme sync
+      if (hadLight) {
+        rootClassList.remove('light');
+      }
+      if (!hadDark) {
+        rootClassList.add('dark');
+      }
+
       // Dynamic theme-color metadata handling (Safari UI / status-bar configuration)
-      let themeColorMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
-      let createdMeta = false;
+      const themeColorMeta = document.getElementById('theme-color-meta') as HTMLMetaElement;
       let originalThemeColor = '';
 
       if (themeColorMeta) {
         originalThemeColor = themeColorMeta.content;
-        themeColorMeta.content = 'black';
-      } else {
-        themeColorMeta = document.createElement('meta');
-        themeColorMeta.name = 'theme-color';
-        themeColorMeta.content = 'black';
-        document.head.appendChild(themeColorMeta);
-        createdMeta = true;
+        themeColorMeta.content = '#000000';
       }
 
       return () => {
@@ -93,9 +99,16 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
         document.documentElement.style.backgroundColor = originalDocBg || '';
         document.documentElement.style.colorScheme = originalColorScheme || '';
 
-        if (createdMeta) {
-          themeColorMeta.remove();
-        } else if (themeColorMeta) {
+        // Restore original <html> classes
+        if (hadLight) {
+          rootClassList.add('light');
+        }
+        if (!hadDark) {
+          rootClassList.remove('dark');
+        }
+
+        // Restore theme-color
+        if (themeColorMeta) {
           themeColorMeta.content = originalThemeColor;
         }
       };
