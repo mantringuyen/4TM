@@ -56,21 +56,48 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
     };
   }, [getFullscreenElement]);
 
-  // Lock scroll and force black background on body/document for pristine iOS Dynamic Island coloring
+  // Lock scroll, force black background and dark color-scheme on body/document for pristine iOS status bar coloring
   useEffect(() => {
     if (isFullscreen) {
       const originalOverflow = document.body.style.overflow;
       const originalBodyBg = document.body.style.backgroundColor;
       const originalDocBg = document.documentElement.style.backgroundColor;
+      const originalColorScheme = document.documentElement.style.colorScheme;
 
+      // Set fullscreen appearance styles
       document.body.style.overflow = 'hidden';
       document.body.style.backgroundColor = 'black';
       document.documentElement.style.backgroundColor = 'black';
+      document.documentElement.style.colorScheme = 'dark';
+
+      // Dynamic theme-color metadata handling (Safari UI / status-bar configuration)
+      let themeColorMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
+      let createdMeta = false;
+      let originalThemeColor = '';
+
+      if (themeColorMeta) {
+        originalThemeColor = themeColorMeta.content;
+        themeColorMeta.content = 'black';
+      } else {
+        themeColorMeta = document.createElement('meta');
+        themeColorMeta.name = 'theme-color';
+        themeColorMeta.content = 'black';
+        document.head.appendChild(themeColorMeta);
+        createdMeta = true;
+      }
 
       return () => {
+        // Restore previous settings exactly on exit
         document.body.style.overflow = originalOverflow || '';
         document.body.style.backgroundColor = originalBodyBg || '';
         document.documentElement.style.backgroundColor = originalDocBg || '';
+        document.documentElement.style.colorScheme = originalColorScheme || '';
+
+        if (createdMeta) {
+          themeColorMeta.remove();
+        } else if (themeColorMeta) {
+          themeColorMeta.content = originalThemeColor;
+        }
       };
     }
   }, [isFullscreen]);
