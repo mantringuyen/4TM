@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Game, Language } from './types';
 import { GAMES } from './data/games';
 import { LANGUAGE_STORAGE_KEY } from './i18n/translations';
@@ -8,11 +8,96 @@ import { GameCatalog } from './components/GameCatalog';
 import { PlayView } from './components/PlayView';
 import { createClient, User } from '@supabase/supabase-js';
 import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
-import { ThemeProvider, AdSlot, useSEO, SchemaGenerators } from '@shared';
+import { ThemeProvider, useTheme, ThemeMode, AdSlot, useSEO, SchemaGenerators } from '@shared';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+
+interface BlockPuzzleThemeSyncProps {
+  isActive: boolean;
+}
+
+/**
+ * Host-level synchronizer directly under ThemeProvider:
+ * 1. While /block-puzzle is active, applies the host's dark theme via standard setTheme('dark').
+ * 2. When leaving /block-puzzle, restores the user's previous preference (light, dark, or system).
+ * 3. Does NOT permanently overwrite the user's general 4tm_theme_mode preference.
+ */
+function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
+  const { theme, setTheme } = useTheme();
+  const savedPreferenceRef = useRef<ThemeMode | null>(null);
+
+  useEffect(() => {
+    if (isActive) {
+      if (savedPreferenceRef.current === null) {
+        let stored = theme;
+        try {
+          const val = localStorage.getItem('4tm_theme_mode') as ThemeMode;
+          if (val === 'light' || val === 'dark' || val === 'system') {
+            stored = val;
+          }
+        } catch {}
+        savedPreferenceRef.current = stored;
+      }
+
+      if (theme !== 'dark') {
+        setTheme('dark');
+      }
+
+      const themeColorMeta = (document.getElementById('theme-color-meta') ||
+        document.querySelector('meta[name="theme-color"]')) as HTMLMetaElement | null;
+      if (themeColorMeta) {
+        themeColorMeta.content = '#000000';
+      }
+
+      const handleRestoreOnUnload = () => {
+        if (savedPreferenceRef.current !== null) {
+          try {
+            localStorage.setItem('4tm_theme_mode', savedPreferenceRef.current);
+          } catch {}
+        }
+      };
+      window.addEventListener('beforeunload', handleRestoreOnUnload);
+      window.addEventListener('pagehide', handleRestoreOnUnload);
+
+      return () => {
+        window.removeEventListener('beforeunload', handleRestoreOnUnload);
+        window.removeEventListener('pagehide', handleRestoreOnUnload);
+      };
+    } else {
+      if (savedPreferenceRef.current !== null) {
+        const previous = savedPreferenceRef.current;
+        savedPreferenceRef.current = null;
+        if (theme !== previous) {
+          setTheme(previous);
+        }
+        try {
+          localStorage.setItem('4tm_theme_mode', previous);
+        } catch {}
+
+        const themeColorMeta = (document.getElementById('theme-color-meta') ||
+          document.querySelector('meta[name="theme-color"]')) as HTMLMetaElement | null;
+        if (themeColorMeta) {
+          themeColorMeta.content = '#f8fafc';
+        }
+        document.documentElement.style.backgroundColor = '';
+      }
+    }
+  }, [isActive, theme, setTheme]);
+
+  useEffect(() => {
+    return () => {
+      if (savedPreferenceRef.current !== null) {
+        try {
+          localStorage.setItem('4tm_theme_mode', savedPreferenceRef.current);
+        } catch {}
+      }
+    };
+  }, []);
+
+  return null;
+}
 
 export function App() {
   const [language, setLanguage] = useState<Language>(() => {
@@ -175,9 +260,12 @@ export function App() {
     setUser(null);
   };
 
+  const isBlockPuzzleActive = activeGame?.id === 'block-puzzle';
+
   return (
     <ThemeProvider>
-      <div className={`min-h-screen flex flex-col ${activeGame?.id === 'block-puzzle' ? 'bg-black text-white' : 'bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100'} transition-colors duration-200`}>
+      <BlockPuzzleThemeSync isActive={isBlockPuzzleActive} />
+      <div className={`min-h-screen flex flex-col ${isBlockPuzzleActive ? 'bg-black text-white' : 'bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100'} transition-colors duration-200`}>
         <Navbar
           language={language}
           onLanguageChange={handleLanguageChange}

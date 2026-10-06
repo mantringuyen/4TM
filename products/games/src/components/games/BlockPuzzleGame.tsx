@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { Language } from '../../types';
 import { TRANSLATIONS } from '../../i18n/translations';
 import { RotateCcw, Maximize2, Minimize2, Sparkles, Gamepad2, Loader2 } from 'lucide-react';
-import { useTheme } from '@shared';
 
 export interface BlockPuzzleGameProps {
   language: Language;
@@ -11,7 +10,6 @@ export interface BlockPuzzleGameProps {
 
 export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) => {
   const dict = TRANSLATIONS[language];
-  const { theme, setTheme } = useTheme();
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const portalIframeRef = useRef<HTMLIFrameElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -22,86 +20,6 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
   const [isPseudoFs, setIsPseudoFs] = useState(true);
 
   const isFullscreen = isNativeFs || isPseudoFs;
-
-  // 1. Host theme & black document background lifecycle while Block Puzzle is active
-  useEffect(() => {
-    // Capture user's previous Games theme and localStorage configuration
-    const previousTheme = theme;
-    let previousStorageTheme: string | null = null;
-    try {
-      previousStorageTheme = localStorage.getItem('4tm_theme_mode');
-    } catch {}
-
-    // Capture original inline document and body background styles
-    const originalDocBg = document.documentElement.style.backgroundColor;
-    const originalBodyBg = document.body.style.backgroundColor;
-
-    // Capture and set relevant theme-color meta tag (#000000)
-    let themeColorMeta = (document.getElementById('theme-color-meta') ||
-      document.querySelector('meta[name="theme-color"]')) as HTMLMetaElement | null;
-    let originalThemeColor = '';
-    let createdThemeMeta = false;
-
-    if (themeColorMeta) {
-      originalThemeColor = themeColorMeta.content;
-      themeColorMeta.content = '#000000';
-    } else {
-      createdThemeMeta = true;
-      themeColorMeta = document.createElement('meta');
-      themeColorMeta.name = 'theme-color';
-      themeColorMeta.id = 'theme-color-meta';
-      themeColorMeta.content = '#000000';
-      document.head.appendChild(themeColorMeta);
-    }
-
-    // Ensure document/html/body background is black while Block Puzzle is active
-    document.documentElement.style.backgroundColor = '#000000';
-    document.body.style.backgroundColor = '#000000';
-
-    // Automatically apply host's dark theme
-    if (theme !== 'dark') {
-      setTheme('dark');
-    }
-
-    // Preserve original preference in localStorage if user closes tab/refreshes
-    const handleRestoreOnUnload = () => {
-      try {
-        if (previousStorageTheme !== null) {
-          localStorage.setItem('4tm_theme_mode', previousStorageTheme);
-        } else {
-          localStorage.removeItem('4tm_theme_mode');
-        }
-      } catch {}
-    };
-    window.addEventListener('pagehide', handleRestoreOnUnload);
-    window.addEventListener('beforeunload', handleRestoreOnUnload);
-
-    return () => {
-      window.removeEventListener('pagehide', handleRestoreOnUnload);
-      window.removeEventListener('beforeunload', handleRestoreOnUnload);
-
-      // Restore user's previous Games theme exactly
-      setTheme(previousTheme);
-      try {
-        if (previousStorageTheme !== null) {
-          localStorage.setItem('4tm_theme_mode', previousStorageTheme);
-        } else {
-          localStorage.removeItem('4tm_theme_mode');
-        }
-      } catch {}
-
-      // Restore document and body background styles exactly
-      document.documentElement.style.backgroundColor = originalDocBg || '';
-      document.body.style.backgroundColor = originalBodyBg || '';
-
-      // Restore relevant theme-color meta value exactly
-      if (createdThemeMeta && themeColorMeta && themeColorMeta.parentNode) {
-        themeColorMeta.parentNode.removeChild(themeColorMeta);
-      } else if (themeColorMeta) {
-        themeColorMeta.content = originalThemeColor;
-      }
-    };
-  }, []);
 
   // Helper to check native fullscreen element
   const getFullscreenElement = useCallback(() => {
