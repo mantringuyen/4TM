@@ -69,7 +69,18 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     const active = theme === 'system' ? getSystemTheme() : theme;
     setResolvedTheme(active);
 
+    try {
+      localStorage.setItem(storageKey, theme);
+    } catch {
+      // Ignore
+    }
+
     const root = document.documentElement;
+    // Skip mutating root DOM classes/colors if temporary game override (e.g. Block Puzzle) is active
+    if (root.dataset.game === 'block-puzzle') {
+      return;
+    }
+
     root.setAttribute('data-theme', active);
     root.style.colorScheme = active;
 
@@ -79,12 +90,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     } else {
       root.classList.add('light');
       root.classList.remove('dark');
-    }
-
-    try {
-      localStorage.setItem(storageKey, theme);
-    } catch {
-      // Ignore
     }
   }, [theme]);
 

@@ -53,106 +53,80 @@ function updateAppleStatusBarStyle(style: string) {
   document.head.appendChild(newMeta);
 }
 
-interface SavedDomPresentation {
-  htmlClassName: string;
-  htmlBackgroundColor: string;
-  htmlColorScheme: string;
-  bodyBackgroundColor: string;
-  themeColor: string;
-  appleStatusBarStyle: string;
-}
-
 /**
  * Host-level synchronizer directly under ThemeProvider:
- * - Reads current theme / resolvedTheme from ThemeProvider as the single source of truth.
+ * - Reads current resolvedTheme from ThemeProvider as the source of truth.
  * - Does NOT call setTheme() and does NOT modify localStorage or 4tm_theme_mode.
  * - While /block-puzzle is active (isActive = true), temporarily sets:
  *     1. document.documentElement.dataset.game = 'block-puzzle'
- *     2. Adds 'dark' class, removes 'light' class
+ *     2. Adds 'dark' class, sets data-theme="dark"
  *     3. document.documentElement.style.backgroundColor = '#000000'
  *     4. document.body.style.backgroundColor = '#000000'
  *     5. document.documentElement.style.colorScheme = 'dark'
  *     6. Replaces <meta name="theme-color"> with #000000
  *     7. Replaces <meta name="apple-mobile-web-app-status-bar-style"> with 'black-translucent'
- * - When leaving /block-puzzle (isActive = false), restores the exact DOM presentation:
- *     1. Removes dataset.game
- *     2. Restores html classes, backgrounds, colorScheme, and original theme-color / apple status-bar style
+ * - When leaving /block-puzzle (isActive = false), restores deterministically from resolvedTheme:
+ *     - dark -> .dark, data-theme="dark", dark color scheme, theme-color #020617, Apple status bar black-translucent
+ *     - light -> .light, data-theme="light", light color scheme, theme-color #f8fafc, Apple status bar default
  */
 function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
   const { resolvedTheme } = useTheme();
-  const savedPresentationRef = useRef<SavedDomPresentation | null>(null);
 
   useEffect(() => {
     const root = document.documentElement;
     const body = document.body;
 
     if (isActive) {
-      // 1. Capture the original DOM presentation exactly once upon entering Block Puzzle
-      if (savedPresentationRef.current === null) {
-        const currentMeta = (document.getElementById('theme-color-meta') ||
-          document.querySelector('meta[name="theme-color"]')) as HTMLMetaElement | null;
-        const currentAppleMeta = (document.getElementById('apple-status-bar-meta') ||
-          document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')) as HTMLMetaElement | null;
-
-        savedPresentationRef.current = {
-          htmlClassName: root.className,
-          htmlBackgroundColor: root.style.backgroundColor,
-          htmlColorScheme: root.style.colorScheme,
-          bodyBackgroundColor: body.style.backgroundColor,
-          themeColor: currentMeta?.content || (resolvedTheme === 'dark' ? '#020617' : '#f8fafc'),
-          appleStatusBarStyle: currentAppleMeta?.content || (resolvedTheme === 'dark' ? 'black-translucent' : 'default'),
-        };
-      }
-
-      // 2. Set root route marker for CSS & styling
+      // 1. Set root route marker for CSS & ThemeProvider override protection
       root.dataset.game = 'block-puzzle';
 
-      // 3. Temporarily enforce dark classes on <html>
+      // 2. Temporarily enforce dark classes on <html>
       root.classList.add('dark');
       root.classList.remove('light');
+      root.setAttribute('data-theme', 'dark');
 
-      // 4. Force black background & color-scheme on html and body
+      // 3. Force black background & color-scheme on html and body
       root.style.backgroundColor = '#000000';
       body.style.backgroundColor = '#000000';
       root.style.colorScheme = 'dark';
 
-      // 5. Replace theme-color meta with black for iOS Safari status-bar
+      // 4. Replace theme-color meta with black for iOS Safari status-bar
       updateThemeColorMeta('#000000');
 
-      // 6. Replace apple-mobile-web-app-status-bar-style with black-translucent for PWA / standalone edge-to-edge
+      // 5. Replace apple-mobile-web-app-status-bar-style with black-translucent
       updateAppleStatusBarStyle('black-translucent');
     } else {
-      // Leaving Block Puzzle: restore previous DOM presentation
-      if (savedPresentationRef.current !== null) {
-        const saved = savedPresentationRef.current;
-        savedPresentationRef.current = null;
+      // Leaving Block Puzzle: restore deterministically based on resolvedTheme
+      delete root.dataset.game;
 
-        // 1. Remove route marker
-        delete root.dataset.game;
+      // Clean up boot stylesheet if left over from cold load
+      const bootStyle = document.getElementById('block-puzzle-boot-css');
+      if (bootStyle && bootStyle.parentNode) {
+        bootStyle.parentNode.removeChild(bootStyle);
+      }
+      const earlyStyle = document.getElementById('block-puzzle-early-theme');
+      if (earlyStyle && earlyStyle.parentNode) {
+        earlyStyle.parentNode.removeChild(earlyStyle);
+      }
 
-        // 2. Clean up boot stylesheet if left over from cold load
-        const bootStyle = document.getElementById('block-puzzle-boot-css');
-        if (bootStyle && bootStyle.parentNode) {
-          bootStyle.parentNode.removeChild(bootStyle);
-        }
-        const earlyStyle = document.getElementById('block-puzzle-early-theme');
-        if (earlyStyle && earlyStyle.parentNode) {
-          earlyStyle.parentNode.removeChild(earlyStyle);
-        }
+      // Clear inline background overrides
+      root.style.backgroundColor = '';
+      body.style.backgroundColor = '';
 
-        // 3. Restore html classes
-        root.className = saved.htmlClassName;
-
-        // 4. Restore inline styles
-        root.style.backgroundColor = saved.htmlBackgroundColor;
-        body.style.backgroundColor = saved.bodyBackgroundColor;
-        root.style.colorScheme = saved.htmlColorScheme;
-
-        // 5. Restore original theme-color meta
-        updateThemeColorMeta(saved.themeColor);
-
-        // 6. Restore original apple status bar style
-        updateAppleStatusBarStyle(saved.appleStatusBarStyle);
+      if (resolvedTheme === 'dark') {
+        root.classList.add('dark');
+        root.classList.remove('light');
+        root.setAttribute('data-theme', 'dark');
+        root.style.colorScheme = 'dark';
+        updateThemeColorMeta('#020617');
+        updateAppleStatusBarStyle('black-translucent');
+      } else {
+        root.classList.add('light');
+        root.classList.remove('dark');
+        root.setAttribute('data-theme', 'light');
+        root.style.colorScheme = 'light';
+        updateThemeColorMeta('#f8fafc');
+        updateAppleStatusBarStyle('default');
       }
     }
   }, [isActive, resolvedTheme]);
@@ -173,19 +147,26 @@ function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
         earlyStyle.parentNode.removeChild(earlyStyle);
       }
 
-      if (savedPresentationRef.current !== null) {
-        const saved = savedPresentationRef.current;
-        savedPresentationRef.current = null;
+      root.style.backgroundColor = '';
+      body.style.backgroundColor = '';
 
-        root.className = saved.htmlClassName;
-        root.style.backgroundColor = saved.htmlBackgroundColor;
-        body.style.backgroundColor = saved.bodyBackgroundColor;
-        root.style.colorScheme = saved.htmlColorScheme;
-        updateThemeColorMeta(saved.themeColor);
-        updateAppleStatusBarStyle(saved.appleStatusBarStyle);
+      if (resolvedTheme === 'dark') {
+        root.classList.add('dark');
+        root.classList.remove('light');
+        root.setAttribute('data-theme', 'dark');
+        root.style.colorScheme = 'dark';
+        updateThemeColorMeta('#020617');
+        updateAppleStatusBarStyle('black-translucent');
+      } else {
+        root.classList.add('light');
+        root.classList.remove('dark');
+        root.setAttribute('data-theme', 'light');
+        root.style.colorScheme = 'light';
+        updateThemeColorMeta('#f8fafc');
+        updateAppleStatusBarStyle('default');
       }
     };
-  }, []);
+  }, [resolvedTheme]);
 
   return null;
 }
