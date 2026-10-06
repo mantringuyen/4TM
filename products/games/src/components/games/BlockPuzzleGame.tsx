@@ -259,8 +259,10 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
           onLoad={() => setIsLoading(false)}
           className="w-full h-full rounded-none border-0 bg-black shadow-none block"
           style={{
-            width: '100%',
-            height: '100%',
+            position: 'fixed',
+            inset: 0,
+            width: '100vw',
+            height: '100dvh',
             border: 0,
             display: 'block',
             backgroundColor: '#000000',
@@ -367,7 +369,24 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
               src="/games/block-puzzle/index.html"
               title="Block Puzzle — 4TM"
               onLoad={() => setIsLoading(false)}
-              className="w-full h-full aspect-[9/16] max-w-full max-h-full rounded-2xl border-0 bg-black object-contain"
+              className={
+                isNativeFs
+                  ? 'w-full h-full rounded-none border-0 bg-black shadow-none block'
+                  : 'w-full h-full aspect-[9/16] max-w-full max-h-full rounded-2xl border-0 bg-black object-contain'
+              }
+              style={
+                isNativeFs
+                  ? {
+                      position: 'fixed',
+                      inset: 0,
+                      width: '100vw',
+                      height: '100dvh',
+                      border: 0,
+                      display: 'block',
+                      backgroundColor: '#000000',
+                    }
+                  : undefined
+              }
               allow="autoplay; fullscreen; focus-without-user-activation *"
               tabIndex={0}
             />
