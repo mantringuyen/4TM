@@ -19,114 +19,123 @@ interface BlockPuzzleThemeSyncProps {
 }
 
 /**
+ * Safely replaces the <meta name="theme-color"> element in document.head.
+ * On iOS Safari during SPA transitions, replacing/re-inserting the meta node
+ * reliably forces Safari to re-evaluate the top status bar / Dynamic Island appearance,
+ * whereas merely mutating .content often fails to trigger a recalculation.
+ */
+function updateThemeColorMeta(color: string) {
+  if (typeof document === 'undefined') return;
+  const existingMetas = document.querySelectorAll('meta[name="theme-color"]');
+  existingMetas.forEach((meta) => meta.remove());
+
+  const newMeta = document.createElement('meta');
+  newMeta.name = 'theme-color';
+  newMeta.content = color;
+  newMeta.id = 'theme-color-meta';
+  document.head.appendChild(newMeta);
+}
+
+interface SavedDomPresentation {
+  htmlClassName: string;
+  htmlBackgroundColor: string;
+  htmlColorScheme: string;
+  bodyBackgroundColor: string;
+  themeColor: string;
+}
+
+/**
  * Host-level synchronizer directly under ThemeProvider:
- * 1. While /block-puzzle is active, applies the host's dark theme via standard setTheme('dark').
- * 2. Keeps data-game="block-puzzle" route marker and theme-color=#000000.
- * 3. When leaving /block-puzzle, removes route marker, restores user's previous preference, and restores theme-color.
- * 4. Does NOT permanently overwrite the user's general 4tm_theme_mode preference.
- * 5. Lifecycle depends strictly on isActive (not theme) to prevent theme changes from re-triggering the effect.
+ * - Reads current theme / resolvedTheme from ThemeProvider as the single source of truth.
+ * - Does NOT call setTheme() and does NOT modify localStorage or 4tm_theme_mode.
+ * - While /block-puzzle is active (isActive = true), temporarily sets:
+ *     1. document.documentElement.dataset.game = 'block-puzzle'
+ *     2. Adds 'dark' class, removes 'light' class
+ *     3. document.documentElement.style.backgroundColor = '#000000'
+ *     4. document.body.style.backgroundColor = '#000000'
+ *     5. document.documentElement.style.colorScheme = 'dark'
+ *     6. Replaces <meta name="theme-color"> with #000000
+ * - When leaving /block-puzzle (isActive = false), restores the exact DOM presentation:
+ *     1. Removes dataset.game
+ *     2. Restores html classes, backgrounds, colorScheme, and original theme-color
  */
 function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
-  const { theme, setTheme } = useTheme();
-  const savedPreferenceRef = useRef<ThemeMode | null>(null);
-  const themeRef = useRef(theme);
-  const setThemeRef = useRef(setTheme);
-
-  // Keep theme & setTheme refs updated without triggering the lifecycle effect
-  useEffect(() => {
-    themeRef.current = theme;
-  }, [theme]);
-
-  useEffect(() => {
-    setThemeRef.current = setTheme;
-  }, [setTheme]);
+  const { resolvedTheme } = useTheme();
+  const savedPresentationRef = useRef<SavedDomPresentation | null>(null);
 
   useEffect(() => {
     const root = document.documentElement;
+    const body = document.body;
 
     if (isActive) {
-      // 1. Capture the user's original preference exactly once when entering Block Puzzle
-      if (savedPreferenceRef.current === null) {
-        let stored = themeRef.current;
-        try {
-          const val = localStorage.getItem('4tm_theme_mode') as ThemeMode;
-          if (val === 'light' || val === 'dark' || val === 'system') {
-            stored = val;
-          }
-        } catch {}
-        savedPreferenceRef.current = stored;
-      }
-
-      // 2. Set root route marker for early CSS & scoping
-      root.setAttribute('data-game', 'block-puzzle');
-
-      // 3. Set the existing shared theme to dark
-      if (themeRef.current !== 'dark') {
-        setThemeRef.current('dark');
-      }
-
-      // 4. Ensure theme-color meta is black
-      const themeColorMeta = (document.getElementById('theme-color-meta') ||
-        document.querySelector('meta[name="theme-color"]')) as HTMLMetaElement | null;
-      if (themeColorMeta) {
-        themeColorMeta.content = '#000000';
-      }
-
-      // 5. Restore original preference in localStorage if browser tab is closed/unloaded while playing
-      const handleRestoreOnUnload = () => {
-        if (savedPreferenceRef.current !== null) {
-          try {
-            localStorage.setItem('4tm_theme_mode', savedPreferenceRef.current);
-          } catch {}
-        }
-      };
-      window.addEventListener('beforeunload', handleRestoreOnUnload);
-      window.addEventListener('pagehide', handleRestoreOnUnload);
-
-      return () => {
-        window.removeEventListener('beforeunload', handleRestoreOnUnload);
-        window.removeEventListener('pagehide', handleRestoreOnUnload);
-      };
-    } else {
-      // Leaving Block Puzzle:
-      // 1. Remove route marker and boot stylesheet
-      root.removeAttribute('data-game');
-      const bootStyle = document.getElementById('block-puzzle-boot-css');
-      if (bootStyle && bootStyle.parentNode) {
-        bootStyle.parentNode.removeChild(bootStyle);
-      }
-      const earlyStyle = document.getElementById('block-puzzle-early-theme');
-      if (earlyStyle && earlyStyle.parentNode) {
-        earlyStyle.parentNode.removeChild(earlyStyle);
-      }
-
-      // 2. Restore saved user preference exactly once
-      if (savedPreferenceRef.current !== null) {
-        const previous = savedPreferenceRef.current;
-        savedPreferenceRef.current = null;
-
-        if (themeRef.current !== previous) {
-          setThemeRef.current(previous);
-        }
-        try {
-          localStorage.setItem('4tm_theme_mode', previous);
-        } catch {}
-
-        const themeColorMeta = (document.getElementById('theme-color-meta') ||
+      // 1. Capture the original DOM presentation exactly once upon entering Block Puzzle
+      if (savedPresentationRef.current === null) {
+        const currentMeta = (document.getElementById('theme-color-meta') ||
           document.querySelector('meta[name="theme-color"]')) as HTMLMetaElement | null;
-        if (themeColorMeta) {
-          themeColorMeta.content = previous === 'dark' ? '#020617' : '#f8fafc';
+
+        savedPresentationRef.current = {
+          htmlClassName: root.className,
+          htmlBackgroundColor: root.style.backgroundColor,
+          htmlColorScheme: root.style.colorScheme,
+          bodyBackgroundColor: body.style.backgroundColor,
+          themeColor: currentMeta?.content || (resolvedTheme === 'dark' ? '#020617' : '#f8fafc'),
+        };
+      }
+
+      // 2. Set root route marker for CSS & styling
+      root.dataset.game = 'block-puzzle';
+
+      // 3. Temporarily enforce dark classes on <html>
+      root.classList.add('dark');
+      root.classList.remove('light');
+
+      // 4. Force black background & color-scheme on html and body
+      root.style.backgroundColor = '#000000';
+      body.style.backgroundColor = '#000000';
+      root.style.colorScheme = 'dark';
+
+      // 5. Replace theme-color meta with black for iOS Safari status-bar
+      updateThemeColorMeta('#000000');
+    } else {
+      // Leaving Block Puzzle: restore previous DOM presentation
+      if (savedPresentationRef.current !== null) {
+        const saved = savedPresentationRef.current;
+        savedPresentationRef.current = null;
+
+        // 1. Remove route marker
+        delete root.dataset.game;
+
+        // 2. Clean up boot stylesheet if left over from cold load
+        const bootStyle = document.getElementById('block-puzzle-boot-css');
+        if (bootStyle && bootStyle.parentNode) {
+          bootStyle.parentNode.removeChild(bootStyle);
         }
-        root.style.backgroundColor = '';
+        const earlyStyle = document.getElementById('block-puzzle-early-theme');
+        if (earlyStyle && earlyStyle.parentNode) {
+          earlyStyle.parentNode.removeChild(earlyStyle);
+        }
+
+        // 3. Restore html classes
+        root.className = saved.htmlClassName;
+
+        // 4. Restore inline styles
+        root.style.backgroundColor = saved.htmlBackgroundColor;
+        body.style.backgroundColor = saved.bodyBackgroundColor;
+        root.style.colorScheme = saved.htmlColorScheme;
+
+        // 5. Restore original theme-color meta
+        updateThemeColorMeta(saved.themeColor);
       }
     }
-  }, [isActive]);
+  }, [isActive, resolvedTheme]);
 
   // Clean up on component unmount
   useEffect(() => {
     return () => {
       const root = document.documentElement;
-      root.removeAttribute('data-game');
+      const body = document.body;
+      delete root.dataset.game;
+
       const bootStyle = document.getElementById('block-puzzle-boot-css');
       if (bootStyle && bootStyle.parentNode) {
         bootStyle.parentNode.removeChild(bootStyle);
@@ -135,10 +144,16 @@ function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
       if (earlyStyle && earlyStyle.parentNode) {
         earlyStyle.parentNode.removeChild(earlyStyle);
       }
-      if (savedPreferenceRef.current !== null) {
-        try {
-          localStorage.setItem('4tm_theme_mode', savedPreferenceRef.current);
-        } catch {}
+
+      if (savedPresentationRef.current !== null) {
+        const saved = savedPresentationRef.current;
+        savedPresentationRef.current = null;
+
+        root.className = saved.htmlClassName;
+        root.style.backgroundColor = saved.htmlBackgroundColor;
+        body.style.backgroundColor = saved.bodyBackgroundColor;
+        root.style.colorScheme = saved.htmlColorScheme;
+        updateThemeColorMeta(saved.themeColor);
       }
     };
   }, []);
