@@ -16,6 +16,13 @@
     color-scheme: dark;
   }
 
+  html[data-game="block-puzzle"],
+  html[data-game="block-puzzle"] body,
+  html[data-game="block-puzzle"] #root {
+    background-color: #000 !important;
+    color-scheme: dark !important;
+  }
+
   body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }

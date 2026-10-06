@@ -70,25 +70,33 @@
           var isBlockPuzzle = window.location.pathname.replace(/\/+$/, '') === '/block-puzzle' || window.location.hash.indexOf('block-puzzle') !== -1;
           var mode = localStorage.getItem('4tm_theme_preference') || localStorage.getItem('4tm_theme_mode') || 'system';
           var isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-          if (isBlockPuzzle) {
-            isDark = true;
-          }
           var root = document.documentElement;
-          if (isDark) {
+
+          if (isBlockPuzzle) {
+            root.setAttribute('data-game', 'block-puzzle');
             root.classList.add('dark');
             root.classList.remove('light');
             root.setAttribute('data-theme', 'dark');
             root.style.colorScheme = 'dark';
-          } else {
-            root.classList.add('light');
-            root.classList.remove('dark');
-            root.setAttribute('data-theme', 'light');
-            root.style.colorScheme = 'light';
-          }
-          if (isBlockPuzzle) {
-            root.style.backgroundColor = '#000000';
             var meta = document.getElementById('theme-color-meta');
             if (meta) meta.content = '#000000';
+
+            var earlyStyle = document.createElement('style');
+            earlyStyle.id = 'block-puzzle-boot-css';
+            earlyStyle.textContent = 'html[data-game="block-puzzle"], html[data-game="block-puzzle"] body, html[data-game="block-puzzle"] #root { background-color: #000 !important; color-scheme: dark !important; }';
+            document.head.appendChild(earlyStyle);
+          } else {
+            if (isDark) {
+              root.classList.add('dark');
+              root.classList.remove('light');
+              root.setAttribute('data-theme', 'dark');
+              root.style.colorScheme = 'dark';
+            } else {
+              root.classList.add('light');
+              root.classList.remove('dark');
+              root.setAttribute('data-theme', 'light');
+              root.style.colorScheme = 'light';
+            }
           }
         } catch(e) {}
       })();

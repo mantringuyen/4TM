@@ -21,14 +21,17 @@ interface BlockPuzzleThemeSyncProps {
 /**
  * Host-level synchronizer directly under ThemeProvider:
  * 1. While /block-puzzle is active, applies the host's dark theme via standard setTheme('dark').
- * 2. When leaving /block-puzzle, restores the user's previous preference (light, dark, or system).
- * 3. Does NOT permanently overwrite the user's general 4tm_theme_mode preference.
+ * 2. Keeps data-game="block-puzzle" route marker and theme-color=#000000.
+ * 3. When leaving /block-puzzle, removes route marker, restores user's previous preference, and restores theme-color.
+ * 4. Does NOT permanently overwrite the user's general 4tm_theme_mode preference.
  */
 function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
   const { theme, setTheme } = useTheme();
   const savedPreferenceRef = useRef<ThemeMode | null>(null);
 
   useEffect(() => {
+    const root = document.documentElement;
+
     if (isActive) {
       if (savedPreferenceRef.current === null) {
         let stored = theme;
@@ -40,6 +43,8 @@ function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
         } catch {}
         savedPreferenceRef.current = stored;
       }
+
+      root.setAttribute('data-game', 'block-puzzle');
 
       if (theme !== 'dark') {
         setTheme('dark');
@@ -66,6 +71,17 @@ function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
         window.removeEventListener('pagehide', handleRestoreOnUnload);
       };
     } else {
+      // Remove route marker and boot stylesheet if present
+      root.removeAttribute('data-game');
+      const bootStyle = document.getElementById('block-puzzle-boot-css');
+      if (bootStyle && bootStyle.parentNode) {
+        bootStyle.parentNode.removeChild(bootStyle);
+      }
+      const earlyStyle = document.getElementById('block-puzzle-early-theme');
+      if (earlyStyle && earlyStyle.parentNode) {
+        earlyStyle.parentNode.removeChild(earlyStyle);
+      }
+
       if (savedPreferenceRef.current !== null) {
         const previous = savedPreferenceRef.current;
         savedPreferenceRef.current = null;
@@ -79,15 +95,25 @@ function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
         const themeColorMeta = (document.getElementById('theme-color-meta') ||
           document.querySelector('meta[name="theme-color"]')) as HTMLMetaElement | null;
         if (themeColorMeta) {
-          themeColorMeta.content = '#f8fafc';
+          themeColorMeta.content = previous === 'dark' ? '#020617' : '#f8fafc';
         }
-        document.documentElement.style.backgroundColor = '';
+        root.style.backgroundColor = '';
       }
     }
   }, [isActive, theme, setTheme]);
 
   useEffect(() => {
     return () => {
+      const root = document.documentElement;
+      root.removeAttribute('data-game');
+      const bootStyle = document.getElementById('block-puzzle-boot-css');
+      if (bootStyle && bootStyle.parentNode) {
+        bootStyle.parentNode.removeChild(bootStyle);
+      }
+      const earlyStyle = document.getElementById('block-puzzle-early-theme');
+      if (earlyStyle && earlyStyle.parentNode) {
+        earlyStyle.parentNode.removeChild(earlyStyle);
+      }
       if (savedPreferenceRef.current !== null) {
         try {
           localStorage.setItem('4tm_theme_mode', savedPreferenceRef.current);
