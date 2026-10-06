@@ -16,7 +16,8 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
 
   const [isLoading, setIsLoading] = useState(true);
   const [isNativeFs, setIsNativeFs] = useState(false);
-  const [isPseudoFs, setIsPseudoFs] = useState(false);
+  // Default to true so opening Block Puzzle automatically enters the pseudo-fullscreen presentation
+  const [isPseudoFs, setIsPseudoFs] = useState(true);
 
   const isFullscreen = isNativeFs || isPseudoFs;
 
@@ -56,11 +57,17 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
     };
   }, [getFullscreenElement]);
 
-  // Lock scroll, force black background and dark color-scheme on body/document for pristine iOS status bar coloring
+  // Lock scroll, prevent Safari bounce, and synchronize dark document state while fullscreen takeover is active
   useEffect(() => {
     if (isFullscreen) {
-      const originalOverflow = document.body.style.overflow;
+      const originalBodyOverflow = document.body.style.overflow;
+      const originalBodyTouchAction = document.body.style.touchAction;
+      const originalBodyOverscroll = document.body.style.overscrollBehavior;
       const originalBodyBg = document.body.style.backgroundColor;
+
+      const originalDocOverflow = document.documentElement.style.overflow;
+      const originalDocTouchAction = document.documentElement.style.touchAction;
+      const originalDocOverscroll = document.documentElement.style.overscrollBehavior;
       const originalDocBg = document.documentElement.style.backgroundColor;
       const originalColorScheme = document.documentElement.style.colorScheme;
 
@@ -69,13 +76,19 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
       const hadLight = rootClassList.contains('light');
       const hadDark = rootClassList.contains('dark');
 
-      // Set fullscreen appearance styles
+      // 1. Lock host page scroll and prevent Safari bounce / rubber-band
       document.body.style.overflow = 'hidden';
-      document.body.style.backgroundColor = 'black';
-      document.documentElement.style.backgroundColor = 'black';
+      document.body.style.touchAction = 'none';
+      document.body.style.overscrollBehavior = 'none';
+      document.body.style.backgroundColor = '#000000';
+
+      document.documentElement.style.overflow = 'hidden';
+      document.documentElement.style.touchAction = 'none';
+      document.documentElement.style.overscrollBehavior = 'none';
+      document.documentElement.style.backgroundColor = '#000000';
       document.documentElement.style.colorScheme = 'dark';
 
-      // Toggle Tailwind classes for color-scheme and dynamic theme sync
+      // 2. Toggle Tailwind classes for color-scheme and dynamic theme sync
       if (hadLight) {
         rootClassList.remove('light');
       }
@@ -83,8 +96,9 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
         rootClassList.add('dark');
       }
 
-      // Dynamic theme-color metadata handling (Safari UI / status-bar configuration)
-      const themeColorMeta = document.getElementById('theme-color-meta') as HTMLMetaElement;
+      // 3. Dynamic theme-color metadata handling (Safari UI / status-bar configuration)
+      const themeColorMeta = (document.getElementById('theme-color-meta') ||
+        document.querySelector('meta[name="theme-color"]')) as HTMLMetaElement | null;
       let originalThemeColor = '';
 
       if (themeColorMeta) {
@@ -93,9 +107,15 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
       }
 
       return () => {
-        // Restore previous settings exactly on exit
-        document.body.style.overflow = originalOverflow || '';
+        // Restore previous settings exactly on exit / unmount
+        document.body.style.overflow = originalBodyOverflow || '';
+        document.body.style.touchAction = originalBodyTouchAction || '';
+        document.body.style.overscrollBehavior = originalBodyOverscroll || '';
         document.body.style.backgroundColor = originalBodyBg || '';
+
+        document.documentElement.style.overflow = originalDocOverflow || '';
+        document.documentElement.style.touchAction = originalDocTouchAction || '';
+        document.documentElement.style.overscrollBehavior = originalDocOverscroll || '';
         document.documentElement.style.backgroundColor = originalDocBg || '';
         document.documentElement.style.colorScheme = originalColorScheme || '';
 
@@ -115,6 +135,17 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
     }
   }, [isFullscreen]);
 
+  // Allow desktop users to exit pseudo-fullscreen via Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isPseudoFs) {
+        setIsPseudoFs(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isPseudoFs]);
+
   // Restart handler (for normal inline mode)
   const handleRestart = useCallback(() => {
     setIsLoading(true);
@@ -128,7 +159,7 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
     }
   }, [isPseudoFs]);
 
-  // Toggle fullscreen mode with strict feature detection & iOS viewport portal fallback
+  // Toggle fullscreen mode with strict feature detection & iOS pseudo-fullscreen fallback
   const handleToggleFullscreen = useCallback(() => {
     const elem = containerRef.current;
     const isCurrentlyNative = !!getFullscreenElement();
@@ -229,10 +260,25 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
     if (!isPseudoFs || typeof document === 'undefined') return null;
 
     return createPortal(
-      <div className="fixed inset-0 z-[99999] w-full h-full w-[100vw] h-[100dvh] bg-black flex flex-col items-center justify-center p-0 m-0 overflow-hidden select-none">
+      <div
+        className="fixed inset-0 z-[99999] w-full h-full w-[100vw] h-[100vh] h-[100dvh] bg-black flex flex-col items-center justify-center p-0 m-0 overflow-hidden select-none touch-none"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          width: '100vw',
+          height: '100dvh',
+          backgroundColor: '#000000',
+          zIndex: 99999,
+          touchAction: 'none',
+          overscrollBehavior: 'none',
+        }}
+      >
         {/* Loading Overlay in Pseudo-Fullscreen */}
         {isLoading && (
-          <div className="absolute inset-0 z-10 bg-black flex flex-col items-center justify-center p-6 text-center space-y-3">
+          <div
+            className="absolute inset-0 z-10 bg-black flex flex-col items-center justify-center p-6 text-center space-y-3"
+            style={{ backgroundColor: '#000000' }}
+          >
             <div className="relative">
               <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
               <Sparkles className="w-4 h-4 text-amber-400 absolute -top-1 -right-1 animate-pulse" />
@@ -256,7 +302,17 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
           src="/games/block-puzzle/index.html"
           title="Block Puzzle — 4TM"
           onLoad={() => setIsLoading(false)}
-          className="w-full h-full aspect-[9/16] max-w-full max-h-full rounded-none border-0 bg-black object-contain shadow-none"
+          className="w-full h-full aspect-[9/16] max-w-full max-h-full rounded-none border-0 bg-black object-contain shadow-none block"
+          style={{
+            width: '100%',
+            height: '100%',
+            aspectRatio: '9 / 16',
+            maxWidth: '100%',
+            maxHeight: '100%',
+            border: 0,
+            display: 'block',
+            backgroundColor: '#000000',
+          }}
           allow="autoplay; fullscreen; focus-without-user-activation *"
           tabIndex={0}
         />
@@ -267,7 +323,7 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
 
   return (
     <div className="w-full max-w-xl mx-auto space-y-4">
-      {/* Top Controls & Status Bar */}
+      {/* Top Controls & Status Bar (Visible when inline) */}
       <div className="flex items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
         <div className="flex items-center gap-2.5">
           <div className="p-2 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400">
