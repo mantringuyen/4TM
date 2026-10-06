@@ -67,8 +67,12 @@
     <script>
       (function() {
         try {
+          var isBlockPuzzle = window.location.pathname.replace(/\/+$/, '') === '/block-puzzle' || window.location.hash.indexOf('block-puzzle') !== -1;
           var mode = localStorage.getItem('4tm_theme_preference') || localStorage.getItem('4tm_theme_mode') || 'system';
           var isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (isBlockPuzzle) {
+            isDark = true;
+          }
           var root = document.documentElement;
           if (isDark) {
             root.classList.add('dark');
@@ -80,6 +84,11 @@
             root.classList.remove('dark');
             root.setAttribute('data-theme', 'light');
             root.style.colorScheme = 'light';
+          }
+          if (isBlockPuzzle) {
+            root.style.backgroundColor = '#000000';
+            var meta = document.getElementById('theme-color-meta');
+            if (meta) meta.content = '#000000';
           }
         } catch(e) {}
       })();

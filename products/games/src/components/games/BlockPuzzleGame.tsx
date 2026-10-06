@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Language } from '../../types';
 import { TRANSLATIONS } from '../../i18n/translations';
 import { RotateCcw, Maximize2, Minimize2, Sparkles, Gamepad2, Loader2 } from 'lucide-react';
+import { useTheme } from '@shared';
 
 export interface BlockPuzzleGameProps {
   language: Language;
@@ -10,6 +11,7 @@ export interface BlockPuzzleGameProps {
 
 export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) => {
   const dict = TRANSLATIONS[language];
+  const { theme, setTheme } = useTheme();
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const portalIframeRef = useRef<HTMLIFrameElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -20,6 +22,86 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
   const [isPseudoFs, setIsPseudoFs] = useState(true);
 
   const isFullscreen = isNativeFs || isPseudoFs;
+
+  // 1. Host theme & black document background lifecycle while Block Puzzle is active
+  useEffect(() => {
+    // Capture user's previous Games theme and localStorage configuration
+    const previousTheme = theme;
+    let previousStorageTheme: string | null = null;
+    try {
+      previousStorageTheme = localStorage.getItem('4tm_theme_mode');
+    } catch {}
+
+    // Capture original inline document and body background styles
+    const originalDocBg = document.documentElement.style.backgroundColor;
+    const originalBodyBg = document.body.style.backgroundColor;
+
+    // Capture and set relevant theme-color meta tag (#000000)
+    let themeColorMeta = (document.getElementById('theme-color-meta') ||
+      document.querySelector('meta[name="theme-color"]')) as HTMLMetaElement | null;
+    let originalThemeColor = '';
+    let createdThemeMeta = false;
+
+    if (themeColorMeta) {
+      originalThemeColor = themeColorMeta.content;
+      themeColorMeta.content = '#000000';
+    } else {
+      createdThemeMeta = true;
+      themeColorMeta = document.createElement('meta');
+      themeColorMeta.name = 'theme-color';
+      themeColorMeta.id = 'theme-color-meta';
+      themeColorMeta.content = '#000000';
+      document.head.appendChild(themeColorMeta);
+    }
+
+    // Ensure document/html/body background is black while Block Puzzle is active
+    document.documentElement.style.backgroundColor = '#000000';
+    document.body.style.backgroundColor = '#000000';
+
+    // Automatically apply host's dark theme
+    if (theme !== 'dark') {
+      setTheme('dark');
+    }
+
+    // Preserve original preference in localStorage if user closes tab/refreshes
+    const handleRestoreOnUnload = () => {
+      try {
+        if (previousStorageTheme !== null) {
+          localStorage.setItem('4tm_theme_mode', previousStorageTheme);
+        } else {
+          localStorage.removeItem('4tm_theme_mode');
+        }
+      } catch {}
+    };
+    window.addEventListener('pagehide', handleRestoreOnUnload);
+    window.addEventListener('beforeunload', handleRestoreOnUnload);
+
+    return () => {
+      window.removeEventListener('pagehide', handleRestoreOnUnload);
+      window.removeEventListener('beforeunload', handleRestoreOnUnload);
+
+      // Restore user's previous Games theme exactly
+      setTheme(previousTheme);
+      try {
+        if (previousStorageTheme !== null) {
+          localStorage.setItem('4tm_theme_mode', previousStorageTheme);
+        } else {
+          localStorage.removeItem('4tm_theme_mode');
+        }
+      } catch {}
+
+      // Restore document and body background styles exactly
+      document.documentElement.style.backgroundColor = originalDocBg || '';
+      document.body.style.backgroundColor = originalBodyBg || '';
+
+      // Restore relevant theme-color meta value exactly
+      if (createdThemeMeta && themeColorMeta && themeColorMeta.parentNode) {
+        themeColorMeta.parentNode.removeChild(themeColorMeta);
+      } else if (themeColorMeta) {
+        themeColorMeta.content = originalThemeColor;
+      }
+    };
+  }, []);
 
   // Helper to check native fullscreen element
   const getFullscreenElement = useCallback(() => {
@@ -57,80 +139,35 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
     };
   }, [getFullscreenElement]);
 
-  // Lock scroll, prevent Safari bounce, and synchronize dark document state while fullscreen takeover is active
+  // Lock scroll and prevent Safari bounce while fullscreen takeover is active
   useEffect(() => {
     if (isFullscreen) {
       const originalBodyOverflow = document.body.style.overflow;
       const originalBodyTouchAction = document.body.style.touchAction;
       const originalBodyOverscroll = document.body.style.overscrollBehavior;
-      const originalBodyBg = document.body.style.backgroundColor;
 
       const originalDocOverflow = document.documentElement.style.overflow;
       const originalDocTouchAction = document.documentElement.style.touchAction;
       const originalDocOverscroll = document.documentElement.style.overscrollBehavior;
-      const originalDocBg = document.documentElement.style.backgroundColor;
-      const originalColorScheme = document.documentElement.style.colorScheme;
 
-      // Capture original <html> light/dark classes
-      const rootClassList = document.documentElement.classList;
-      const hadLight = rootClassList.contains('light');
-      const hadDark = rootClassList.contains('dark');
-
-      // 1. Lock host page scroll and prevent Safari bounce / rubber-band
+      // Lock host page scroll and prevent Safari bounce / rubber-band
       document.body.style.overflow = 'hidden';
       document.body.style.touchAction = 'none';
       document.body.style.overscrollBehavior = 'none';
-      document.body.style.backgroundColor = '#000000';
 
       document.documentElement.style.overflow = 'hidden';
       document.documentElement.style.touchAction = 'none';
       document.documentElement.style.overscrollBehavior = 'none';
-      document.documentElement.style.backgroundColor = '#000000';
-      document.documentElement.style.colorScheme = 'dark';
-
-      // 2. Toggle Tailwind classes for color-scheme and dynamic theme sync
-      if (hadLight) {
-        rootClassList.remove('light');
-      }
-      if (!hadDark) {
-        rootClassList.add('dark');
-      }
-
-      // 3. Dynamic theme-color metadata handling (Safari UI / status-bar configuration)
-      const themeColorMeta = (document.getElementById('theme-color-meta') ||
-        document.querySelector('meta[name="theme-color"]')) as HTMLMetaElement | null;
-      let originalThemeColor = '';
-
-      if (themeColorMeta) {
-        originalThemeColor = themeColorMeta.content;
-        themeColorMeta.content = '#000000';
-      }
 
       return () => {
-        // Restore previous settings exactly on exit / unmount
+        // Restore previous scroll settings on exit fullscreen
         document.body.style.overflow = originalBodyOverflow || '';
         document.body.style.touchAction = originalBodyTouchAction || '';
         document.body.style.overscrollBehavior = originalBodyOverscroll || '';
-        document.body.style.backgroundColor = originalBodyBg || '';
 
         document.documentElement.style.overflow = originalDocOverflow || '';
         document.documentElement.style.touchAction = originalDocTouchAction || '';
         document.documentElement.style.overscrollBehavior = originalDocOverscroll || '';
-        document.documentElement.style.backgroundColor = originalDocBg || '';
-        document.documentElement.style.colorScheme = originalColorScheme || '';
-
-        // Restore original <html> classes
-        if (hadLight) {
-          rootClassList.add('light');
-        }
-        if (!hadDark) {
-          rootClassList.remove('dark');
-        }
-
-        // Restore theme-color
-        if (themeColorMeta) {
-          themeColorMeta.content = originalThemeColor;
-        }
       };
     }
   }, [isFullscreen]);
