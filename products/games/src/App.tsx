@@ -36,12 +36,30 @@ function updateThemeColorMeta(color: string) {
   document.head.appendChild(newMeta);
 }
 
+/**
+ * Safely replaces/updates <meta name="apple-mobile-web-app-status-bar-style">
+ * For edge-to-edge fullscreen PWA / Safari standalone display, 'black-translucent'
+ * enables web content to render fully under the status bar / Dynamic Island.
+ */
+function updateAppleStatusBarStyle(style: string) {
+  if (typeof document === 'undefined') return;
+  const existingMetas = document.querySelectorAll('meta[name="apple-mobile-web-app-status-bar-style"]');
+  existingMetas.forEach((meta) => meta.remove());
+
+  const newMeta = document.createElement('meta');
+  newMeta.name = 'apple-mobile-web-app-status-bar-style';
+  newMeta.content = style;
+  newMeta.id = 'apple-status-bar-meta';
+  document.head.appendChild(newMeta);
+}
+
 interface SavedDomPresentation {
   htmlClassName: string;
   htmlBackgroundColor: string;
   htmlColorScheme: string;
   bodyBackgroundColor: string;
   themeColor: string;
+  appleStatusBarStyle: string;
 }
 
 /**
@@ -55,9 +73,10 @@ interface SavedDomPresentation {
  *     4. document.body.style.backgroundColor = '#000000'
  *     5. document.documentElement.style.colorScheme = 'dark'
  *     6. Replaces <meta name="theme-color"> with #000000
+ *     7. Replaces <meta name="apple-mobile-web-app-status-bar-style"> with 'black-translucent'
  * - When leaving /block-puzzle (isActive = false), restores the exact DOM presentation:
  *     1. Removes dataset.game
- *     2. Restores html classes, backgrounds, colorScheme, and original theme-color
+ *     2. Restores html classes, backgrounds, colorScheme, and original theme-color / apple status-bar style
  */
 function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
   const { resolvedTheme } = useTheme();
@@ -72,6 +91,8 @@ function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
       if (savedPresentationRef.current === null) {
         const currentMeta = (document.getElementById('theme-color-meta') ||
           document.querySelector('meta[name="theme-color"]')) as HTMLMetaElement | null;
+        const currentAppleMeta = (document.getElementById('apple-status-bar-meta') ||
+          document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')) as HTMLMetaElement | null;
 
         savedPresentationRef.current = {
           htmlClassName: root.className,
@@ -79,6 +100,7 @@ function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
           htmlColorScheme: root.style.colorScheme,
           bodyBackgroundColor: body.style.backgroundColor,
           themeColor: currentMeta?.content || (resolvedTheme === 'dark' ? '#020617' : '#f8fafc'),
+          appleStatusBarStyle: currentAppleMeta?.content || (resolvedTheme === 'dark' ? 'black-translucent' : 'default'),
         };
       }
 
@@ -96,6 +118,9 @@ function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
 
       // 5. Replace theme-color meta with black for iOS Safari status-bar
       updateThemeColorMeta('#000000');
+
+      // 6. Replace apple-mobile-web-app-status-bar-style with black-translucent for PWA / standalone edge-to-edge
+      updateAppleStatusBarStyle('black-translucent');
     } else {
       // Leaving Block Puzzle: restore previous DOM presentation
       if (savedPresentationRef.current !== null) {
@@ -125,6 +150,9 @@ function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
 
         // 5. Restore original theme-color meta
         updateThemeColorMeta(saved.themeColor);
+
+        // 6. Restore original apple status bar style
+        updateAppleStatusBarStyle(saved.appleStatusBarStyle);
       }
     }
   }, [isActive, resolvedTheme]);
@@ -154,6 +182,7 @@ function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
         body.style.backgroundColor = saved.bodyBackgroundColor;
         root.style.colorScheme = saved.htmlColorScheme;
         updateThemeColorMeta(saved.themeColor);
+        updateAppleStatusBarStyle(saved.appleStatusBarStyle);
       }
     };
   }, []);

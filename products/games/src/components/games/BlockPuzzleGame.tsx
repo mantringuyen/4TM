@@ -216,11 +216,11 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
 
     return createPortal(
       <div
-        className="fixed inset-0 z-[99999] w-full h-full w-[100vw] h-[100vh] h-[100dvh] bg-black flex flex-col items-center justify-center p-0 m-0 overflow-hidden select-none touch-none"
+        className="fixed inset-0 z-[99999] w-full h-full w-[100dvw] h-[100dvh] bg-black flex flex-col items-center justify-center p-0 m-0 overflow-hidden select-none touch-none"
         style={{
           position: 'fixed',
           inset: 0,
-          width: '100vw',
+          width: '100dvw',
           height: '100dvh',
           backgroundColor: '#000000',
           zIndex: 99999,
@@ -251,19 +251,16 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
           </div>
         )}
 
-        {/* Game Iframe extending to maximum available viewport centered at 9:16 portrait ratio */}
+        {/* Game Iframe extending to fill the full viewport shell edge-to-edge */}
         <iframe
           ref={portalIframeRef}
           src="/games/block-puzzle/index.html"
           title="Block Puzzle — 4TM"
           onLoad={() => setIsLoading(false)}
-          className="w-full h-full aspect-[9/16] max-w-full max-h-full rounded-none border-0 bg-black object-contain shadow-none block"
+          className="w-full h-full rounded-none border-0 bg-black shadow-none block"
           style={{
             width: '100%',
             height: '100%',
-            aspectRatio: '9 / 16',
-            maxWidth: '100%',
-            maxHeight: '100%',
             border: 0,
             display: 'block',
             backgroundColor: '#000000',
