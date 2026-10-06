@@ -182,9 +182,9 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
     if (!isPseudoFs || typeof document === 'undefined') return null;
 
     return createPortal(
-      <div className="fixed inset-0 z-[99999] w-screen h-screen w-[100vw] h-[100dvh] bg-slate-950 flex flex-col items-center justify-center p-2 sm:p-4 pt-[env(safe-area-inset-top,8px)] pb-[env(safe-area-inset-bottom,8px)] overflow-hidden">
-        {/* Floating Controls in Pseudo-Fullscreen */}
-        <div className="absolute top-3 right-3 z-30 flex items-center gap-2 bg-slate-900/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800 shadow-lg">
+      <div className="fixed inset-0 z-[99999] w-full h-full w-[100vw] h-[100dvh] bg-slate-950 flex flex-col items-center justify-center p-0 m-0 overflow-hidden">
+        {/* Floating Controls in Pseudo-Fullscreen (Safe-area adjusted for touch controls only) */}
+        <div className="absolute top-[max(0.5rem,env(safe-area-inset-top))] right-[max(0.5rem,env(safe-area-inset-right))] z-30 flex items-center gap-2 bg-slate-900/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800 shadow-lg">
           <button
             type="button"
             onClick={handleRestart}
@@ -223,13 +223,13 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
           </div>
         )}
 
-        {/* Game Iframe centered at 9:16 portrait ratio */}
+        {/* Game Iframe extending to maximum available viewport centered at 9:16 portrait ratio */}
         <iframe
           ref={portalIframeRef}
           src="/games/block-puzzle/index.html"
           title="Block Puzzle — 4TM"
           onLoad={() => setIsLoading(false)}
-          className="w-full h-full aspect-[9/16] max-w-full max-h-full rounded-2xl border-0 bg-black object-contain shadow-2xl"
+          className="w-full h-full aspect-[9/16] max-w-full max-h-full rounded-none border-0 bg-black object-contain shadow-none"
           allow="autoplay; fullscreen; focus-without-user-activation *"
           tabIndex={0}
         />
@@ -294,7 +294,7 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
         ref={containerRef}
         className={`relative transition-all overflow-hidden flex flex-col items-center justify-center ${
           isNativeFs
-            ? 'w-screen h-screen bg-slate-950 p-2 sm:p-4'
+            ? 'w-screen h-screen bg-slate-950 p-0 m-0'
             : 'w-full rounded-3xl bg-slate-950 border-2 border-slate-800 shadow-2xl p-2 sm:p-3 aspect-[9/16] max-h-[740px]'
         }`}
       >
