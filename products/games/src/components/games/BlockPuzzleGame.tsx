@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Language } from '../../types';
 import { TRANSLATIONS } from '../../i18n/translations';
-import { RotateCcw, Maximize2, Minimize2, Sparkles, Gamepad2, Loader2, X } from 'lucide-react';
+import { RotateCcw, Maximize2, Minimize2, Sparkles, Gamepad2, Loader2 } from 'lucide-react';
 
 export interface BlockPuzzleGameProps {
   language: Language;
@@ -56,20 +56,26 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
     };
   }, [getFullscreenElement]);
 
-  // Lock outer page background scrolling when fullscreen is active (especially for iOS Safari)
+  // Lock scroll and force black background on body/document for pristine iOS Dynamic Island coloring
   useEffect(() => {
     if (isFullscreen) {
       const originalOverflow = document.body.style.overflow;
+      const originalBodyBg = document.body.style.backgroundColor;
+      const originalDocBg = document.documentElement.style.backgroundColor;
+
       document.body.style.overflow = 'hidden';
+      document.body.style.backgroundColor = 'black';
+      document.documentElement.style.backgroundColor = 'black';
+
       return () => {
         document.body.style.overflow = originalOverflow || '';
+        document.body.style.backgroundColor = originalBodyBg || '';
+        document.documentElement.style.backgroundColor = originalDocBg || '';
       };
-    } else {
-      document.body.style.overflow = '';
     }
   }, [isFullscreen]);
 
-  // Restart handler
+  // Restart handler (for normal inline mode)
   const handleRestart = useCallback(() => {
     setIsLoading(true);
     const activeIframe = isPseudoFs ? portalIframeRef.current : iframeRef.current;
@@ -178,34 +184,15 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
   }, [isFullscreen, getFullscreenElement]);
 
   // Pseudo-fullscreen viewport portal view (unconstrained by parent layout)
+  // No floating Reset or Exit controls over the game per specification #2.
   const renderPseudoFsPortal = () => {
     if (!isPseudoFs || typeof document === 'undefined') return null;
 
     return createPortal(
-      <div className="fixed inset-0 z-[99999] w-full h-full w-[100vw] h-[100dvh] bg-slate-950 flex flex-col items-center justify-center p-0 m-0 overflow-hidden">
-        {/* Floating Controls in Pseudo-Fullscreen (Safe-area adjusted for touch controls only) */}
-        <div className="absolute top-[max(0.5rem,env(safe-area-inset-top))] right-[max(0.5rem,env(safe-area-inset-right))] z-30 flex items-center gap-2 bg-slate-900/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800 shadow-lg">
-          <button
-            type="button"
-            onClick={handleRestart}
-            className="p-2 rounded-xl bg-slate-800 text-slate-200 hover:text-rose-400 hover:bg-slate-700 transition-colors cursor-pointer"
-            title={dict.playView.restart}
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={handleToggleFullscreen}
-            className="p-2 rounded-xl bg-rose-600/80 hover:bg-rose-600 text-white transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
-            title="Exit Fullscreen"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
+      <div className="fixed inset-0 z-[99999] w-full h-full w-[100vw] h-[100dvh] bg-black flex flex-col items-center justify-center p-0 m-0 overflow-hidden select-none">
         {/* Loading Overlay in Pseudo-Fullscreen */}
         {isLoading && (
-          <div className="absolute inset-0 z-10 bg-slate-950/90 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center space-y-3">
+          <div className="absolute inset-0 z-10 bg-black flex flex-col items-center justify-center p-6 text-center space-y-3">
             <div className="relative">
               <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
               <Sparkles className="w-4 h-4 text-amber-400 absolute -top-1 -right-1 animate-pulse" />
