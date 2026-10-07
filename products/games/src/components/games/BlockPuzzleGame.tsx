@@ -359,12 +359,12 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
         className={`relative transition-all overflow-hidden flex flex-col items-center justify-center ${
           isNativeFs
             ? 'w-screen h-screen bg-slate-950 p-0 m-0'
-            : 'w-full rounded-3xl bg-slate-950 border-2 border-slate-800 shadow-2xl p-2 sm:p-3 aspect-[9/16] max-h-[740px]'
+            : 'w-full rounded-3xl bg-slate-950 border-2 border-slate-800 shadow-2xl p-2 sm:p-3 aspect-[9/16] max-h-[380px] sm:max-h-[740px]'
         }`}
       >
         {/* If pseudo-fullscreen portal is active, show placeholder in inline slot */}
         {isPseudoFs ? (
-          <div className="w-full h-full aspect-[9/16] flex flex-col items-center justify-center text-slate-400 font-mono text-xs p-4 text-center space-y-2">
+          <div className="w-full h-full aspect-[9/16] max-h-[380px] sm:max-h-[740px] flex flex-col items-center justify-center text-slate-400 font-mono text-xs p-4 text-center space-y-2">
             <Gamepad2 className="w-8 h-8 text-rose-500 animate-bounce" />
             <div>Playing in Fullscreen Mode</div>
           </div>

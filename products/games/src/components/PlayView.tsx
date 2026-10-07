@@ -73,24 +73,24 @@ export const PlayView: React.FC<PlayViewProps> = ({ game, language, onBackToCata
       </button>
 
       {/* Arena Title Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-3 sm:mb-8">
+      <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-8">
         <div>
-          <div className="flex flex-wrap items-center gap-2 text-xs font-mono mb-2">
-            <span className={`px-2.5 py-0.5 rounded-full border font-bold uppercase ${statusBadgeClass}`}>
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-mono mb-1 sm:mb-2">
+            <span className={`px-2 py-0.5 rounded-full border font-bold uppercase ${statusBadgeClass}`}>
               {statusLabel}
             </span>
             <span className="text-rose-700 dark:text-rose-400 font-bold uppercase">
               {game.genre[language]}
             </span>
-            <span className="text-slate-400">&bull;</span>
-            <span className="text-slate-500 dark:text-slate-400">{game.badge}</span>
+            <span className="text-slate-400 hidden sm:inline">&bull;</span>
+            <span className="text-slate-500 dark:text-slate-400 hidden sm:inline">{game.badge}</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
             {titleText}
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="hidden sm:flex items-center gap-2">
           <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-mono border border-slate-200 dark:border-slate-700">
             {dict.card.difficulty}: {game.difficulty}
           </span>

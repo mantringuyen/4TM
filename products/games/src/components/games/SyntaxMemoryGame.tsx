@@ -150,14 +150,14 @@ export const SyntaxMemoryGame: React.FC<SyntaxMemoryGameProps> = ({ language }) 
         </div>
       ) : (
         /* Cards Grid */
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
           {cards.map((card, idx) => {
             const showFace = card.isFlipped || card.isMatched;
             return (
               <div
                 key={card.id}
                 onClick={() => handleCardClick(idx)}
-                className={`h-28 rounded-2xl p-3 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-300 border ${
+                className={`h-20 sm:h-28 rounded-2xl p-2 sm:p-3 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-300 border ${
                   card.isMatched
                     ? 'bg-emerald-100 dark:bg-emerald-950/60 border-emerald-400 dark:border-emerald-500/60 text-emerald-900 dark:text-emerald-300 shadow-md'
                     : showFace
