@@ -60,20 +60,20 @@ export const PlayView: React.FC<PlayViewProps> = ({ game, language, onBackToCata
       : 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30';
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+    <div className="flex-1 min-h-0 flex flex-col w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-8 lg:py-10">
       {/* Top navigation */}
       <button
         type="button"
         id="game-back-btn"
         onClick={onBackToCatalog}
-        className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors mb-6 cursor-pointer"
+        className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors mb-3 sm:mb-6 cursor-pointer"
       >
         <ArrowLeft className="w-4 h-4" />
         <span>{dict.playView.backToCatalog}</span>
       </button>
 
       {/* Arena Title Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-3 sm:mb-8">
         <div>
           <div className="flex flex-wrap items-center gap-2 text-xs font-mono mb-2">
             <span className={`px-2.5 py-0.5 rounded-full border font-bold uppercase ${statusBadgeClass}`}>
@@ -100,8 +100,8 @@ export const PlayView: React.FC<PlayViewProps> = ({ game, language, onBackToCata
         </div>
       </div>
 
-      {/* Supported Platforms Bar */}
-      <div className="mb-8 p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+      {/* Supported Platforms Bar (Desktop/Tablet md+) */}
+      <div className="hidden md:flex mb-8 p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex-wrap items-center justify-between gap-3 text-xs">
         <span className="font-mono font-bold uppercase text-slate-500 text-[11px]">
           {dict.platforms.title}:
         </span>
