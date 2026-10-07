@@ -97,7 +97,6 @@ const products = [
   { name: 'Study', filePath: path.resolve(__dirname, '../products/study/src/App.tsx') },
   { name: 'Ebook', filePath: path.resolve(__dirname, '../products/ebook/src/App.tsx') },
   { name: 'Tools', filePath: path.resolve(__dirname, '../products/tools/src/App.tsx') },
-  { name: 'Games', filePath: path.resolve(__dirname, '../products/games/src/App.tsx') },
   { name: 'Apps', filePath: path.resolve(__dirname, '../products/apps/src/App.tsx') },
 ];
 

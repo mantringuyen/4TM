@@ -3,12 +3,11 @@ import { Game, Language } from './types';
 import { GAMES } from './data/games';
 import { LANGUAGE_STORAGE_KEY } from './i18n/translations';
 import { Navbar } from './components/Navbar';
-import { Footer } from './components/Footer';
 import { GameCatalog } from './components/GameCatalog';
 import { PlayView } from './components/PlayView';
 import { createClient, User } from '@supabase/supabase-js';
 import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
-import { ThemeProvider, useTheme, ThemeMode, AdSlot, useSEO, SchemaGenerators } from '@shared';
+import { ThemeProvider, useTheme, ThemeMode, useSEO, SchemaGenerators } from '@shared';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -389,9 +388,6 @@ export function App() {
             />
           )}
         </div>
-
-        <AdSlot product="games" user={user} supabaseClient={supabase} />
-        <Footer language={language} />
       </div>
     </ThemeProvider>
   );
