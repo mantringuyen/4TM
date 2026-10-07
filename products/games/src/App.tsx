@@ -67,7 +67,7 @@ function updateAppleStatusBarStyle(style: string) {
  *     7. Replaces <meta name="apple-mobile-web-app-status-bar-style"> with 'black-translucent'
  * - When leaving /block-puzzle (isActive = false), restores deterministically from resolvedTheme:
  *     - dark -> .dark, data-theme="dark", dark color scheme, theme-color #020617, Apple status bar black-translucent
- *     - light -> .light, data-theme="light", light color scheme, theme-color #f8fafc, Apple status bar default
+ *     - light -> .light, data-theme="light", light color scheme, theme-color #f8fafc, Apple status bar black-translucent
  */
 function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
   const { resolvedTheme } = useTheme();
@@ -126,7 +126,7 @@ function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
         root.setAttribute('data-theme', 'light');
         root.style.colorScheme = 'light';
         updateThemeColorMeta('#f8fafc');
-        updateAppleStatusBarStyle('default');
+        updateAppleStatusBarStyle('black-translucent');
       }
     }
   }, [isActive, resolvedTheme]);
@@ -163,7 +163,7 @@ function BlockPuzzleThemeSync({ isActive }: BlockPuzzleThemeSyncProps) {
         root.setAttribute('data-theme', 'light');
         root.style.colorScheme = 'light';
         updateThemeColorMeta('#f8fafc');
-        updateAppleStatusBarStyle('default');
+        updateAppleStatusBarStyle('black-translucent');
       }
     };
   }, [resolvedTheme]);
