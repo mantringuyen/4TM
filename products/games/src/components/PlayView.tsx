@@ -1,7 +1,7 @@
 import React from 'react';
 import { Game, Language, getGameTitle } from '../types';
 import { TRANSLATIONS } from '../i18n/translations';
-import { ArrowLeft, ShieldCheck, Zap, Globe, Smartphone, Clock, Sparkles } from 'lucide-react';
+import { ArrowLeft, Globe, Smartphone, Clock } from 'lucide-react';
 import { BlockPuzzleGame } from './games/BlockPuzzleGame';
 import { BinarySearchGame } from './games/BinarySearchGame';
 import { SyntaxMemoryGame } from './games/SyntaxMemoryGame';
@@ -126,30 +126,7 @@ export const PlayView: React.FC<PlayViewProps> = ({ game, language, onBackToCata
       </div>
 
       {/* Main Game Arena */}
-      <div className="mb-10">{renderGameArena()}</div>
-
-      {/* Instructions & Controls Guide */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-xs">
-          <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400 flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4" />
-            <span>{dict.playView.howToPlay}</span>
-          </h3>
-          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{game.objective[language]}</p>
-        </div>
-
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-xs">
-          <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400 flex items-center gap-2">
-            <Zap className="w-4 h-4" />
-            <span>{dict.playView.controls}</span>
-          </h3>
-          <ul className="space-y-1 text-xs text-slate-600 dark:text-slate-300 list-disc list-inside">
-            {game.controls[language].map((ctrl, idx) => (
-              <li key={idx}>{ctrl}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      <div>{renderGameArena()}</div>
     </div>
   );
 };
