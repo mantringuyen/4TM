@@ -16,11 +16,26 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
 
   const [isLoading, setIsLoading] = useState(true);
   const [isNativeFs, setIsNativeFs] = useState(false);
+  // Helper to detect mobile / touch viewports (iOS Safari, mobile browsers, touch screens)
+  const checkIsMobileViewport = useCallback(() => {
+    if (typeof window === 'undefined') return true;
+    const isTouch = 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+    const isSmallScreen = window.innerWidth < 768;
+    const isIosMobile = /iPhone|iPod|iPad/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    return isSmallScreen || isTouch || isIosMobile;
+  }, []);
+
   // Default to true on mobile/touch viewports so opening Block Puzzle automatically enters the pseudo-fullscreen presentation
   const [isPseudoFs, setIsPseudoFs] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    return window.innerWidth < 768 || 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+    return checkIsMobileViewport();
   });
+
+  // Ensure pseudo-fullscreen portal is active on mount for mobile/touch viewports in Safari Web and PWA
+  useEffect(() => {
+    if (checkIsMobileViewport()) {
+      setIsPseudoFs(true);
+    }
+  }, [checkIsMobileViewport]);
 
   const isFullscreen = isNativeFs || isPseudoFs;
 
