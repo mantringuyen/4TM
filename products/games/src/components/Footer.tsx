@@ -14,15 +14,6 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
 
   return (
     <footer className="w-full border-t border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 mt-auto transition-colors text-slate-600 dark:text-slate-400">
-      {/* Bottom Ad Container Slot (Prepared for Ecosystem Ad Distribution, currently empty) */}
-      <div
-        id="bottom-ad-container"
-        className="w-full max-w-5xl mx-auto px-4 pt-8 pb-4 text-center"
-        aria-hidden="true"
-      >
-        <div className="min-h-[1px] w-full" data-ad-slot="games-bottom" />
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-slate-200 dark:border-slate-800">
           {/* Brand Column */}
