@@ -16,8 +16,11 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
 
   const [isLoading, setIsLoading] = useState(true);
   const [isNativeFs, setIsNativeFs] = useState(false);
-  // Default to true so opening Block Puzzle automatically enters the pseudo-fullscreen presentation
-  const [isPseudoFs, setIsPseudoFs] = useState(true);
+  // Default to true on mobile/touch viewports so opening Block Puzzle automatically enters the pseudo-fullscreen presentation
+  const [isPseudoFs, setIsPseudoFs] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return window.innerWidth < 768 || 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+  });
 
   const isFullscreen = isNativeFs || isPseudoFs;
 
@@ -57,12 +60,15 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
     };
   }, [getFullscreenElement]);
 
-  // Lock scroll and prevent Safari bounce while fullscreen takeover is active
+  // Lock scroll, lock body height/position, and prevent Safari bounce while fullscreen takeover is active
   useEffect(() => {
     if (isFullscreen) {
       const originalBodyOverflow = document.body.style.overflow;
       const originalBodyTouchAction = document.body.style.touchAction;
       const originalBodyOverscroll = document.body.style.overscrollBehavior;
+      const originalBodyPosition = document.body.style.position;
+      const originalBodyWidth = document.body.style.width;
+      const originalBodyHeight = document.body.style.height;
 
       const originalDocOverflow = document.documentElement.style.overflow;
       const originalDocTouchAction = document.documentElement.style.touchAction;
@@ -72,6 +78,9 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
       document.body.style.overflow = 'hidden';
       document.body.style.touchAction = 'none';
       document.body.style.overscrollBehavior = 'none';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100dvh';
 
       document.documentElement.style.overflow = 'hidden';
       document.documentElement.style.touchAction = 'none';
@@ -82,6 +91,9 @@ export const BlockPuzzleGame: React.FC<BlockPuzzleGameProps> = ({ language }) =>
         document.body.style.overflow = originalBodyOverflow || '';
         document.body.style.touchAction = originalBodyTouchAction || '';
         document.body.style.overscrollBehavior = originalBodyOverscroll || '';
+        document.body.style.position = originalBodyPosition || '';
+        document.body.style.width = originalBodyWidth || '';
+        document.body.style.height = originalBodyHeight || '';
 
         document.documentElement.style.overflow = originalDocOverflow || '';
         document.documentElement.style.touchAction = originalDocTouchAction || '';
