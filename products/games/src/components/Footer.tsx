@@ -14,8 +14,9 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
 
   return (
     <footer className="w-full border-t border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 mt-auto transition-colors text-slate-600 dark:text-slate-400">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-slate-200 dark:border-slate-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-10">
+        {/* Desktop 3-Column Ecosystem Section */}
+        <div className="hidden md:grid md:grid-cols-3 gap-8 pb-8 border-b border-slate-200 dark:border-slate-800">
           {/* Brand Column */}
           <div className="space-y-3">
             <BrandLogo size="md" productName="Games" showText={true} showMark={true} href="#" />
@@ -92,10 +93,15 @@ export const Footer: React.FC<FooterProps> = ({ language }) => {
           </div>
         </div>
 
-        {/* Bottom copyright */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-          <div>
-            &copy; {currentYear} 4TM Ecosystem. {dict.footer.rights}
+        {/* Mobile Compact Footer / Bottom Copyright */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 md:pt-6">
+          <div className="flex items-center gap-3">
+            <div className="md:hidden">
+              <BrandLogo size="sm" productName="Games" showText={true} showMark={true} href="#" />
+            </div>
+            <div>
+              &copy; {currentYear} 4TM Ecosystem. {dict.footer.rights}
+            </div>
           </div>
           <div className="font-mono text-[11px] text-slate-500">
             games.4tm.io.vn
