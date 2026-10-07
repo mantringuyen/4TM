@@ -60,7 +60,7 @@ export const PlayView: React.FC<PlayViewProps> = ({ game, language, onBackToCata
       : 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30';
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+    <div className="flex-1 flex flex-col w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
       {/* Top navigation */}
       <button
         type="button"
