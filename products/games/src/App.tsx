@@ -337,7 +337,7 @@ export function App() {
   return (
     <ThemeProvider>
       <BlockPuzzleThemeSync isActive={isBlockPuzzleActive} />
-      <div className={`min-h-dvh flex flex-col ${isBlockPuzzleActive ? 'bg-black text-white' : 'bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100'} transition-colors duration-200`}>
+      <div className={`min-h-full flex-1 flex flex-col ${isBlockPuzzleActive ? 'bg-black text-white' : 'bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100'} transition-colors duration-200`}>
         <Navbar
           language={language}
           onLanguageChange={handleLanguageChange}
