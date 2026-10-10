@@ -1,0 +1,152 @@
+name: Release Games
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release-games:
+    name: Release Latest Dev Games Build to Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository (4TM)
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js / Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.0"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Validate GitHub Secrets Prerequisite
+        run: |
+          echo "Checking required repository secrets..."
+          MISSING_SECRETS=0
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "::error::Missing required secret: CLOUDFLARE_API_TOKEN"
+            MISSING_SECRETS=1
+          fi
+          if [ -z "${{ secrets.GH_PAT || secrets.REPO_ACCESS_TOKEN }}" ]; then
+            echo "::error::Missing required secret: GH_PAT or REPO_ACCESS_TOKEN for cross-repository access to mantringuyen/4TM-games"
+            MISSING_SECRETS=1
+          fi
+          if [ "$MISSING_SECRETS" -eq 1 ]; then
+            echo "::error::Prerequisite check failed: Required GitHub secrets (CLOUDFLARE_API_TOKEN, GH_PAT/REPO_ACCESS_TOKEN) are not configured. Please configure these secrets in repository settings before triggering a release."
+            exit 1
+          fi
+          echo "All required deployment secrets are present."
+
+      - name: Fetch Latest Successfully Deployed Dev Build from mantringuyen/4TM-games
+        env:
+          TOKEN: ${{ secrets.GH_PAT || secrets.REPO_ACCESS_TOKEN }}
+        run: |
+          echo "==> Fetching latest build artifacts from mantringuyen/4TM-games..."
+          API_URL="https://api.github.com/repos/mantringuyen/4TM-games/actions/artifacts?per_page=5"
+          RESPONSE=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" "$API_URL")
+          
+          TOTAL_COUNT=$(echo "$RESPONSE" | jq '.total_count // 0')
+          echo "Found $TOTAL_COUNT total artifacts in 4TM-games."
+          
+          if [ "$TOTAL_COUNT" -eq 0 ]; then
+            echo "::error::No build artifacts found in mantringuyen/4TM-games. Ensure the Dev repository has successfully completed a build workflow."
+            exit 1
+          fi
+
+          DOWNLOAD_URL=$(echo "$RESPONSE" | jq -r '.artifacts[0].archive_download_url')
+          ARTIFACT_NAME=$(echo "$RESPONSE" | jq -r '.artifacts[0].name')
+          
+          if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "null" ]; then
+            echo "::error::Failed to retrieve download URL for latest 4TM-games artifact."
+            exit 1
+          fi
+
+          echo "Downloading latest artifact: $ARTIFACT_NAME..."
+          curl -L -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" "$DOWNLOAD_URL" -o dev-game-artifact.zip
+
+          echo "Extracting Dev game build..."
+          mkdir -p temp-dev-build
+          unzip -q dev-game-artifact.zip -d temp-dev-build
+          ls -la temp-dev-build
+
+      - name: Verify Dev Build Integrity and Completeness
+        run: |
+          echo "==> Verifying completeness of extracted Dev build..."
+          BUILD_DIR="temp-dev-build"
+          if [ -d "temp-dev-build/dist" ]; then
+            BUILD_DIR="temp-dev-build/dist"
+          elif [ -d "temp-dev-build/public/games/block-puzzle" ]; then
+            BUILD_DIR="temp-dev-build/public/games/block-puzzle"
+          fi
+
+          echo "Using build source directory: $BUILD_DIR"
+
+          MISSING=0
+          if ! find "$BUILD_DIR" -name "index.html" | grep -q .; then
+            echo "::error::Missing required file: index.html in Dev build."
+            MISSING=1
+          fi
+          if ! find "$BUILD_DIR" -name "*.js" | grep -q .; then
+            echo "::error::Missing required JavaScript assets in Dev build."
+            MISSING=1
+          fi
+          if ! find "$BUILD_DIR" -name "*.wasm" -o -name "*.wasm.gz" | grep -q .; then
+            echo "::error::Missing required WebAssembly (.wasm or .wasm.gz) in Dev build."
+            MISSING=1
+          fi
+          if ! find "$BUILD_DIR" -name "index.pck" | grep -q .; then
+            echo "::error::Missing required file: index.pck in Dev build."
+            MISSING=1
+          fi
+
+          if [ "$MISSING" -eq 1 ]; then
+            echo "::error::Dev build validation failed: Incomplete files detected."
+            exit 1
+          fi
+
+          echo "SUCCESS: Dev build verification passed. All required files (index.html, JS, WASM, index.pck) are present."
+          echo "BUILD_DIR=$BUILD_DIR" >> $GITHUB_ENV
+
+      - name: Transfer Verified Dev Build into Production Game Structure
+        run: |
+          echo "==> Transferring verified Dev build into products/games public structure..."
+          SRC_DIR="${{ env.BUILD_DIR }}"
+          TARGET_DIR="products/games/public/games/block-puzzle"
+          mkdir -p "$TARGET_DIR"
+
+          cp -r "$SRC_DIR"/* "$TARGET_DIR"/ || true
+          
+          echo "Files transferred successfully to $TARGET_DIR:"
+          ls -la "$TARGET_DIR"
+
+      - name: Upload PCK to Production R2 Bucket (4tm-games)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          echo "==> Uploading index.pck to production R2 bucket '4tm-games' using canonical key 'block-puzzle/index.pck'..."
+          PCK_PATH="products/games/public/games/block-puzzle/index.pck"
+          if [ ! -f "$PCK_PATH" ]; then
+            echo "::error::index.pck not found at $PCK_PATH"
+            exit 1
+          fi
+
+          npx wrangler r2 object put 4tm-games/block-puzzle/index.pck --file "$PCK_PATH" --config products/games/wrangler.jsonc
+          echo "SUCCESS: index.pck successfully uploaded to production R2 bucket 4tm-games."
+
+      - name: Build Production Games App
+        run: |
+          echo "==> Building production games app..."
+          bun run --prefix products/games build
+
+      - name: Deploy Public Games Worker to Production
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          echo "==> Deploying Public Games Worker to Production (games.4tm.io.vn)..."
+          cd products/games
+          npx wrangler deploy --config wrangler.jsonc
+          echo "SUCCESS: Public Games Worker deployed successfully to production."
