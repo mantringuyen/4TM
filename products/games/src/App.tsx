@@ -5,6 +5,7 @@ import { LANGUAGE_STORAGE_KEY } from './i18n/translations';
 import { Navbar } from './components/Navbar';
 import { GameCatalog } from './components/GameCatalog';
 import { PlayView } from './components/PlayView';
+import { BlockPuzzleDetails } from './components/BlockPuzzleDetails';
 import { createClient, User } from '@supabase/supabase-js';
 import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
 import { ThemeProvider, useTheme, ThemeMode, useSEO, SchemaGenerators } from '@shared';
@@ -12,6 +13,8 @@ import { ThemeProvider, useTheme, ThemeMode, useSEO, SchemaGenerators } from '@s
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+
+export type RouteMode = 'catalog' | 'details' | 'play';
 
 interface BlockPuzzleThemeSyncProps {
   isActive: boolean;
@@ -179,20 +182,63 @@ export function App() {
     return 'en';
   });
 
-  const [activeGame, setActiveGame] = useState<Game | null>(() => {
+  const [routeState, setRouteState] = useState<{ mode: RouteMode; game: Game | null }>(() => {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname.replace(/\/+$/, '');
       const hash = window.location.hash.replace(/^#\/?/, '').replace(/\/+$/, '');
+      if (path === '/block-puzzle/play' || hash === 'block-puzzle/play') {
+        return { mode: 'play', game: GAMES.find((g) => g.id === 'block-puzzle') || null };
+      }
       if (path === '/block-puzzle' || hash === 'block-puzzle') {
-        return GAMES.find((g) => g.id === 'block-puzzle') || null;
+        return { mode: 'details', game: GAMES.find((g) => g.id === 'block-puzzle') || null };
       }
       if (hash) {
-        return GAMES.find((g) => g.id === hash || g.slug === hash) || null;
+        const found = GAMES.find((g) => g.id === hash || g.slug === hash) || null;
+        return { mode: found ? 'play' : 'catalog', game: found };
       }
     }
-    return null;
+    return { mode: 'catalog', game: null };
   });
   const [user, setUser] = useState<User | null>(null);
+
+  const navigateToCatalog = () => {
+    setRouteState({ mode: 'catalog', game: null });
+    setSearchQuery('');
+    if (typeof window !== 'undefined') {
+      window.history.pushState(null, '', '/');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const navigateToBlockPuzzleDetails = () => {
+    const bp = GAMES.find((g) => g.id === 'block-puzzle') || null;
+    setRouteState({ mode: 'details', game: bp });
+    if (typeof window !== 'undefined') {
+      window.history.pushState(null, '', '/block-puzzle');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const navigateToBlockPuzzlePlay = () => {
+    const bp = GAMES.find((g) => g.id === 'block-puzzle') || null;
+    setRouteState({ mode: 'play', game: bp });
+    if (typeof window !== 'undefined') {
+      window.history.pushState(null, '', '/block-puzzle/play');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleSelectGame = (game: Game) => {
+    if (game.id === 'block-puzzle') {
+      navigateToBlockPuzzleDetails();
+    } else {
+      setRouteState({ mode: 'play', game });
+      if (typeof window !== 'undefined') {
+        window.history.pushState(null, '', `/#/${game.id}`);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  };
 
   // Sync route state on back/forward browser navigation
   useEffect(() => {
@@ -201,12 +247,18 @@ export function App() {
     const handleRouteChange = () => {
       const path = window.location.pathname.replace(/\/+$/, '');
       const hash = window.location.hash.replace(/^#\/?/, '').replace(/\/+$/, '');
-      if (path === '/block-puzzle' || hash === 'block-puzzle') {
-        setActiveGame(GAMES.find((g) => g.id === 'block-puzzle') || null);
+
+      if (path === '/block-puzzle/play' || hash === 'block-puzzle/play') {
+        const bp = GAMES.find((g) => g.id === 'block-puzzle') || null;
+        setRouteState({ mode: 'play', game: bp });
+      } else if (path === '/block-puzzle' || hash === 'block-puzzle') {
+        const bp = GAMES.find((g) => g.id === 'block-puzzle') || null;
+        setRouteState({ mode: 'details', game: bp });
       } else if (hash) {
-        setActiveGame(GAMES.find((g) => g.id === hash || g.slug === hash) || null);
+        const found = GAMES.find((g) => g.id === hash || g.slug === hash) || null;
+        setRouteState({ mode: found ? 'play' : 'catalog', game: found });
       } else if (path === '' || path === '/') {
-        setActiveGame(null);
+        setRouteState({ mode: 'catalog', game: null });
       }
     };
 
@@ -272,40 +324,50 @@ export function App() {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Dynamic SEO Synchronization
-  const pageTitle = activeGame
-    ? `${activeGame.title[language]} — Play Online | 4TM Games`
-    : language === 'vi'
-    ? '4TM Games — Trò chơi Tư duy & Thử thách Thuật toán'
-    : '4TM Games — Computer Science Puzzles & Algorithmic Arcade';
+  const isBlockPuzzle = routeState.game?.id === 'block-puzzle';
+  const pageTitle =
+    routeState.mode === 'play' && isBlockPuzzle
+      ? language === 'vi'
+        ? 'Chơi Xếp Gạch — 4TM Trực Tuyến | 4TM Games'
+        : 'Play Block Puzzle — 4TM Online | 4TM Games'
+      : routeState.mode === 'details' && isBlockPuzzle
+      ? language === 'vi'
+        ? 'Xếp Gạch — 4TM | Chi Tiết & Luật Chơi | 4TM Games'
+        : 'Block Puzzle — 4TM | Game Details & Rules | 4TM Games'
+      : routeState.game
+      ? `${routeState.game.title[language]} — Play Online | 4TM Games`
+      : language === 'vi'
+      ? '4TM Games — Trò chơi Tư duy & Thử thách Thuật toán'
+      : '4TM Games — Computer Science Puzzles & Algorithmic Arcade';
 
-  const pageDescription = activeGame
-    ? activeGame.description[language]
+  const pageDescription = routeState.game
+    ? routeState.game.description[language]
     : language === 'vi'
     ? 'Hệ thống mini game và thử thách tư duy lập trình: câu đố nhị phân, thuật toán sắp xếp, regular expression và đồ thị chạy trực tiếp trên web.'
     : 'Interactive Game Ecosystem — browser-native computer science puzzles, logic riddles, algorithmic visualizers, binary search games, and interactive problem-solving challenges.';
 
-  const canonicalUrl = activeGame
-    ? activeGame.id === 'block-puzzle'
+  const canonicalUrl =
+    routeState.mode === 'play' && isBlockPuzzle
+      ? 'https://games.4tm.io.vn/block-puzzle/play'
+      : routeState.mode === 'details' && isBlockPuzzle
       ? 'https://games.4tm.io.vn/block-puzzle'
-      : `https://games.4tm.io.vn/#/${activeGame.id}`
-    : 'https://games.4tm.io.vn/';
+      : routeState.game
+      ? `https://games.4tm.io.vn/#/${routeState.game.id}`
+      : 'https://games.4tm.io.vn/';
 
   useSEO({
     title: pageTitle,
     description: pageDescription,
     canonicalUrl,
     language,
-    jsonLd: activeGame
+    jsonLd: routeState.game
       ? [
           SchemaGenerators.videoGame({
-            id: activeGame.id,
-            name: activeGame.title[language],
-            description: activeGame.description[language],
-            genre: activeGame.category,
-            url:
-              activeGame.id === 'block-puzzle'
-                ? 'https://games.4tm.io.vn/block-puzzle'
-                : `https://games.4tm.io.vn/#/${activeGame.id}`,
+            id: routeState.game.id,
+            name: routeState.game.title[language],
+            description: routeState.game.description[language],
+            genre: routeState.game.category,
+            url: canonicalUrl,
           }),
           SchemaGenerators.website('https://games.4tm.io.vn', '4TM Games', pageDescription),
         ]
@@ -316,11 +378,8 @@ export function App() {
 
   const handleSearchChange = (q: string) => {
     setSearchQuery(q);
-    if (activeGame && q) {
-      setActiveGame(null);
-      if (typeof window !== 'undefined') {
-        window.history.pushState(null, '', '/');
-      }
+    if (routeState.game && q) {
+      navigateToCatalog();
     }
   };
 
@@ -331,23 +390,17 @@ export function App() {
     setUser(null);
   };
 
-  const isBlockPuzzleActive = activeGame?.id === 'block-puzzle';
+  const isBlockPuzzlePlayActive =
+    routeState.mode === 'play' && routeState.game?.id === 'block-puzzle';
 
   return (
     <ThemeProvider>
-      <BlockPuzzleThemeSync isActive={isBlockPuzzleActive} />
-      <div className={`min-h-full flex-1 flex flex-col ${isBlockPuzzleActive ? 'bg-black text-white' : 'bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100'} transition-colors duration-200`}>
+      <BlockPuzzleThemeSync isActive={isBlockPuzzlePlayActive} />
+      <div className={`min-h-full flex-1 flex flex-col ${isBlockPuzzlePlayActive ? 'bg-black text-white' : 'bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100'} transition-colors duration-200`}>
         <Navbar
           language={language}
           onLanguageChange={handleLanguageChange}
-          onNavigateHome={() => {
-            setActiveGame(null);
-            setSearchQuery('');
-            if (typeof window !== 'undefined') {
-              window.history.pushState(null, '', '/');
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigateHome={navigateToCatalog}
           user={user}
           onSignIn={handleSignIn}
           onSignOut={handleSignOut}
@@ -356,33 +409,29 @@ export function App() {
         />
 
         <div className="flex-1 min-h-0 flex flex-col">
-          {activeGame ? (
-            <PlayView
-              game={activeGame}
+          {routeState.mode === 'details' && routeState.game?.id === 'block-puzzle' ? (
+            <BlockPuzzleDetails
+              game={routeState.game}
               language={language}
-              onBackToCatalog={() => {
-                setActiveGame(null);
-                if (typeof window !== 'undefined') {
-                  window.history.pushState(null, '', '/');
-                }
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onPlay={navigateToBlockPuzzlePlay}
+              onBackToCatalog={navigateToCatalog}
+            />
+          ) : routeState.mode === 'play' && routeState.game ? (
+            <PlayView
+              game={routeState.game}
+              language={language}
+              onBackToCatalog={navigateToCatalog}
+              onBackToDetails={
+                routeState.game.id === 'block-puzzle'
+                  ? navigateToBlockPuzzleDetails
+                  : undefined
+              }
             />
           ) : (
             <GameCatalog
               games={GAMES}
               language={language}
-              onSelectGame={(game) => {
-                setActiveGame(game);
-                if (typeof window !== 'undefined') {
-                  if (game.id === 'block-puzzle') {
-                    window.history.pushState(null, '', '/block-puzzle');
-                  } else {
-                    window.history.pushState(null, '', `/#/${game.id}`);
-                  }
-                }
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onSelectGame={handleSelectGame}
               searchQuery={searchQuery}
               onSearchChange={handleSearchChange}
             />

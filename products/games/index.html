@@ -66,12 +66,12 @@
     <script>
       (function() {
         try {
-          var isBlockPuzzle = window.location.pathname.replace(/\/+$/, '') === '/block-puzzle' || window.location.hash.indexOf('block-puzzle') !== -1;
+          var isBlockPuzzlePlay = window.location.pathname.replace(/\/+$/, '') === '/block-puzzle/play' || window.location.hash.indexOf('block-puzzle/play') !== -1;
           var mode = localStorage.getItem('4tm_theme_preference') || localStorage.getItem('4tm_theme_mode') || 'system';
           var isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
           var root = document.documentElement;
 
-          if (isBlockPuzzle) {
+          if (isBlockPuzzlePlay) {
             root.setAttribute('data-game', 'block-puzzle');
             root.classList.add('dark');
             root.classList.remove('light');

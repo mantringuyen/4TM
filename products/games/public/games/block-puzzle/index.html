@@ -101,19 +101,31 @@ body {
 			window.fetch = async function (resource, init) {
 				let url = typeof resource === 'string' ? resource : (resource && resource.url ? resource.url : '');
 
-				// 1. Cross-origin R2 package handling:
-				// Map games-data.4tm.io.vn directly to same-origin proxy on games.4tm.io.vn
-				// to avoid cross-origin CORS blockage and guarantee direct R2 binding streaming
+				// 1. Direct R2/CDN package delivery with proxy fallback:
+				// Keep PCK downloads direct from R2/CDN (https://games-data.4tm.io.vn/block-puzzle/...) where possible
 				if (url.includes('games-data.4tm.io.vn')) {
 					try {
+						// Attempt direct CDN download first
+						const directRes = await origFetch(resource, init);
+						if (directRes && directRes.ok) {
+							return directRes;
+						}
+					} catch (directErr) {
+						console.warn('[4TM Games] Direct CDN fetch failed, falling back to same-origin proxy:', directErr);
+					}
+
+					// Fallback to same-origin proxy backed by Cloudflare R2 binding
+					try {
 						const parsed = new URL(url, window.location.origin);
-						const proxyPath = '/api/games-data' + parsed.pathname;
+						// Normalize path: map /games/block-puzzle to /block-puzzle if needed
+						const cleanPath = parsed.pathname.replace(/^\/games\//, '/');
+						const proxyPath = '/api/games-data' + cleanPath;
 						if (resource instanceof Request) {
 							return origFetch(new Request(proxyPath, resource));
 						}
 						return origFetch(proxyPath, init);
 					} catch (proxyErr) {
-						console.error('[4TM Games] Proxy mapping failed:', proxyErr);
+						console.error('[4TM Games] Proxy mapping fallback failed:', proxyErr);
 					}
 				}
 
@@ -153,7 +165,7 @@ body {
 		<script src="index.js"></script>
 		<script>
 const GODOT_CONFIG = {
-	"mainPack": "https://games-data.4tm.io.vn/games/block-puzzle/index.pck",
+	"mainPack": "https://games-data.4tm.io.vn/block-puzzle/index.pck",
 	"args": [],
 	"canvasResizePolicy": 2,
 	"ensureCrossOriginIsolationHeaders": true,
@@ -161,6 +173,8 @@ const GODOT_CONFIG = {
 	"experimentalVK": false,
 	"fileSizes": {
 		"index.pck": 48215200,
+		"https://games-data.4tm.io.vn/block-puzzle/index.pck": 48215200,
+		"/api/games-data/block-puzzle/index.pck": 48215200,
 		"https://games-data.4tm.io.vn/games/block-puzzle/index.pck": 48215200,
 		"/api/games-data/games/block-puzzle/index.pck": 48215200,
 		"index.wasm": 35376909

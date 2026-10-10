@@ -14,7 +14,7 @@
   "r2_buckets": [
     {
       "binding": "DATA",
-      "bucket_name": "4tm-games-dev"
+      "bucket_name": "4tm-games"
     }
   ],
   "vars": {

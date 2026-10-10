@@ -12,9 +12,15 @@ export interface PlayViewProps {
   game: Game;
   language: Language;
   onBackToCatalog: () => void;
+  onBackToDetails?: () => void;
 }
 
-export const PlayView: React.FC<PlayViewProps> = ({ game, language, onBackToCatalog }) => {
+export const PlayView: React.FC<PlayViewProps> = ({
+  game,
+  language,
+  onBackToCatalog,
+  onBackToDetails,
+}) => {
   const dict = TRANSLATIONS[language];
   const titleText = getGameTitle(game, language);
 
@@ -59,17 +65,24 @@ export const PlayView: React.FC<PlayViewProps> = ({ game, language, onBackToCata
       ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30'
       : 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30';
 
+  const backHandler = onBackToDetails || onBackToCatalog;
+  const backLabel = onBackToDetails
+    ? language === 'vi'
+      ? 'Quay Lại Chi Tiết'
+      : 'Back to Details'
+    : dict.playView.backToCatalog;
+
   return (
     <div className="flex-1 min-h-0 flex flex-col w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-8 lg:py-10">
       {/* Top navigation */}
       <button
         type="button"
         id="game-back-btn"
-        onClick={onBackToCatalog}
+        onClick={backHandler}
         className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors mb-3 sm:mb-6 cursor-pointer"
       >
         <ArrowLeft className="w-4 h-4" />
-        <span>{dict.playView.backToCatalog}</span>
+        <span>{backLabel}</span>
       </button>
 
       {/* Arena Title Header */}

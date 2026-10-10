@@ -38,12 +38,14 @@ export default {
       });
     }
 
-    // Proxy / direct R2 handler for game packages and assets (e.g. /api/games-data/games/block-puzzle/index.pck or /games-data/...)
+    // Proxy / direct R2 handler for game packages and assets (e.g. /api/games-data/block-puzzle/index.pck or /games-data/...)
     if (url.pathname.startsWith('/api/games-data/') || url.pathname.startsWith('/games-data/')) {
-      const key = url.pathname.replace(/^\/(?:api\/)?games-data\//, '');
+      let key = url.pathname.replace(/^\/(?:api\/)?games-data\//, '');
+      // Normalize legacy subpath if present so both /block-puzzle and /games/block-puzzle resolve cleanly
+      key = key.replace(/^games\//, '');
       const isHead = request.method === 'HEAD';
 
-      // 1. Direct R2 bucket binding if available (DATA -> 4tm-games-dev)
+      // 1. Direct R2 bucket binding if available (DATA -> 4tm-games production bucket)
       if (env.DATA) {
         try {
           const rangeHeader = request.headers.get('range');
