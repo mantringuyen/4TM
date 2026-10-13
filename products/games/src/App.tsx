@@ -8,7 +8,7 @@ import { PlayView } from './components/PlayView';
 import { BlockPuzzleDetails } from './components/BlockPuzzleDetails';
 import { createClient, User } from '@supabase/supabase-js';
 import { processSsoCallback, initiateSsoAuthRequest } from '@shared/sso';
-import { ThemeProvider, useTheme, ThemeMode, useSEO, SchemaGenerators } from '@shared';
+import { ThemeProvider, useTheme, ThemeMode, useSEO, SchemaGenerators, AdSlot } from '@shared';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -436,6 +436,7 @@ export function App() {
               onSearchChange={handleSearchChange}
             />
           )}
+          <AdSlot product="games" user={user} supabaseClient={supabase} view={routeState.mode} />
         </div>
       </div>
     </ThemeProvider>

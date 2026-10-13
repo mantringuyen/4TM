@@ -464,6 +464,28 @@ assert(
   'shouldLoadAdSenseScript returns false immediately when screen transitions to empty/loading/error/auth'
 );
 
+// 5.10 Google AdSense ads.txt verification
+const adsTxtPaths = [
+  path.resolve(__dirname, '../public/ads.txt'),
+  path.resolve(__dirname, '../products/study/public/ads.txt'),
+  path.resolve(__dirname, '../products/ebook/public/ads.txt'),
+  path.resolve(__dirname, '../products/tools/public/ads.txt'),
+  path.resolve(__dirname, '../products/games/public/ads.txt'),
+  path.resolve(__dirname, '../products/apps/public/ads.txt'),
+];
+
+for (const p of adsTxtPaths) {
+  const exists = fs.existsSync(p);
+  const content = exists ? fs.readFileSync(p, 'utf8') : '';
+  const containsPub = content.includes('pub-3414472167895157');
+  const relPath = path.relative(path.resolve(__dirname, '..'), p);
+
+  assert(
+    exists && containsPub,
+    `ads.txt exists and contains valid AdSense publisher ID (pub-3414472167895157) at ${relPath}`
+  );
+}
+
 console.log('=====================================================');
 console.log(`QA Test Summary: ${passed} Passed, ${failed} Failed`);
 console.log('=====================================================');

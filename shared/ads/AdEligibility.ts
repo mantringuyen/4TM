@@ -322,7 +322,21 @@ export function isValidProductPublicRoute(
     return false;
   }
 
-  // Fallback for other products (e.g. games, apps)
+  if (productKey === 'games') {
+    if (cleanPath === '' || cleanPath === 'index.html' || cleanPath === 'games' || cleanPath === 'block-puzzle') {
+      return true;
+    }
+    const cleanHash = (hash || '').replace(/^#\/?/, '').trim();
+    if (cleanPath === 'block-puzzle/play' || cleanHash.includes('play')) {
+      return false;
+    }
+    if (cleanPath.startsWith('games/') || cleanPath.startsWith('block-puzzle')) {
+      return true;
+    }
+    return cleanPath === '' || cleanPath === 'index.html' || cleanPath === 'block-puzzle';
+  }
+
+  // Fallback for other products (e.g. apps)
   return cleanPath === '' || cleanPath === 'index.html';
 }
 
