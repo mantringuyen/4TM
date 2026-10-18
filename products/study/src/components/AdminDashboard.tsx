@@ -805,7 +805,7 @@ export const AdminDashboard: React.FC = () => {
                   className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-purple-500"
                 >
                   <option value="partner_banner">4TM Custom House Campaigns (Internal Network)</option>
-                  <option value="custom">Google AdSense Responsive Unit</option>
+                  <option value="adsense">Google AdSense Responsive Unit</option>
                   <option value="none">None (Disabled)</option>
                 </select>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">

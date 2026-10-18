@@ -43,6 +43,8 @@ export const DEFAULT_SYSTEM_SETTINGS: SystemSettingsState = {
   ad_provider: {
     type: 'partner_banner',
     network: 'house',
+    enable_banner: true,
+    enable_adsense: false,
   },
 };
 
