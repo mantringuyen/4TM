@@ -18,6 +18,8 @@ export interface AdProviderConfig {
   type: 'partner_banner' | 'house' | 'adsense' | 'custom' | 'none';
   network?: string;
   slotId?: string;
+  enable_banner?: boolean;
+  enable_adsense?: boolean;
 }
 
 export interface SystemSettingsState {
