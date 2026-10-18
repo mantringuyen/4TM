@@ -515,14 +515,16 @@ export function evaluateAdEligibility(context: AdEligibilityContext): AdEligibil
     };
   }
 
-  const isAdSenseProvider =
-    settings.ad_provider?.type === 'adsense' &&
+  const isAdSenseEligible =
     Boolean(settings.ads_enabled) &&
+    Boolean(settings.ad_provider?.enable_adsense) &&
+    Boolean(settings.ad_provider?.network?.startsWith('ca-pub-')) &&
+    Boolean(settings.ad_provider?.slotId) &&
     settings.ads_products?.[productKey] !== false;
 
   return {
     eligible: true,
-    shouldLoadAdSense: isAdSenseProvider,
+    shouldLoadAdSense: isAdSenseEligible,
   };
 }
 

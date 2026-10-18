@@ -259,8 +259,8 @@ export function shouldDisplayAds(
     return false;
   }
 
-  // 3. If ad provider is none
-  if (s.ad_provider?.type === 'none') {
+  // 3. If ad provider is disabled
+  if (s.ad_provider?.enable_banner !== true && s.ad_provider?.enable_adsense !== true) {
     return false;
   }
 

@@ -162,7 +162,7 @@ assert(
 // Test 3.4: Provider type = 'none' -> SUPPRESSED
 const noProviderSettings: SystemSettingsState = {
   ...defaultSettings,
-  ad_provider: { type: 'none' },
+  ad_provider: { enable_adsense: false, enable_banner: false },
 };
 assert(
   shouldDisplayAds('games', { id: 'user-1', ad_free: false }, noProviderSettings) === false,
@@ -229,7 +229,7 @@ assert(
     pathname: '/',
     settings: {
       ...DEFAULT_SYSTEM_SETTINGS,
-      ad_provider: { type: 'adsense', network: 'ca-pub-3414472167895157', slotId: '12345' },
+      ad_provider: { enable_adsense: true, network: 'ca-pub-3414472167895157', slotId: '12345' },
     },
   }) === false,
   'shouldLoadAdSenseScript never loads AdSense on Root'
@@ -279,7 +279,7 @@ for (const badPath of ALL_REQUIRED_DISALLOWED_ROUTES) {
         pathname: badPath,
         settings: {
           ...DEFAULT_SYSTEM_SETTINGS,
-          ad_provider: { type: 'adsense', network: 'ca-pub-3414472167895157', slotId: '12345' },
+          ad_provider: { enable_adsense: true, network: 'ca-pub-3414472167895157', slotId: '12345' },
         },
       }) === false,
     `Centralized eligibility rejects disallowed pathname: ${badPath}`
@@ -325,7 +325,7 @@ for (const rootRoute of ['/', '/auth', '/sso', '/unknown-route']) {
     pathname: rootRoute,
     settings: {
       ...DEFAULT_SYSTEM_SETTINGS,
-      ad_provider: { type: 'adsense', network: 'ca-pub-3414472167895157', slotId: '12345' },
+      ad_provider: { enable_adsense: true, network: 'ca-pub-3414472167895157', slotId: '12345' },
     },
   });
   assert(
@@ -440,7 +440,7 @@ assert(
 const adsenseSettings: SystemSettingsState = {
   ...DEFAULT_SYSTEM_SETTINGS,
   ads_enabled: true,
-  ad_provider: { type: 'adsense', network: 'ca-pub-3414472167895157', slotId: '987654321' },
+  ad_provider: { enable_adsense: true, network: 'ca-pub-3414472167895157', slotId: '987654321' },
 };
 assert(
   shouldLoadAdSenseScript({

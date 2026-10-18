@@ -795,41 +795,44 @@ export const AdminDashboard: React.FC = () => {
 
             {/* Ad Provider & Configuration */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 space-y-2">
-                <label className="text-xs font-bold text-slate-900 dark:text-white block">
-                  Ad Provider Engine
-                </label>
-                <select
-                  value={systemSettings.ad_provider?.type || 'partner_banner'}
-                  onChange={(e) => handleUpdateSetting('ad_provider', { ...systemSettings.ad_provider, type: e.target.value as any })}
-                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-purple-500"
-                >
-                  <option value="partner_banner">4TM Custom House Campaigns (Internal Network)</option>
-                  <option value="adsense">Google AdSense Responsive Unit</option>
-                  <option value="none">None (Disabled)</option>
-                </select>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Custom house ads cross-promote 4TM ecosystem products with zero third-party tracking.
-                </p>
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-900 dark:text-white">Enable House Banner</label>
+                  <input
+                    type="checkbox"
+                    checked={systemSettings.ad_provider?.enable_banner !== false}
+                    onChange={(e) => handleUpdateSetting('ad_provider', { ...systemSettings.ad_provider, enable_banner: e.target.checked })}
+                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-900 dark:text-white">Enable Google AdSense</label>
+                  <input
+                    type="checkbox"
+                    checked={!!systemSettings.ad_provider?.enable_adsense}
+                    onChange={(e) => handleUpdateSetting('ad_provider', { ...systemSettings.ad_provider, enable_adsense: e.target.checked })}
+                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  />
+                </div>
               </div>
 
               <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 space-y-2">
-                <label className="text-xs font-bold text-slate-900 dark:text-white block">
-                  House Ads Active Campaign
-                </label>
-                <select
-                  value={systemSettings.ad_provider?.network || 'house'}
+                <label className="text-xs font-bold text-slate-900 dark:text-white block">AdSense Publisher ID (ca-pub-...)</label>
+                <input
+                  type="text"
+                  value={systemSettings.ad_provider?.network?.startsWith('ca-pub-') ? systemSettings.ad_provider.network : ''}
                   onChange={(e) => handleUpdateSetting('ad_provider', { ...systemSettings.ad_provider, network: e.target.value })}
+                  placeholder="ca-pub-XXXXXXXXXXXXXXXX"
                   className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-purple-500"
-                >
-                  <option value="house">Auto Rotate All Campaigns (Study, Ebook, Tools)</option>
-                  <option value="study">Study Pro: Interactive WASM Python & SQL Track</option>
-                  <option value="ebook">4TM Ebook: 54 Engineering Handbooks</option>
-                  <option value="tools">DevTools: Fast Developer Utilities & Formatters</option>
-                </select>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Select a targeted product campaign or allow smart automatic rotation.
-                </p>
+                />
+                <label className="text-xs font-bold text-slate-900 dark:text-white block mt-2">AdSense Slot ID</label>
+                <input
+                  type="text"
+                  value={systemSettings.ad_provider?.slotId || ''}
+                  onChange={(e) => handleUpdateSetting('ad_provider', { ...systemSettings.ad_provider, slotId: e.target.value })}
+                  placeholder="XXXXXXXXXX"
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-purple-500"
+                />
               </div>
             </div>
           </div>
