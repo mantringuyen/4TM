@@ -493,3 +493,27 @@ console.log('=====================================================');
 if (failed > 0) {
   process.exit(1);
 }
+
+// Regression tests: Provider combinations and validation
+const settingsBase = { ...DEFAULT_SYSTEM_SETTINGS, ads_enabled: true };
+
+// 1. Both enabled
+const bothEnabled = { ...settingsBase, ad_provider: { enable_banner: true, enable_adsense: true, network: 'ca-pub-3414472167895157', slotId: '123' } };
+assert(evaluateAdEligibility({ product: 'study', settings: bothEnabled }).shouldLoadAdSense === true, 'Both enabled: AdSense should load');
+
+// 2. AdSense only
+const adsenseOnly = { ...settingsBase, ad_provider: { enable_banner: false, enable_adsense: true, network: 'ca-pub-3414472167895157', slotId: '123' } };
+assert(evaluateAdEligibility({ product: 'study', settings: adsenseOnly }).shouldLoadAdSense === true, 'AdSense only: AdSense should load');
+
+// 3. Banner only
+const bannerOnly = { ...settingsBase, ad_provider: { enable_banner: true, enable_adsense: false } };
+assert(evaluateAdEligibility({ product: 'study', settings: bannerOnly }).shouldLoadAdSense === false, 'Banner only: AdSense should not load');
+
+// 4. Missing/Invalid pub ID
+const invalidPubId = { ...settingsBase, ad_provider: { enable_banner: false, enable_adsense: true, network: 'invalid', slotId: '123' } };
+assert(evaluateAdEligibility({ product: 'study', settings: invalidPubId }).shouldLoadAdSense === false, 'Invalid pub ID: AdSense should not load');
+
+// 5. Missing Slot ID
+const missingSlotId = { ...settingsBase, ad_provider: { enable_banner: false, enable_adsense: true, network: 'ca-pub-3414472167895157', slotId: '' } };
+assert(evaluateAdEligibility({ product: 'study', settings: missingSlotId }).shouldLoadAdSense === false, 'Missing slot ID: AdSense should not load');
+

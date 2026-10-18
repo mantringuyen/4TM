@@ -126,7 +126,7 @@ export const AdSlot: React.FC<AdSlotProps> = ({
   const isVisible = eligibility.eligible && providerAllowed;
 
   const rawNetwork = adContext?.adsenseClientId || settings.ad_provider?.network || '';
-  const adsenseClient = rawNetwork.startsWith('ca-pub-') ? rawNetwork : DEFAULT_ADSENSE_CLIENT_ID;
+  const adsenseClient = rawNetwork.startsWith('ca-pub-') ? rawNetwork : null;
   const slotIdentifier = adSlotId || settings.ad_provider?.slotId || '';
 
   useEffect(() => {
