@@ -153,6 +153,10 @@ export const AdSlot: React.FC<AdSlotProps> = ({
         removeAdSenseScript();
         return;
       }
+      if (!adsenseClient) {
+        removeAdSenseScript();
+        return;
+      }
       ensureAdSenseScriptLoaded(adsenseClient, latestContext).then((loaded) => {
         if (!loaded) return;
         try {
