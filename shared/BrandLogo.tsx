@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { getProductAccent } from './tokens';
 
 export interface BrandLogoProps {
@@ -10,6 +10,8 @@ export interface BrandLogoProps {
   href?: string;
   onClick?: (e: React.MouseEvent) => void;
   as?: 'a' | 'div' | 'button';
+  variant?: 'portal' | 'study' | 'ebook' | 'tools' | 'games' | 'apps' | 'ecosystem';
+  useProductMark?: boolean;
 }
 
 export const BRAND_CONFIG = {
@@ -22,6 +24,18 @@ export const BRAND_CONFIG = {
   },
 };
 
+export const PRODUCT_LOGOS: Record<string, string> = {
+  ecosystem: '/brand/4tm-logo-1024.png',
+  hub: '/brand/4tm-logo-1024.png',
+  portal: '/brand/4tm-logo-1024.png',
+  '4tm': '/brand/4tm-logo-1024.png',
+  study: '/brand/study-logo-1024.png',
+  ebook: '/brand/ebook-logo-1024.png',
+  tools: '/brand/tools-logo-1024.png',
+  games: '/brand/games-logo-1024.png',
+  apps: '/brand/apps-logo-1024.png',
+};
+
 export const BrandLogo: React.FC<BrandLogoProps> = ({
   size = 'md',
   productName,
@@ -31,11 +45,16 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   href,
   onClick,
   as,
+  variant,
+  useProductMark = true,
 }) => {
-  const getProductLabel = (name?: string): string => {
-    if (name && name.trim()) {
-      const lower = name.trim().toLowerCase();
-      if (lower === '4tm' || lower === 'hub' || lower === 'ecosystem') return 'ecosystem';
+  const [hasError, setHasError] = useState(false);
+
+  const getProductLabel = (name?: string, v?: string): string => {
+    const raw = v || name;
+    if (raw && raw.trim()) {
+      const lower = raw.trim().toLowerCase();
+      if (lower === '4tm' || lower === 'hub' || lower === 'ecosystem' || lower === 'portal') return 'ecosystem';
       return lower;
     }
     if (typeof window !== 'undefined' && window.location?.hostname) {
@@ -49,7 +68,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     return 'ecosystem';
   };
 
-  const label = getProductLabel(productName);
+  const label = getProductLabel(productName, variant);
   const accent = getProductAccent(label);
 
   const resolvedHref = (href && href !== '#') ? href : (onClick ? undefined : '/');
@@ -57,48 +76,39 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
   const sizeClasses = {
     sm: {
-      mark: 'w-7 h-7 rounded-[7px] p-[1.5px]',
-      inner: 'rounded-[5.5px]',
-      markText: 'text-[11px] tracking-tight font-black',
+      mark: 'w-7 h-7 rounded-[7px]',
       badge: 'text-[10px] px-1.5 py-0.5',
     },
     md: {
-      mark: 'w-9 h-9 rounded-[9px] p-[1.5px]',
-      inner: 'rounded-[7.5px]',
-      markText: 'text-[13px] tracking-tight font-black',
+      mark: 'w-9 h-9 rounded-[9px]',
       badge: 'text-xs px-2 py-0.5',
     },
     lg: {
-      mark: 'w-12 h-12 rounded-[12px] p-[2px]',
-      inner: 'rounded-[10px]',
-      markText: 'text-[17px] tracking-tight font-black',
+      mark: 'w-12 h-12 rounded-[12px]',
       badge: 'text-sm px-2.5 py-1',
     },
   }[size];
 
-  // Rich continuous multicolor spectrum ring gradient (Blue -> Cyan -> Green -> Yellow -> Orange -> Red -> Magenta -> Purple -> Blue)
-  const spectrumGradientStyle: React.CSSProperties = {
-    background: 'conic-gradient(from 135deg at 50% 50%, #2563EB 0%, #06B6D4 12%, #10B981 25%, #F59E0B 37%, #F97316 50%, #EF4444 62%, #EC4899 75%, #8B5CF6 87%, #2563EB 100%)',
-  };
+  const primaryLogo = (useProductMark && PRODUCT_LOGOS[label]) ? PRODUCT_LOGOS[label] : PRODUCT_LOGOS.ecosystem;
+  const logoSrc = hasError ? '/favicon.svg' : primaryLogo;
 
   const content = (
     <>
       {showMark && (
         <div
-          className={`relative flex items-center justify-center shrink-0 shadow-xs group-hover:scale-[1.03] transition-transform duration-200 ${sizeClasses.mark}`}
-          style={spectrumGradientStyle}
+          className={`relative flex items-center justify-center shrink-0 shadow-xs group-hover:scale-[1.03] transition-transform duration-200 overflow-hidden bg-[#090D16] ${sizeClasses.mark}`}
           aria-hidden="true"
         >
-          {/* Solid near-black background core */}
-          <div
-            className={`w-full h-full flex items-center justify-center select-none ${sizeClasses.inner}`}
-            style={{ backgroundColor: '#090D16' }}
-          >
-            {/* Clean, bold solid white 4TM lettering inside mark */}
-            <span className={`text-white leading-none ${sizeClasses.markText}`}>
-              4TM
-            </span>
-          </div>
+          <img
+            src={logoSrc}
+            alt={label === 'ecosystem' ? '4TM Logo' : `4TM ${label} Logo`}
+            className="w-full h-full object-cover select-none pointer-events-none"
+            loading="eager"
+            decoding="async"
+            onError={() => {
+              if (!hasError) setHasError(true);
+            }}
+          />
         </div>
       )}
 

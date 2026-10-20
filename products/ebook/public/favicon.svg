@@ -1,33 +1,3 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <defs>
-    <linearGradient id="brand-spectrum-ring" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2563EB" />
-      <stop offset="12%" stop-color="#06B6D4" />
-      <stop offset="25%" stop-color="#10B981" />
-      <stop offset="37%" stop-color="#F59E0B" />
-      <stop offset="50%" stop-color="#F97316" />
-      <stop offset="62%" stop-color="#EF4444" />
-      <stop offset="75%" stop-color="#EC4899" />
-      <stop offset="87%" stop-color="#8B5CF6" />
-      <stop offset="100%" stop-color="#2563EB" />
-    </linearGradient>
-  </defs>
-  
-  <!-- Outer multicolor spectrum ring -->
-  <rect x="0.75" y="0.75" width="30.5" height="30.5" rx="7.25" fill="url(#brand-spectrum-ring)" stroke="none" />
-  
-  <!-- Inner solid near-black core background -->
-  <rect x="2.25" y="2.25" width="27.5" height="27.5" rx="5.75" fill="#090D16" />
-  
-  <!-- Solid white 4TM brand lettering with optical balance -->
-  <text 
-    x="16" 
-    y="20.5" 
-    fill="#FFFFFF" 
-    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Plus Jakarta Sans', sans-serif" 
-    font-size="10.5" 
-    font-weight="900" 
-    text-anchor="middle" 
-    letter-spacing="-0.04em"
-  >4TM</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <image width="32" height="32" href="data:image/png;base64,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" />
 </svg>

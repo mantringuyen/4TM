@@ -1,33 +1,3 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <defs>
-    <linearGradient id="brand-spectrum-ring" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2563EB" />
-      <stop offset="12%" stop-color="#06B6D4" />
-      <stop offset="25%" stop-color="#10B981" />
-      <stop offset="37%" stop-color="#F59E0B" />
-      <stop offset="50%" stop-color="#F97316" />
-      <stop offset="62%" stop-color="#EF4444" />
-      <stop offset="75%" stop-color="#EC4899" />
-      <stop offset="87%" stop-color="#8B5CF6" />
-      <stop offset="100%" stop-color="#2563EB" />
-    </linearGradient>
-  </defs>
-  
-  <!-- Outer multicolor spectrum ring -->
-  <rect x="0.75" y="0.75" width="30.5" height="30.5" rx="7.25" fill="url(#brand-spectrum-ring)" stroke="none" />
-  
-  <!-- Inner solid near-black core background -->
-  <rect x="2.25" y="2.25" width="27.5" height="27.5" rx="5.75" fill="#090D16" />
-  
-  <!-- Solid white 4TM brand lettering with optical balance -->
-  <text 
-    x="16" 
-    y="20.5" 
-    fill="#FFFFFF" 
-    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Plus Jakarta Sans', sans-serif" 
-    font-size="10.5" 
-    font-weight="900" 
-    text-anchor="middle" 
-    letter-spacing="-0.04em"
-  >4TM</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <image width="32" height="32" href="data:image/png;base64,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" />
 </svg>
