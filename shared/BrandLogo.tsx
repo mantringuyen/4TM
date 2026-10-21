@@ -25,15 +25,15 @@ export const BRAND_CONFIG = {
 };
 
 export const PRODUCT_LOGOS: Record<string, string> = {
-  ecosystem: '/brand/4tm-logo-1024.png',
-  hub: '/brand/4tm-logo-1024.png',
-  portal: '/brand/4tm-logo-1024.png',
-  '4tm': '/brand/4tm-logo-1024.png',
-  study: '/brand/study-logo-1024.png',
-  ebook: '/brand/ebook-logo-1024.png',
-  tools: '/brand/tools-logo-1024.png',
-  games: '/brand/games-logo-1024.png',
-  apps: '/brand/apps-logo-1024.png',
+  ecosystem: '/brand/4tm-logo.svg',
+  hub: '/brand/4tm-logo.svg',
+  portal: '/brand/4tm-logo.svg',
+  '4tm': '/brand/4tm-logo.svg',
+  study: '/brand/study-logo.svg',
+  ebook: '/brand/ebook-logo.svg',
+  tools: '/brand/tools-logo.svg',
+  games: '/brand/games-logo.svg',
+  apps: '/brand/apps-logo.svg',
 };
 
 export const BrandLogo: React.FC<BrandLogoProps> = ({
