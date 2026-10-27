@@ -161,7 +161,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           echo "==> Backing up existing production block-puzzle/index.pck from R2 before replacement..."
-          if OUT=$(npx wrangler r2 object get 4tm-games/block-puzzle/index.pck --file previous-index.pck --config products/games/wrangler.jsonc 2>&1); then
+          if npx wrangler r2 object get 4tm-games/block-puzzle/index.pck --file previous-index.pck --config products/games/wrangler.jsonc --remote; then
             if [ -f "previous-index.pck" ] && [ -s "previous-index.pck" ]; then
               BYTES=$(stat -c%s "previous-index.pck" 2>/dev/null || stat -f%z "previous-index.pck" 2>/dev/null)
               echo "SUCCESS: Existing production PCK backed up successfully ($BYTES bytes)."
@@ -170,13 +170,8 @@ jobs:
               exit 1
             fi
           else
-            echo "$OUT"
-            if echo "$OUT" | grep -iq -E "not found|does not exist|404|nosuchkey|objectnotfound"; then
-              echo "Notice: No existing index.pck found on production R2 (first release or fresh bucket)."
-            else
-              echo "::error::Failed to download production PCK backup due to network, authentication, or API error."
-              exit 1
-            fi
+            echo "::error::Failed to download remote production PCK '4tm-games/block-puzzle/index.pck' from R2. A valid backup is required before replacing."
+            exit 1
           fi
 
       - name: Upload PCK to Production R2 Bucket (4tm-games)
@@ -190,7 +185,7 @@ jobs:
             exit 1
           fi
 
-          npx wrangler r2 object put 4tm-games/block-puzzle/index.pck --file "$PCK_PATH" --config products/games/wrangler.jsonc
+          npx wrangler r2 object put 4tm-games/block-puzzle/index.pck --file "$PCK_PATH" --config products/games/wrangler.jsonc --remote
           echo "SUCCESS: index.pck successfully uploaded to production R2 bucket 4tm-games."
 
       - name: Deploy Public Games Worker to Production
@@ -210,7 +205,7 @@ jobs:
           echo "==> ERROR: Release pipeline failed. Checking for previous production PCK backup to restore..."
           if [ -f "previous-index.pck" ] && [ -s "previous-index.pck" ]; then
             echo "Found previous-index.pck backup ($(stat -c%s "previous-index.pck" 2>/dev/null || stat -f%z "previous-index.pck" 2>/dev/null) bytes). Attempting automatic rollback..."
-            if npx wrangler r2 object put 4tm-games/block-puzzle/index.pck --file previous-index.pck --config products/games/wrangler.jsonc; then
+            if npx wrangler r2 object put 4tm-games/block-puzzle/index.pck --file previous-index.pck --config products/games/wrangler.jsonc --remote; then
               echo "::notice::Rollback SUCCESS: Previous index.pck restored successfully to production R2 bucket 4tm-games."
             else
               echo "::error::Rollback FAILED: Could not restore previous index.pck to production R2 bucket 4tm-games."
