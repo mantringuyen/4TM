@@ -150,7 +150,8 @@ jobs:
       - name: Build Production Games App
         run: |
           echo "==> Building and validating production games app before touching production R2/Workers..."
-          bun run --prefix products/games build
+          cd products/games
+          bun run build
           echo "SUCCESS: Production games build completed successfully."
 
       - name: Backup Existing Production PCK
