@@ -161,17 +161,29 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           echo "==> Backing up existing production block-puzzle/index.pck from R2 before replacement..."
-          if npx wrangler r2 object get 4tm-games/block-puzzle/index.pck --file previous-index.pck --config products/games/wrangler.jsonc --remote; then
+          set +e
+          GET_OUTPUT=$(npx wrangler r2 object get 4tm-games/block-puzzle/index.pck --file previous-index.pck --config products/games/wrangler.jsonc --remote 2>&1)
+          GET_EXIT_CODE=$?
+          set -e
+
+          if [ $GET_EXIT_CODE -eq 0 ]; then
             if [ -f "previous-index.pck" ] && [ -s "previous-index.pck" ]; then
               BYTES=$(stat -c%s "previous-index.pck" 2>/dev/null || stat -f%z "previous-index.pck" 2>/dev/null)
               echo "SUCCESS: Existing production PCK backed up successfully ($BYTES bytes)."
+              echo "HAS_BACKUP=true" >> $GITHUB_ENV
             else
               echo "::error::Backup file 'previous-index.pck' is missing or empty (0 bytes)."
               exit 1
             fi
           else
-            echo "::error::Failed to download remote production PCK '4tm-games/block-puzzle/index.pck' from R2. A valid backup is required before replacing."
-            exit 1
+            echo "$GET_OUTPUT"
+            if echo "$GET_OUTPUT" | grep -iq -E "not found|does not exist|404|nosuchkey|objectnotfound|10007"; then
+              echo "::notice::Object 'block-puzzle/index.pck' confirmed missing in R2 bucket '4tm-games'. Proceeding with first-time initialization without backup."
+              echo "HAS_BACKUP=false" >> $GITHUB_ENV
+            else
+              echo "::error::Backup failed due to authentication, permission, network, or Cloudflare API error. Halting release before replacing production R2 object."
+              exit 1
+            fi
           fi
 
       - name: Upload PCK to Production R2 Bucket (4tm-games)
@@ -185,8 +197,33 @@ jobs:
             exit 1
           fi
 
+          LOCAL_SIZE=$(stat -c%s "$PCK_PATH" 2>/dev/null || stat -f%z "$PCK_PATH" 2>/dev/null)
+          echo "Artifact PCK size: $LOCAL_SIZE bytes"
+
           npx wrangler r2 object put 4tm-games/block-puzzle/index.pck --file "$PCK_PATH" --config products/games/wrangler.jsonc --remote
-          echo "SUCCESS: index.pck successfully uploaded to production R2 bucket 4tm-games."
+          echo "SUCCESS: index.pck uploaded to production R2 bucket 4tm-games."
+
+          echo "==> Verifying remote object existence and size on R2..."
+          rm -f downloaded-verify.pck
+          if npx wrangler r2 object get 4tm-games/block-puzzle/index.pck --file downloaded-verify.pck --config products/games/wrangler.jsonc --remote; then
+            if [ -f "downloaded-verify.pck" ]; then
+              REMOTE_SIZE=$(stat -c%s "downloaded-verify.pck" 2>/dev/null || stat -f%z "downloaded-verify.pck" 2>/dev/null)
+              rm -f downloaded-verify.pck
+              echo "Remote PCK size: $REMOTE_SIZE bytes"
+              if [ "$REMOTE_SIZE" -eq "$LOCAL_SIZE" ]; then
+                echo "SUCCESS: Remote object verified! Size matches artifact ($LOCAL_SIZE bytes)."
+              else
+                echo "::error::Remote verification failed: Size mismatch. Local: $LOCAL_SIZE bytes, Remote: $REMOTE_SIZE bytes."
+                exit 1
+              fi
+            else
+              echo "::error::Remote verification failed: Verification file was not created."
+              exit 1
+            fi
+          else
+            echo "::error::Remote verification failed: Could not fetch uploaded object from R2."
+            exit 1
+          fi
 
       - name: Deploy Public Games Worker to Production
         env:
@@ -202,9 +239,9 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          echo "==> ERROR: Release pipeline failed. Checking for previous production PCK backup to restore..."
-          if [ -f "previous-index.pck" ] && [ -s "previous-index.pck" ]; then
-            echo "Found previous-index.pck backup ($(stat -c%s "previous-index.pck" 2>/dev/null || stat -f%z "previous-index.pck" 2>/dev/null) bytes). Attempting automatic rollback..."
+          echo "==> ERROR: Release pipeline failed. Checking rollback conditions..."
+          if [ "${{ env.HAS_BACKUP }}" = "true" ] && [ -f "previous-index.pck" ] && [ -s "previous-index.pck" ]; then
+            echo "Found verified previous-index.pck backup ($(stat -c%s "previous-index.pck" 2>/dev/null || stat -f%z "previous-index.pck" 2>/dev/null) bytes). Attempting automatic rollback..."
             if npx wrangler r2 object put 4tm-games/block-puzzle/index.pck --file previous-index.pck --config products/games/wrangler.jsonc --remote; then
               echo "::notice::Rollback SUCCESS: Previous index.pck restored successfully to production R2 bucket 4tm-games."
             else
@@ -212,5 +249,5 @@ jobs:
               exit 1
             fi
           else
-            echo "::warning::No previous production PCK backup found (previous-index.pck missing or empty). Rollback skipped."
+            echo "::notice::Rollback skipped: No previous production object existed or backup was not created."
           fi
