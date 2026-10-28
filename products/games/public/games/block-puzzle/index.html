@@ -105,22 +105,30 @@ body {
 				if (url.includes('games-data.4tm.io.vn') || url.includes('.pck')) {
 					let res;
 					try {
-						// Attempt direct CDN fetch first
+						// Attempt direct fetch first
 						const directRes = await origFetch(resource, init);
-						if (directRes && directRes.ok) {
+						const directCt = directRes ? (directRes.headers.get('content-type') || '') : '';
+						if (directRes && directRes.ok && !directCt.includes('text/html')) {
 							res = directRes;
 						}
 					} catch (directErr) {
-						console.warn('[4TM Games] Direct CDN fetch failed, falling back to same-origin proxy:', directErr);
+						console.warn('[4TM Games] Direct fetch failed, falling back to same-origin proxy:', directErr);
 					}
 
 					if (!res) {
 						// Fallback to same-origin proxy backed by Cloudflare R2 binding
 						try {
 							const parsed = new URL(url, window.location.origin);
-							const cleanPath = parsed.pathname.replace(/^\/games\//, '/');
-							const proxyPath = '/api/games-data' + cleanPath;
-							res = await (resource instanceof Request ? origFetch(new Request(proxyPath, resource)) : origFetch(proxyPath, init));
+							// Map to canonical /games/block-puzzle/index.pck if not already
+							let proxyPath = parsed.pathname;
+							if (!proxyPath.includes('.pck')) {
+								proxyPath = '/games/block-puzzle/index.pck';
+							}
+							const proxyRes = await (resource instanceof Request ? origFetch(new Request(proxyPath, resource)) : origFetch(proxyPath, init));
+							const proxyCt = proxyRes ? (proxyRes.headers.get('content-type') || '') : '';
+							if (proxyRes && proxyRes.ok && !proxyCt.includes('text/html')) {
+								res = proxyRes;
+							}
 						} catch (proxyErr) {
 							console.error('[4TM Games] Proxy mapping fallback failed:', proxyErr);
 						}
@@ -133,10 +141,18 @@ body {
 							if (size > 0) {
 								GODOT_CONFIG.fileSizes[url] = size;
 								GODOT_CONFIG.fileSizes["index.pck"] = size;
+								GODOT_CONFIG.fileSizes["games/block-puzzle/index.pck"] = size;
+								GODOT_CONFIG.fileSizes["/games/block-puzzle/index.pck"] = size;
 							}
 						}
 						return res;
 					}
+
+					// Never return HTML fallback for a .pck file
+					return new Response('Package file not found', {
+						status: 404,
+						headers: { 'Content-Type': 'text/plain' }
+					});
 				}
 
 				// 2. WASM decompression & HTML fallback prevention
@@ -223,7 +239,7 @@ body {
 		<script src="index.js"></script>
 		<script>
 const GODOT_CONFIG = {
-	"mainPack": "https://games-data.4tm.io.vn/block-puzzle/index.pck",
+	"mainPack": "index.pck",
 	"args": [],
 	"canvasResizePolicy": 2,
 	"ensureCrossOriginIsolationHeaders": true,
@@ -231,9 +247,12 @@ const GODOT_CONFIG = {
 	"experimentalVK": false,
 	"fileSizes": {
 		"index.pck": 48215200,
+		"block-puzzle/index.pck": 48215200,
+		"games/block-puzzle/index.pck": 48215200,
+		"/games/block-puzzle/index.pck": 48215200,
 		"https://games-data.4tm.io.vn/block-puzzle/index.pck": 48215200,
-		"/api/games-data/block-puzzle/index.pck": 48215200,
 		"https://games-data.4tm.io.vn/games/block-puzzle/index.pck": 48215200,
+		"/api/games-data/block-puzzle/index.pck": 48215200,
 		"/api/games-data/games/block-puzzle/index.pck": 48215200,
 		"index.wasm": 35376909
 	},

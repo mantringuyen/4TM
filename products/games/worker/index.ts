@@ -38,11 +38,21 @@ export default {
       });
     }
 
-    // Proxy / direct R2 handler for game packages and assets (e.g. /api/games-data/block-puzzle/index.pck or /games-data/...)
-    if (url.pathname.startsWith('/api/games-data/') || url.pathname.startsWith('/games-data/')) {
-      let key = url.pathname.replace(/^\/(?:api\/)?games-data\//, '');
-      // Normalize legacy subpath if present so both /block-puzzle and /games/block-puzzle resolve cleanly
-      key = key.replace(/^games\//, '');
+    // Proxy / direct R2 handler for game packages and assets (e.g. /games/block-puzzle/index.pck, /api/games-data/..., /games-data/...)
+    const isPckRequest = url.pathname.endsWith('.pck');
+    const isGamesDataRequest = url.pathname.startsWith('/api/games-data/') || url.pathname.startsWith('/games-data/');
+
+    if (isGamesDataRequest || isPckRequest) {
+      let rawKey = url.pathname.replace(/^\/(?:api\/)?games-data\//, '').replace(/^\//, '');
+      const candidateKeys: string[] = [];
+      if (rawKey.startsWith('games/')) {
+        candidateKeys.push(rawKey);
+        candidateKeys.push(rawKey.replace(/^games\//, ''));
+      } else {
+        candidateKeys.push(`games/${rawKey}`);
+        candidateKeys.push(rawKey);
+      }
+
       const isHead = request.method === 'HEAD';
 
       // 1. Direct R2 bucket binding if available (DATA -> 4tm-games production bucket)
@@ -58,7 +68,14 @@ export default {
           if (ifMatch || ifNoneMatch) {
             getOptions.onlyIf = request.headers;
           }
-          const object = await env.DATA.get(key, Object.keys(getOptions).length > 0 ? getOptions : undefined);
+
+          let object: any = null;
+          for (const key of candidateKeys) {
+            object = await env.DATA.get(key, Object.keys(getOptions).length > 0 ? getOptions : undefined);
+            if (object) {
+              break;
+            }
+          }
 
           if (object) {
             const headers = new Headers();
@@ -79,6 +96,7 @@ export default {
             headers.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
             headers.set('Access-Control-Allow-Headers', '*');
             headers.set('Access-Control-Expose-Headers', 'Content-Range, Content-Length, Accept-Ranges, Content-Type, etag');
+            headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
             headers.set('Cache-Control', 'public, max-age=31536000, immutable');
 
             // Set accurate Content-Length and Content-Range for 200 vs 206
@@ -106,33 +124,48 @@ export default {
       }
 
       // 2. Fallback upstream fetch to public R2 CDN with CORS & Range decoration
-      try {
-        const upstreamUrl = `https://games-data.4tm.io.vn/${key}`;
-        const upstreamRes = await fetch(upstreamUrl, {
-          headers: request.headers,
-          method: request.method,
-        });
+      for (const key of candidateKeys) {
+        try {
+          const upstreamUrl = `https://games-data.4tm.io.vn/${key}`;
+          const upstreamRes = await fetch(upstreamUrl, {
+            headers: request.headers,
+            method: request.method,
+          });
 
-        const headers = new Headers(upstreamRes.headers);
-        headers.set('Access-Control-Allow-Origin', '*');
-        headers.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-        headers.set('Access-Control-Allow-Headers', '*');
-        headers.set('Access-Control-Expose-Headers', 'Content-Range, Content-Length, Accept-Ranges, Content-Type, etag');
+          if (upstreamRes.ok && upstreamRes.status !== 404) {
+            const ct = upstreamRes.headers.get('content-type') || '';
+            // Ensure upstream response is not an HTML fallback page
+            if (!ct.includes('text/html')) {
+              const headers = new Headers(upstreamRes.headers);
+              headers.set('Access-Control-Allow-Origin', '*');
+              headers.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+              headers.set('Access-Control-Allow-Headers', '*');
+              headers.set('Access-Control-Expose-Headers', 'Content-Range, Content-Length, Accept-Ranges, Content-Type, etag');
+              headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
 
-        if (!headers.get('Content-Type')) {
-          headers.set('Content-Type', 'application/octet-stream');
+              if (!headers.get('Content-Type')) {
+                headers.set('Content-Type', 'application/octet-stream');
+              }
+
+              return new Response(isHead ? null : upstreamRes.body, {
+                status: upstreamRes.status,
+                headers,
+              });
+            }
+          }
+        } catch (upstreamErr) {
+          console.warn(`[4TM Games Worker] Upstream fetch failed for key ${key}:`, upstreamErr);
         }
-
-        return new Response(isHead ? null : upstreamRes.body, {
-          status: upstreamRes.status,
-          headers,
-        });
-      } catch (upstreamErr) {
-        return new Response(
-          JSON.stringify({ error: 'Failed to retrieve asset from games-data', details: String(upstreamErr) }),
-          { status: 502, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
-        );
       }
+
+      // 3. Return explicit 404 if not found (NEVER silently serve SPA HTML fallback)
+      return new Response('Package file not found', {
+        status: 404,
+        headers: {
+          'Content-Type': 'text/plain',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
     }
 
     // Handle WASM request decompression & content verification
@@ -216,6 +249,15 @@ export default {
     }
 
     if (env.ASSETS) {
+      if (url.pathname.endsWith('.pck')) {
+        return new Response('Package file not found', {
+          status: 404,
+          headers: {
+            'Content-Type': 'text/plain',
+            'Access-Control-Allow-Origin': '*',
+          },
+        });
+      }
       const response = await env.ASSETS.fetch(request);
       // Ensure cross-origin isolation headers / resource policy on HTML and assets for Godot compatibility
       if (url.pathname.endsWith('.html') || url.pathname.endsWith('/')) {
