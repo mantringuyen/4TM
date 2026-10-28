@@ -135,28 +135,83 @@ export default {
       }
     }
 
-    // Handle WASM request decompression / Content-Encoding
-    if (url.pathname.endsWith('.wasm') && env.ASSETS) {
-      // 1. Check for pre-compressed .wasm.gz in ASSETS (since only .wasm.gz exists on disk)
-      const gzUrl = new URL(request.url + '.gz');
-      const gzRes = await env.ASSETS.fetch(gzUrl.toString());
-      const gzType = gzRes.headers.get('content-type') || '';
-      if (gzRes.ok && gzRes.status === 200 && !gzType.includes('text/html')) {
-        const headers = new Headers(gzRes.headers);
-        headers.set('Content-Type', 'application/wasm');
-        headers.set('Content-Encoding', 'gzip');
-        headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
-        return new Response(gzRes.body, { status: 200, headers });
-      }
+    // Handle WASM request decompression & content verification
+    if ((url.pathname.endsWith('.wasm') || url.pathname.endsWith('.wasm.gz')) && env.ASSETS) {
+      try {
+        let primaryUrl = request.url;
+        let fallbackUrl = request.url.endsWith('.gz') ? request.url.slice(0, -3) : request.url + '.gz';
 
-      // 2. Direct ASSETS fetch for uncompressed .wasm (verify not SPA HTML fallback)
-      const wasmRes = await env.ASSETS.fetch(request);
-      const wasmType = wasmRes.headers.get('content-type') || '';
-      if (wasmRes.ok && wasmRes.status === 200 && !wasmType.includes('text/html')) {
-        const headers = new Headers(wasmRes.headers);
+        let assetRes = await env.ASSETS.fetch(primaryUrl);
+        let ct = assetRes.headers.get('content-type') || '';
+
+        // If primary fetch failed or returned HTML fallback, try fallback URL
+        if (!assetRes.ok || assetRes.status !== 200 || ct.includes('text/html')) {
+          assetRes = await env.ASSETS.fetch(fallbackUrl);
+          ct = assetRes.headers.get('content-type') || '';
+        }
+
+        // If both failed or returned HTML, explicitly reject with 404 (NEVER return HTML for WASM)
+        if (!assetRes.ok || assetRes.status !== 200 || ct.includes('text/html')) {
+          return new Response('WebAssembly asset not found', {
+            status: 404,
+            headers: {
+              'Content-Type': 'text/plain',
+              'Access-Control-Allow-Origin': '*',
+            },
+          });
+        }
+
+        // Read asset bytes to inspect magic header and serve valid uncompressed application/wasm
+        const buf = await assetRes.arrayBuffer();
+        const bytes = new Uint8Array(buf);
+
+        // Check if bytes are gzip-compressed (magic bytes 0x1F 0x8B)
+        let wasmBuffer: ArrayBuffer = buf;
+        if (bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b) {
+          // Decompress gzip payload exactly once
+          const decompressedResponse = new Response(
+            new Response(buf).body!.pipeThrough(new DecompressionStream('gzip'))
+          );
+          wasmBuffer = await decompressedResponse.arrayBuffer();
+        }
+
+        // Verify decompressed payload starts with \0asm (0x00 0x61 0x73 0x6D)
+        const verifyBytes = new Uint8Array(wasmBuffer);
+        if (
+          verifyBytes.length < 4 ||
+          verifyBytes[0] !== 0x00 ||
+          verifyBytes[1] !== 0x61 ||
+          verifyBytes[2] !== 0x73 ||
+          verifyBytes[3] !== 0x6d
+        ) {
+          console.error('[4TM Games Worker] Invalid WASM magic bytes:', verifyBytes.slice(0, 4));
+          return new Response('Invalid WebAssembly module format', {
+            status: 500,
+            headers: {
+              'Content-Type': 'text/plain',
+              'Access-Control-Allow-Origin': '*',
+            },
+          });
+        }
+
+        // Serve pristine, uncompressed application/wasm without conflicting Content-Encoding
+        const headers = new Headers();
         headers.set('Content-Type', 'application/wasm');
+        headers.set('Content-Length', wasmBuffer.byteLength.toString());
+        headers.set('Access-Control-Allow-Origin', '*');
         headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
-        return new Response(wasmRes.body, { status: 200, headers });
+        headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+
+        return new Response(wasmBuffer, { status: 200, headers });
+      } catch (wasmErr) {
+        console.error('[4TM Games Worker] WASM handling error:', wasmErr);
+        return new Response('Error processing WebAssembly asset: ' + String(wasmErr), {
+          status: 500,
+          headers: {
+            'Content-Type': 'text/plain',
+            'Access-Control-Allow-Origin': '*',
+          },
+        });
       }
     }
 

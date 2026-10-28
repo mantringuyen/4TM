@@ -102,58 +102,116 @@ body {
 				let url = typeof resource === 'string' ? resource : (resource && resource.url ? resource.url : '');
 
 				// 1. Direct R2/CDN package delivery with proxy fallback:
-				// Keep PCK downloads direct from R2/CDN (https://games-data.4tm.io.vn/block-puzzle/...) where possible
-				if (url.includes('games-data.4tm.io.vn')) {
+				if (url.includes('games-data.4tm.io.vn') || url.includes('.pck')) {
+					let res;
 					try {
-						// Attempt direct CDN download first
+						// Attempt direct CDN fetch first
 						const directRes = await origFetch(resource, init);
 						if (directRes && directRes.ok) {
-							return directRes;
+							res = directRes;
 						}
 					} catch (directErr) {
 						console.warn('[4TM Games] Direct CDN fetch failed, falling back to same-origin proxy:', directErr);
 					}
 
-					// Fallback to same-origin proxy backed by Cloudflare R2 binding
-					try {
-						const parsed = new URL(url, window.location.origin);
-						// Normalize path: map /games/block-puzzle to /block-puzzle if needed
-						const cleanPath = parsed.pathname.replace(/^\/games\//, '/');
-						const proxyPath = '/api/games-data' + cleanPath;
-						if (resource instanceof Request) {
-							return origFetch(new Request(proxyPath, resource));
+					if (!res) {
+						// Fallback to same-origin proxy backed by Cloudflare R2 binding
+						try {
+							const parsed = new URL(url, window.location.origin);
+							const cleanPath = parsed.pathname.replace(/^\/games\//, '/');
+							const proxyPath = '/api/games-data' + cleanPath;
+							res = await (resource instanceof Request ? origFetch(new Request(proxyPath, resource)) : origFetch(proxyPath, init));
+						} catch (proxyErr) {
+							console.error('[4TM Games] Proxy mapping fallback failed:', proxyErr);
 						}
-						return origFetch(proxyPath, init);
-					} catch (proxyErr) {
-						console.error('[4TM Games] Proxy mapping fallback failed:', proxyErr);
+					}
+
+					if (res && res.ok) {
+						const cl = res.headers.get('content-length');
+						if (cl && typeof GODOT_CONFIG !== 'undefined' && GODOT_CONFIG.fileSizes) {
+							const size = parseInt(cl, 10);
+							if (size > 0) {
+								GODOT_CONFIG.fileSizes[url] = size;
+								GODOT_CONFIG.fileSizes["index.pck"] = size;
+							}
+						}
+						return res;
 					}
 				}
 
-				// 2. WASM decompression fallback (when .wasm is requested but only .wasm.gz is stored)
+				// 2. WASM decompression & HTML fallback prevention
 				if (url.endsWith('.wasm')) {
+					let wasmRes;
 					try {
-						const wasmRes = await origFetch(resource, init);
-						const ct = wasmRes.headers.get('content-type') || '';
-						if (wasmRes && wasmRes.ok && !ct.includes('text/html')) return wasmRes;
-					} catch (_) {}
+						wasmRes = await origFetch(resource, init);
+						let ct = wasmRes.headers.get('content-type') || '';
+						if (!wasmRes.ok || ct.includes('text/html')) {
+							wasmRes = null;
+						}
+					} catch (_) {
+						wasmRes = null;
+					}
 
+					if (!wasmRes) {
+						try {
+							const gzUrl = url + '.gz';
+							const gzRes = await origFetch(gzUrl, init);
+							let gzType = gzRes.headers.get('content-type') || '';
+							if (gzRes && gzRes.ok && !gzType.includes('text/html')) {
+								wasmRes = gzRes;
+							}
+						} catch (gzErr) {
+							console.error('[4TM Block Puzzle Loader v4] WASM gz fallback failed:', gzErr);
+						}
+					}
+
+					// If both failed or returned HTML fallback, NEVER return HTML for a WASM request
+					if (!wasmRes) {
+						return new Response('WebAssembly asset not found', {
+							status: 404,
+							headers: { 'Content-Type': 'text/plain' }
+						});
+					}
+
+					// Inspect bytes to decompress if gzipped and verify \0asm magic header
 					try {
-						const gzUrl = url + '.gz';
-						const gzRes = await origFetch(gzUrl, init);
-						const gzType = gzRes.headers.get('content-type') || '';
-						if (gzRes && gzRes.ok && !gzType.includes('text/html')) {
+						const buf = await wasmRes.arrayBuffer();
+						const bytes = new Uint8Array(buf);
+						let wasmBuffer = buf;
+
+						if (bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b) {
 							if (typeof DecompressionStream !== 'undefined') {
 								const ds = new DecompressionStream('gzip');
-								const decompressed = gzRes.body.pipeThrough(ds);
-								return new Response(decompressed, {
-									status: 200,
-									headers: { 'Content-Type': 'application/wasm' }
-								});
+								const decompressedResponse = new Response(new Response(buf).body.pipeThrough(ds));
+								wasmBuffer = await decompressedResponse.arrayBuffer();
 							}
-							return gzRes;
 						}
-					} catch (gzErr) {
-						console.error('[4TM Block Puzzle Loader v4] WASM gz fallback failed:', gzErr);
+
+						const verifyBytes = new Uint8Array(wasmBuffer);
+						if (
+							verifyBytes.length >= 4 &&
+							verifyBytes[0] === 0x00 &&
+							verifyBytes[1] === 0x61 &&
+							verifyBytes[2] === 0x73 &&
+							verifyBytes[3] === 0x6d
+						) {
+							return new Response(wasmBuffer, {
+								status: 200,
+								headers: { 'Content-Type': 'application/wasm' }
+							});
+						} else {
+							console.error('[4TM Block Puzzle Loader v4] Invalid WASM magic bytes:', verifyBytes.slice(0, 4));
+							return new Response('Invalid WebAssembly module header', {
+								status: 500,
+								headers: { 'Content-Type': 'text/plain' }
+							});
+						}
+					} catch (parseErr) {
+						console.error('[4TM Block Puzzle Loader v4] WASM parse error:', parseErr);
+						return new Response('Error parsing WebAssembly asset', {
+							status: 500,
+							headers: { 'Content-Type': 'text/plain' }
+						});
 					}
 				}
 
