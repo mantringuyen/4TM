@@ -6,6 +6,32 @@ export interface Env {
   APP_URL?: string;
 }
 
+function createChunkPrependedStream(
+  firstChunk: Uint8Array,
+  reader: ReadableStreamDefaultReader<Uint8Array>
+): ReadableStream<Uint8Array> {
+  return new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(firstChunk);
+    },
+    async pull(controller) {
+      try {
+        const { value, done } = await reader.read();
+        if (done) {
+          controller.close();
+        } else {
+          controller.enqueue(value);
+        }
+      } catch (err) {
+        controller.error(err);
+      }
+    },
+    cancel(reason) {
+      return reader.cancel(reason);
+    },
+  });
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -168,7 +194,7 @@ export default {
       });
     }
 
-    // Handle WASM request decompression & content verification
+    // Handle WASM request decompression & streaming delivery
     if ((url.pathname.endsWith('.wasm') || url.pathname.endsWith('.wasm.gz')) && env.ASSETS) {
       try {
         let primaryUrl = request.url;
@@ -178,13 +204,13 @@ export default {
         let ct = assetRes.headers.get('content-type') || '';
 
         // If primary fetch failed or returned HTML fallback, try fallback URL
-        if (!assetRes.ok || assetRes.status !== 200 || ct.includes('text/html')) {
+        if (!assetRes.ok || assetRes.status !== 200 || ct.includes('text/html') || !assetRes.body) {
           assetRes = await env.ASSETS.fetch(fallbackUrl);
           ct = assetRes.headers.get('content-type') || '';
         }
 
-        // If both failed or returned HTML, explicitly reject with 404 (NEVER return HTML for WASM)
-        if (!assetRes.ok || assetRes.status !== 200 || ct.includes('text/html')) {
+        // If both failed or returned HTML or missing body, explicitly reject with 404 (NEVER return HTML for WASM)
+        if (!assetRes.ok || assetRes.status !== 200 || ct.includes('text/html') || !assetRes.body) {
           return new Response('WebAssembly asset not found', {
             status: 404,
             headers: {
@@ -194,30 +220,42 @@ export default {
           });
         }
 
-        // Read asset bytes to inspect magic header and serve valid uncompressed application/wasm
-        const buf = await assetRes.arrayBuffer();
-        const bytes = new Uint8Array(buf);
+        // Inspect initial chunk to validate signatures without buffering entire file in memory
+        const reader = assetRes.body.getReader();
+        const { value: firstChunk, done } = await reader.read();
 
-        // Check if bytes are gzip-compressed (magic bytes 0x1F 0x8B)
-        let wasmBuffer: ArrayBuffer = buf;
-        if (bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b) {
-          // Decompress gzip payload exactly once
-          const decompressedResponse = new Response(
-            new Response(buf).body!.pipeThrough(new DecompressionStream('gzip'))
-          );
-          wasmBuffer = await decompressedResponse.arrayBuffer();
+        if (done || !firstChunk || firstChunk.length === 0) {
+          return new Response('WebAssembly asset is empty', {
+            status: 404,
+            headers: {
+              'Content-Type': 'text/plain',
+              'Access-Control-Allow-Origin': '*',
+            },
+          });
         }
 
-        // Verify decompressed payload starts with \0asm (0x00 0x61 0x73 0x6D)
-        const verifyBytes = new Uint8Array(wasmBuffer);
-        if (
-          verifyBytes.length < 4 ||
-          verifyBytes[0] !== 0x00 ||
-          verifyBytes[1] !== 0x61 ||
-          verifyBytes[2] !== 0x73 ||
-          verifyBytes[3] !== 0x6d
-        ) {
-          console.error('[4TM Games Worker] Invalid WASM magic bytes:', verifyBytes.slice(0, 4));
+        // Explicitly reject HTML fallback payload (e.g. <!DOCTYPE html> starting with 0x3C '<')
+        if (firstChunk[0] === 0x3c) {
+          reader.cancel();
+          return new Response('WebAssembly asset not found', {
+            status: 404,
+            headers: {
+              'Content-Type': 'text/plain',
+              'Access-Control-Allow-Origin': '*',
+            },
+          });
+        }
+
+        const isGzip = firstChunk.length >= 2 && firstChunk[0] === 0x1f && firstChunk[1] === 0x8b;
+        const isWasm =
+          firstChunk.length >= 4 &&
+          firstChunk[0] === 0x00 &&
+          firstChunk[1] === 0x61 &&
+          firstChunk[2] === 0x73 &&
+          firstChunk[3] === 0x6d;
+
+        if (!isGzip && !isWasm) {
+          reader.cancel();
           return new Response('Invalid WebAssembly module format', {
             status: 500,
             headers: {
@@ -227,15 +265,55 @@ export default {
           });
         }
 
-        // Serve pristine, uncompressed application/wasm without conflicting Content-Encoding
+        let deliveryStream: ReadableStream<Uint8Array>;
+
+        if (isGzip) {
+          // Stream decompression through DecompressionStream without full-file memory buffering
+          const compressedStream = createChunkPrependedStream(firstChunk, reader);
+          const decompressedStream = compressedStream.pipeThrough(new DecompressionStream('gzip'));
+
+          // Validate decompressed WebAssembly magic header (\0asm) before committing HTTP response
+          const dReader = decompressedStream.getReader();
+          const { value: dFirstChunk, done: dDone } = await dReader.read();
+
+          if (
+            dDone ||
+            !dFirstChunk ||
+            dFirstChunk.length < 4 ||
+            dFirstChunk[0] !== 0x00 ||
+            dFirstChunk[1] !== 0x61 ||
+            dFirstChunk[2] !== 0x73 ||
+            dFirstChunk[3] !== 0x6d
+          ) {
+            dReader.cancel();
+            return new Response('Invalid WebAssembly module format', {
+              status: 500,
+              headers: {
+                'Content-Type': 'text/plain',
+                'Access-Control-Allow-Origin': '*',
+              },
+            });
+          }
+
+          deliveryStream = createChunkPrependedStream(dFirstChunk, dReader);
+        } else {
+          deliveryStream = createChunkPrependedStream(firstChunk, reader);
+        }
+
+        // Configure headers for streaming WebAssembly delivery with cross-origin isolation
         const headers = new Headers();
         headers.set('Content-Type', 'application/wasm');
-        headers.set('Content-Length', wasmBuffer.byteLength.toString());
         headers.set('Access-Control-Allow-Origin', '*');
         headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
+        headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
+        headers.set('Cross-Origin-Opener-Policy', 'same-origin');
         headers.set('Cache-Control', 'public, max-age=31536000, immutable');
 
-        return new Response(wasmBuffer, { status: 200, headers });
+        if (request.method === 'HEAD') {
+          return new Response(null, { status: 200, headers });
+        }
+
+        return new Response(deliveryStream, { status: 200, headers });
       } catch (wasmErr) {
         console.error('[4TM Games Worker] WASM handling error:', wasmErr);
         return new Response('Error processing WebAssembly asset: ' + String(wasmErr), {
