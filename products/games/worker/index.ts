@@ -6,15 +6,48 @@ export interface Env {
   APP_URL?: string;
 }
 
-function createChunkPrependedStream(
-  firstChunk: Uint8Array,
-  reader: ReadableStreamDefaultReader<Uint8Array>
-): ReadableStream<Uint8Array> {
-  return new ReadableStream<Uint8Array>({
-    start(controller) {
-      controller.enqueue(firstChunk);
-    },
+interface PeekedStream {
+  bytes: Uint8Array;
+  stream: ReadableStream<Uint8Array>;
+  cancel: (reason?: any) => Promise<void>;
+}
+
+async function peekStreamBytes(
+  stream: ReadableStream<Uint8Array>,
+  minBytes: number
+): Promise<PeekedStream> {
+  const reader = stream.getReader();
+  const bufferedChunks: Uint8Array[] = [];
+  let totalBytes = 0;
+
+  try {
+    while (totalBytes < minBytes) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      if (value && value.length > 0) {
+        bufferedChunks.push(value);
+        totalBytes += value.length;
+      }
+    }
+  } catch (err) {
+    reader.releaseLock();
+    throw err;
+  }
+
+  const combined = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of bufferedChunks) {
+    combined.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  let chunkIndex = 0;
+  const reconstructedStream = new ReadableStream<Uint8Array>({
     async pull(controller) {
+      if (chunkIndex < bufferedChunks.length) {
+        controller.enqueue(bufferedChunks[chunkIndex++]);
+        return;
+      }
       try {
         const { value, done } = await reader.read();
         if (done) {
@@ -30,6 +63,12 @@ function createChunkPrependedStream(
       return reader.cancel(reason);
     },
   });
+
+  return {
+    bytes: combined,
+    stream: reconstructedStream,
+    cancel: (reason?: any) => reader.cancel(reason),
+  };
 }
 
 export default {
@@ -220,11 +259,25 @@ export default {
           });
         }
 
-        // Inspect initial chunk to validate signatures without buffering entire file in memory
-        const reader = assetRes.body.getReader();
-        const { value: firstChunk, done } = await reader.read();
+        // Read enough initial bytes (at least 4) across chunks to validate signatures without buffering full file
+        let peeked: PeekedStream;
+        try {
+          peeked = await peekStreamBytes(assetRes.body, 4);
+        } catch (readErr) {
+          return new Response('Failed to read WebAssembly stream: ' + String(readErr), {
+            status: 500,
+            headers: {
+              'Content-Type': 'text/plain',
+              'Access-Control-Allow-Origin': '*',
+            },
+          });
+        }
 
-        if (done || !firstChunk || firstChunk.length === 0) {
+        const rawBytes = peeked.bytes;
+
+        // Empty stream check
+        if (rawBytes.length === 0) {
+          await peeked.cancel();
           return new Response('WebAssembly asset is empty', {
             status: 404,
             headers: {
@@ -235,8 +288,8 @@ export default {
         }
 
         // Explicitly reject HTML fallback payload (e.g. <!DOCTYPE html> starting with 0x3C '<')
-        if (firstChunk[0] === 0x3c) {
-          reader.cancel();
+        if (rawBytes[0] === 0x3c) {
+          await peeked.cancel();
           return new Response('WebAssembly asset not found', {
             status: 404,
             headers: {
@@ -246,16 +299,16 @@ export default {
           });
         }
 
-        const isGzip = firstChunk.length >= 2 && firstChunk[0] === 0x1f && firstChunk[1] === 0x8b;
+        const isGzip = rawBytes.length >= 2 && rawBytes[0] === 0x1f && rawBytes[1] === 0x8b;
         const isWasm =
-          firstChunk.length >= 4 &&
-          firstChunk[0] === 0x00 &&
-          firstChunk[1] === 0x61 &&
-          firstChunk[2] === 0x73 &&
-          firstChunk[3] === 0x6d;
+          rawBytes.length >= 4 &&
+          rawBytes[0] === 0x00 &&
+          rawBytes[1] === 0x61 &&
+          rawBytes[2] === 0x73 &&
+          rawBytes[3] === 0x6d;
 
         if (!isGzip && !isWasm) {
-          reader.cancel();
+          await peeked.cancel();
           return new Response('Invalid WebAssembly module format', {
             status: 500,
             headers: {
@@ -266,26 +319,47 @@ export default {
         }
 
         let deliveryStream: ReadableStream<Uint8Array>;
+        let activeCancel: (reason?: any) => Promise<void>;
 
         if (isGzip) {
-          // Stream decompression through DecompressionStream without full-file memory buffering
-          const compressedStream = createChunkPrependedStream(firstChunk, reader);
-          const decompressedStream = compressedStream.pipeThrough(new DecompressionStream('gzip'));
+          // Stream decompression through DecompressionStream
+          let decompressedStream: ReadableStream<Uint8Array>;
+          try {
+            decompressedStream = peeked.stream.pipeThrough(new DecompressionStream('gzip'));
+          } catch (decompErr) {
+            await peeked.cancel();
+            return new Response('Invalid gzip stream: ' + String(decompErr), {
+              status: 500,
+              headers: {
+                'Content-Type': 'text/plain',
+                'Access-Control-Allow-Origin': '*',
+              },
+            });
+          }
 
-          // Validate decompressed WebAssembly magic header (\0asm) before committing HTTP response
-          const dReader = decompressedStream.getReader();
-          const { value: dFirstChunk, done: dDone } = await dReader.read();
+          // Validate decompressed WebAssembly magic header (\0asm) across chunks before committing HTTP response
+          let dPeeked: PeekedStream;
+          try {
+            dPeeked = await peekStreamBytes(decompressedStream, 4);
+          } catch (dErr) {
+            return new Response('Failed to decompress WebAssembly stream: ' + String(dErr), {
+              status: 500,
+              headers: {
+                'Content-Type': 'text/plain',
+                'Access-Control-Allow-Origin': '*',
+              },
+            });
+          }
 
+          const dBytes = dPeeked.bytes;
           if (
-            dDone ||
-            !dFirstChunk ||
-            dFirstChunk.length < 4 ||
-            dFirstChunk[0] !== 0x00 ||
-            dFirstChunk[1] !== 0x61 ||
-            dFirstChunk[2] !== 0x73 ||
-            dFirstChunk[3] !== 0x6d
+            dBytes.length < 4 ||
+            dBytes[0] !== 0x00 ||
+            dBytes[1] !== 0x61 ||
+            dBytes[2] !== 0x73 ||
+            dBytes[3] !== 0x6d
           ) {
-            dReader.cancel();
+            await dPeeked.cancel();
             return new Response('Invalid WebAssembly module format', {
               status: 500,
               headers: {
@@ -295,9 +369,11 @@ export default {
             });
           }
 
-          deliveryStream = createChunkPrependedStream(dFirstChunk, dReader);
+          deliveryStream = dPeeked.stream;
+          activeCancel = dPeeked.cancel;
         } else {
-          deliveryStream = createChunkPrependedStream(firstChunk, reader);
+          deliveryStream = peeked.stream;
+          activeCancel = peeked.cancel;
         }
 
         // Configure headers for streaming WebAssembly delivery with cross-origin isolation
@@ -310,6 +386,7 @@ export default {
         headers.set('Cache-Control', 'public, max-age=31536000, immutable');
 
         if (request.method === 'HEAD') {
+          await activeCancel();
           return new Response(null, { status: 200, headers });
         }
 
