@@ -4,6 +4,7 @@ export const GAMES: Game[] = [
   {
     id: 'block-puzzle',
     slug: 'block-puzzle',
+    logo: 'block-puzzle',
     title: {
       en: 'Block Puzzle — 4TM',
       vi: 'Xếp Gạch — 4TM',

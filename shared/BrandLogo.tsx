@@ -105,15 +105,18 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
   const sizeClasses = {
     sm: {
-      mark: 'w-7 h-7 rounded-[7px]',
+      dimension: 28,
+      mark: 'w-7 h-7',
       badge: 'text-[10px] px-1.5 py-0.5',
     },
     md: {
-      mark: 'w-9 h-9 rounded-[9px]',
+      dimension: 36,
+      mark: 'w-9 h-9',
       badge: 'text-xs px-2 py-0.5',
     },
     lg: {
-      mark: 'w-12 h-12 rounded-[12px]',
+      dimension: 48,
+      mark: 'w-12 h-12',
       badge: 'text-sm px-2.5 py-1',
     },
   }[size];
@@ -138,14 +141,16 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     <>
       {showMark && (
         <div
-          className={`relative flex items-center justify-center shrink-0 shadow-xs group-hover:scale-[1.03] transition-transform duration-200 overflow-hidden bg-[#090D16] ${sizeClasses.mark}`}
+          className={`relative flex items-center justify-center shrink-0 aspect-square group-hover:scale-[1.03] transition-transform duration-200 bg-transparent ${sizeClasses.mark}`}
           aria-hidden="true"
         >
           <img
             key={logoSrc}
             src={logoSrc}
             alt={label === 'ecosystem' ? '4TM Logo' : `4TM ${label} Logo`}
-            className="w-full h-full object-cover select-none pointer-events-none"
+            width={sizeClasses.dimension}
+            height={sizeClasses.dimension}
+            className="w-full h-full object-contain aspect-square select-none pointer-events-none drop-shadow-xs"
             loading="eager"
             decoding="async"
             onError={() => {

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Game, GameCategory, Language, getGameTitle, isPublicGameStatus } from '../types';
 import { TRANSLATIONS } from '../i18n/translations';
 import { Search, Gamepad2, Play, Clock, Star, Globe, Smartphone, RotateCcw, Layers, X } from 'lucide-react';
+import { BrandLogo } from '@shared';
 
 export interface GameCatalogProps {
   games: Game[];
@@ -235,12 +236,27 @@ export const GameCatalog: React.FC<GameCatalogProps> = ({
                   </div>
 
                   {/* Title & Genre */}
-                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors mb-1 leading-snug">
-                    {titleText}
-                  </h2>
-                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3">
-                    {game.genre[language]}
-                  </p>
+                  <div className="flex items-start gap-3.5 mb-1">
+                    {(game.logo || game.id === 'block-puzzle') && (
+                      <div className="shrink-0 pt-0.5 group-hover:scale-105 transition-transform duration-200">
+                        <BrandLogo
+                          productName={game.logo || game.id}
+                          size="md"
+                          showMark={true}
+                          showText={false}
+                          as="div"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors leading-snug">
+                        {titleText}
+                      </h2>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3">
+                        {game.genre[language]}
+                      </p>
+                    </div>
+                  </div>
 
                   {/* Description */}
                   <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">

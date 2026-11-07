@@ -1,16 +1,10 @@
 import React from 'react';
 import { EcosystemProductItem } from '../config/products';
 import { useLanguage } from '../i18n/LanguageContext';
-import { getProductAccent } from '@shared';
+import { getProductAccent, BrandLogo } from '@shared';
 import {
-  GraduationCap,
-  LayoutGrid,
-  Gamepad2,
-  BookOpen,
-  Wrench,
   ArrowUpRight,
   CheckCircle2,
-  Layers,
 } from 'lucide-react';
 
 interface ProductCardProps {
@@ -21,24 +15,6 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({ product, featured = false }) => {
   const { language, dict } = useLanguage();
   const accent = getProductAccent(product.id);
-
-  const renderIcon = (iconName: string) => {
-    const props = { className: 'w-6 h-6' };
-    switch (iconName) {
-      case 'GraduationCap':
-        return <GraduationCap {...props} />;
-      case 'LayoutGrid':
-        return <LayoutGrid {...props} />;
-      case 'Gamepad2':
-        return <Gamepad2 {...props} />;
-      case 'BookOpen':
-        return <BookOpen {...props} />;
-      case 'Wrench':
-        return <Wrench {...props} />;
-      default:
-        return <Layers {...props} />;
-    }
-  };
 
   return (
     <div
@@ -52,8 +28,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, featured = fa
         {/* Card Header: Icon, Subdomain & Status Badge */}
         <div className="flex items-start justify-between gap-3 mb-5">
           <div className="flex items-center gap-3">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${accent.classes.badge} group-hover:scale-105 transition-transform duration-200`}>
-              {renderIcon(product.icon)}
+            <div className="shrink-0 group-hover:scale-105 transition-transform duration-200">
+              <BrandLogo
+                productName={product.id}
+                size="lg"
+                showMark={true}
+                showText={false}
+                as="div"
+              />
             </div>
             <div>
               <span className="text-xs font-mono text-slate-400 dark:text-slate-500 block">

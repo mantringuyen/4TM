@@ -33,6 +33,7 @@ export interface Game {
   id: GameId;
   slug: string;
   title: string | { en: string; vi: string };
+  logo?: string;
   genre: {
     en: string;
     vi: string;
