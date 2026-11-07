@@ -82,7 +82,7 @@ jobs:
             RELATIVE_PATH="${FILE#"$SOURCE_ROOT"/}"
             OBJECT_KEY="brand/$RELATIVE_PATH"
 
-            if [[ "$FILE" == *.svg ]]; then
+            if [[ "${FILE,,}" == *.svg ]]; then
               CONTENT_TYPE="image/svg+xml"
             else
               CONTENT_TYPE="image/png"
