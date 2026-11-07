@@ -25,15 +25,42 @@ export const BRAND_CONFIG = {
 };
 
 export const PRODUCT_LOGOS: Record<string, string> = {
-  ecosystem: '/brand/4tm-logo.svg',
-  hub: '/brand/4tm-logo.svg',
-  portal: '/brand/4tm-logo.svg',
-  '4tm': '/brand/4tm-logo.svg',
-  study: '/brand/study-logo.svg',
-  ebook: '/brand/ebook-logo.svg',
-  tools: '/brand/tools-logo.svg',
-  games: '/brand/games-logo.svg',
-  apps: '/brand/apps-logo.svg',
+  ecosystem: 'https://cdn.4tm.io.vn/brand/logos/adaptive/4tm-logo.svg',
+  hub: 'https://cdn.4tm.io.vn/brand/logos/adaptive/4tm-logo.svg',
+  portal: 'https://cdn.4tm.io.vn/brand/logos/adaptive/4tm-logo.svg',
+  '4tm': 'https://cdn.4tm.io.vn/brand/logos/adaptive/4tm-logo.svg',
+  study: 'https://cdn.4tm.io.vn/brand/logos/adaptive/study-logo.svg',
+  ebook: 'https://cdn.4tm.io.vn/brand/logos/adaptive/ebook-logo.svg',
+  tools: 'https://cdn.4tm.io.vn/brand/logos/adaptive/tools-logo.svg',
+  games: 'https://cdn.4tm.io.vn/brand/logos/adaptive/games-logo.svg',
+  apps: 'https://cdn.4tm.io.vn/brand/logos/adaptive/apps-logo.svg',
+  'block-puzzle': 'https://cdn.4tm.io.vn/brand/logos/adaptive/block-puzzle-logo.svg',
+};
+
+export const PRODUCT_LOGOS_DARK: Record<string, string> = {
+  ecosystem: 'https://cdn.4tm.io.vn/brand/logos/dark/svg/4tm.svg',
+  hub: 'https://cdn.4tm.io.vn/brand/logos/dark/svg/4tm.svg',
+  portal: 'https://cdn.4tm.io.vn/brand/logos/dark/svg/4tm.svg',
+  '4tm': 'https://cdn.4tm.io.vn/brand/logos/dark/svg/4tm.svg',
+  study: 'https://cdn.4tm.io.vn/brand/logos/dark/svg/study.svg',
+  ebook: 'https://cdn.4tm.io.vn/brand/logos/dark/svg/ebook.svg',
+  tools: 'https://cdn.4tm.io.vn/brand/logos/dark/svg/tools.svg',
+  games: 'https://cdn.4tm.io.vn/brand/logos/dark/svg/games.svg',
+  apps: 'https://cdn.4tm.io.vn/brand/logos/dark/svg/apps.svg',
+  'block-puzzle': 'https://cdn.4tm.io.vn/brand/logos/dark/svg/block-puzzle.svg',
+};
+
+export const PRODUCT_LOGOS_LIGHT: Record<string, string> = {
+  ecosystem: 'https://cdn.4tm.io.vn/brand/logos/light/svg/4tm.svg',
+  hub: 'https://cdn.4tm.io.vn/brand/logos/light/svg/4tm.svg',
+  portal: 'https://cdn.4tm.io.vn/brand/logos/light/svg/4tm.svg',
+  '4tm': 'https://cdn.4tm.io.vn/brand/logos/light/svg/4tm.svg',
+  study: 'https://cdn.4tm.io.vn/brand/logos/light/svg/study.svg',
+  ebook: 'https://cdn.4tm.io.vn/brand/logos/light/svg/ebook.svg',
+  tools: 'https://cdn.4tm.io.vn/brand/logos/light/svg/tools.svg',
+  games: 'https://cdn.4tm.io.vn/brand/logos/light/svg/games.svg',
+  apps: 'https://cdn.4tm.io.vn/brand/logos/light/svg/apps.svg',
+  'block-puzzle': 'https://cdn.4tm.io.vn/brand/logos/light/svg/block-puzzle.svg',
 };
 
 export const BrandLogo: React.FC<BrandLogoProps> = ({
@@ -90,7 +117,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   }[size];
 
   const primaryLogo = (useProductMark && PRODUCT_LOGOS[label]) ? PRODUCT_LOGOS[label] : PRODUCT_LOGOS.ecosystem;
-  const logoSrc = hasError ? '/favicon.svg' : primaryLogo;
+  const logoSrc = hasError ? 'https://cdn.4tm.io.vn/brand/icons/4tm/favicon.svg' : primaryLogo;
 
   const content = (
     <>

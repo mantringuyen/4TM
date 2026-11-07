@@ -7,23 +7,23 @@
   "theme_color": "#080A0E",
   "icons": [
     {
-      "src": "/favicon.svg",
+      "src": "https://cdn.4tm.io.vn/brand/icons/ebook/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/favicon-32.png",
+      "src": "https://cdn.4tm.io.vn/brand/icons/ebook/favicon-32.png",
       "sizes": "32x32",
       "type": "image/png"
     },
     {
-      "src": "/apple-touch-icon.png",
+      "src": "https://cdn.4tm.io.vn/brand/icons/ebook/apple-touch-icon-180.png",
       "sizes": "180x180",
       "type": "image/png"
     },
     {
-      "src": "/logo-1024.png",
+      "src": "https://cdn.4tm.io.vn/brand/logos/dark/png/ebook.png",
       "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any"

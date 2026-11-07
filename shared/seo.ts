@@ -131,7 +131,7 @@ export const SchemaGenerators = {
     '@id': 'https://4tm.io.vn/#organization',
     name: '4TM Ecosystem',
     url: 'https://4tm.io.vn',
-    logo: 'https://4tm.io.vn/favicon.svg',
+    logo: 'https://cdn.4tm.io.vn/brand/logos/adaptive/4tm-logo.svg',
     description:
       'Autonomous digital ecosystem connecting Interactive Programming LMS, Engineering Ebooks, Technical Utilities, Web Applications, and Computer Science Games.',
     sameAs: [
