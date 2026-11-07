@@ -1,0 +1,158 @@
+name: Delete Old Logo Assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Choose preview or delete"
+        required: true
+        type: choice
+        options:
+          - preview
+          - delete
+        default: preview
+      confirmation:
+        description: "For deletion, enter DELETE_OLD_LOGOS"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: delete-old-logo-assets
+  cancel-in-progress: false
+
+jobs:
+  manage-logo-assets:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Find old logo image assets
+        id: find
+        shell: bash
+        run: |
+          python3 <<'PY'
+          import subprocess
+          import os
+
+          extensions = {
+              ".svg", ".png", ".jpg", ".jpeg",
+              ".webp", ".gif", ".ico"
+          }
+
+          protected = {
+              "4TM-Logo-Assets.zip"
+          }
+
+          tracked = subprocess.check_output(
+              ["git", "ls-files", "-z"]
+          ).decode("utf-8").split("\0")
+
+          selected = []
+
+          for path in tracked:
+              if not path:
+                  continue
+
+              normalized = path.lower()
+              filename = os.path.basename(normalized)
+              extension = os.path.splitext(normalized)[1]
+
+              if path in protected:
+                  continue
+
+              if normalized.startswith(".github/workflows/"):
+                  continue
+
+              if extension not in extensions:
+                  continue
+
+              parts = normalized.split("/")
+
+              in_brand_folder = "brand" in parts
+
+              in_shared_asset_folder = (
+                  normalized.startswith("shared/assets/logos/")
+                  or normalized.startswith("shared/assets/favicons/")
+                  or normalized.startswith("shared/assets/icons/")
+              )
+
+              logo_filename = any(
+                  keyword in filename
+                  for keyword in (
+                      "logo",
+                      "favicon",
+                      "apple-touch-icon"
+                  )
+              )
+
+              if (
+                  in_brand_folder
+                  or in_shared_asset_folder
+                  or logo_filename
+              ):
+                  selected.append(path)
+
+          selected.sort()
+
+          with open("logo-assets-to-delete.txt", "w") as f:
+              for path in selected:
+                  f.write(path + "\n")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"count={len(selected)}\n")
+
+          print(f"Found {len(selected)} candidate files:")
+          for path in selected:
+              print(f"  {path}")
+          PY
+
+      - name: Preview deletion list
+        run: |
+          echo "Files matched: ${{ steps.find.outputs.count }}"
+          echo "Review the complete list in the workflow log."
+          cat logo-assets-to-delete.txt
+
+      - name: Validate deletion confirmation
+        if: inputs.action == 'delete'
+        env:
+          CONFIRMATION: ${{ inputs.confirmation }}
+        run: |
+          if [ "$CONFIRMATION" != "DELETE_OLD_LOGOS" ]; then
+            echo "::error::Confirmation does not match DELETE_OLD_LOGOS"
+            exit 1
+          fi
+
+          if [ "${{ steps.find.outputs.count }}" = "0" ]; then
+            echo "No matching files. Nothing to delete."
+            exit 0
+          fi
+
+      - name: Delete old logo assets
+        if: inputs.action == 'delete' && steps.find.outputs.count != '0'
+        shell: bash
+        run: |
+          mapfile -t files < logo-assets-to-delete.txt
+
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No files to delete."
+            exit 0
+          fi
+
+          git rm -- "${files[@]}"
+
+      - name: Commit and push deletion
+        if: inputs.action == 'delete' && steps.find.outputs.count != '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git commit -m "Remove old logo image assets"
+          git push origin HEAD:main
