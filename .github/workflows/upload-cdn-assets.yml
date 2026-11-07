@@ -1,0 +1,100 @@
+name: Upload CDN Assets
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  upload:
+    name: Upload brand assets to Cloudflare R2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify and extract official asset archive
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ARCHIVE="4TM-Logo-Assets.zip"
+          EXTRACT_DIR="$RUNNER_TEMP/4tm-logo-assets"
+
+          if [ ! -f "$ARCHIVE" ]; then
+            echo "::error::Missing $ARCHIVE at repository root."
+            exit 1
+          fi
+
+          unzip -tq "$ARCHIVE"
+          mkdir -p "$EXTRACT_DIR"
+          unzip -q "$ARCHIVE" -d "$EXTRACT_DIR"
+
+          mapfile -t TOP_ENTRIES < <(
+            find "$EXTRACT_DIR" -mindepth 1 -maxdepth 1
+          )
+
+          SOURCE_ROOT="$EXTRACT_DIR"
+
+          if [ "${#TOP_ENTRIES[@]}" -eq 1 ] && [ -d "${TOP_ENTRIES[0]}" ]; then
+            SOURCE_ROOT="${TOP_ENTRIES[0]}"
+          fi
+
+          echo "SOURCE_ROOT=$SOURCE_ROOT" >> "$GITHUB_ENV"
+
+      - name: Upload SVG and PNG assets to R2
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$AWS_ACCESS_KEY_ID" ] || \
+             [ -z "$AWS_SECRET_ACCESS_KEY" ] || \
+             [ -z "$R2_ACCOUNT_ID" ]; then
+            echo "::error::One or more Cloudflare R2 secrets are missing."
+            exit 1
+          fi
+
+          ENDPOINT="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+
+          mapfile -d '' ASSETS < <(
+            find "$SOURCE_ROOT" -type f \
+              \( -iname '*.svg' -o -iname '*.png' \) \
+              ! -iname '*preview*' \
+              ! -iname '*contact-sheet*' \
+              ! -iname '*overview*' \
+              -print0
+          )
+
+          if [ "${#ASSETS[@]}" -eq 0 ]; then
+            echo "::error::No eligible SVG or PNG assets found."
+            exit 1
+          fi
+
+          echo "Found ${#ASSETS[@]} assets."
+
+          for FILE in "${ASSETS[@]}"; do
+            RELATIVE_PATH="${FILE#"$SOURCE_ROOT"/}"
+            OBJECT_KEY="brand/$RELATIVE_PATH"
+
+            if [[ "$FILE" == *.svg ]]; then
+              CONTENT_TYPE="image/svg+xml"
+            else
+              CONTENT_TYPE="image/png"
+            fi
+
+            echo "Uploading: $OBJECT_KEY"
+
+            aws s3 cp "$FILE" "s3://4tm-cdn/$OBJECT_KEY" \
+              --endpoint-url "$ENDPOINT" \
+              --region auto \
+              --content-type "$CONTENT_TYPE" \
+              --cache-control "public, max-age=3600"
+          done
+
+          echo "Successfully uploaded ${#ASSETS[@]} assets."
