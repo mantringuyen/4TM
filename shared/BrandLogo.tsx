@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getProductAccent } from './tokens';
+import { useTheme } from './theme';
 
 export interface BrandLogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -75,7 +76,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   variant,
   useProductMark = true,
 }) => {
-  const [hasError, setHasError] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const [errorLevel, setErrorLevel] = useState<number>(0);
 
   const getProductLabel = (name?: string, v?: string): string => {
     const raw = v || name;
@@ -116,8 +118,21 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     },
   }[size];
 
-  const primaryLogo = (useProductMark && PRODUCT_LOGOS[label]) ? PRODUCT_LOGOS[label] : PRODUCT_LOGOS.ecosystem;
-  const logoSrc = hasError ? 'https://cdn.4tm.io.vn/brand/icons/4tm/favicon.svg' : primaryLogo;
+  const themedLogos = resolvedTheme === 'light' ? PRODUCT_LOGOS_LIGHT : PRODUCT_LOGOS_DARK;
+  const themedLogo = (useProductMark && themedLogos[label]) ? themedLogos[label] : themedLogos.ecosystem;
+  const adaptiveLogo = (useProductMark && PRODUCT_LOGOS[label]) ? PRODUCT_LOGOS[label] : PRODUCT_LOGOS.ecosystem;
+  const fallbackLogo = 'https://cdn.4tm.io.vn/brand/icons/4tm/favicon.svg';
+
+  useEffect(() => {
+    setErrorLevel(0);
+  }, [themedLogo]);
+
+  let logoSrc = themedLogo;
+  if (errorLevel === 1) {
+    logoSrc = adaptiveLogo;
+  } else if (errorLevel >= 2) {
+    logoSrc = fallbackLogo;
+  }
 
   const content = (
     <>
@@ -127,13 +142,14 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           aria-hidden="true"
         >
           <img
+            key={logoSrc}
             src={logoSrc}
             alt={label === 'ecosystem' ? '4TM Logo' : `4TM ${label} Logo`}
             className="w-full h-full object-cover select-none pointer-events-none"
             loading="eager"
             decoding="async"
             onError={() => {
-              if (!hasError) setHasError(true);
+              setErrorLevel((prev) => (prev === 0 && adaptiveLogo && adaptiveLogo !== themedLogo ? 1 : 2));
             }}
           />
         </div>
